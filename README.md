@@ -18,7 +18,10 @@ ws://<SERVER>/v1/transaction/<SCOPE>/<ACTION>
 ws://<SERVER>/v1/transaction/eosio.token/transer
 ```
 
-## Webhooks
+## Related Javascript
+
+- WebSockets (https://github.com/websockets/ws)
+- Socket.io (https://github.com/socketio/socket.io)
 
 ## Related Video
 
@@ -26,4 +29,4 @@ ws://<SERVER>/v1/transaction/eosio.token/transer
 
 ## Related Nodeos Plugins
 
-- https://github.com/acoutts/chintai-zeromq-watcher-plugin
+- Watcher & ZeroMQ Nodeos plugin (https://github.com/acoutts/chintai-zeromq-watcher-plugin)
