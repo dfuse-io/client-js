@@ -18,6 +18,12 @@ ws://<SERVER>/v1/transaction/<SCOPE>/<ACTION>
 ws://<SERVER>/v1/transaction/eosio.token/transer
 ```
 
+## Types of Notifications
+
+1) websocket (and/or socket.io)
+2) web hook (we poke your API on trigger)
+3) long polling API (eosjs compatible) on steroids
+
 ## Related Javascript
 
 - WebSockets (https://github.com/websockets/ws)
