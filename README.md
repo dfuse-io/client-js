@@ -7,12 +7,14 @@ Able to receive a push notification of a transaction (optional Block ID & Traces
 Listen for all transactions from a particular contract (scope)
 
 ```
+ws://<SERVER>/v1/transaction/<SCOPE>
 ws://<SERVER>/v1/transaction/eosio.token
 ```
 
 Listen for all transactions from a particular contract (scope) & action
 
 ```
+ws://<SERVER>/v1/transaction/<SCOPE>/<ACTION>
 ws://<SERVER>/v1/transaction/eosio.token/transer
 ```
 
