@@ -1,4 +1,4 @@
-# EOS Webhooks/Websockets
+# EOS Websockets/Webhooks
 
 Able to receive a push notification of a transaction (optional Block ID & Traces)
 
