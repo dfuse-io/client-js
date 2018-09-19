@@ -3,31 +3,20 @@
   "version": "0.1.0",
   "description": "EOS WebSocket",
   "main": "index.js",
+  "types": "index.d.js",
   "repository": "git@github.com:EOS-Nation/eos-websocket.git",
   "author": "Denis Carriere <denis@eosnation.io>",
   "license": "MIT",
   "scripts": {
     "start": "tsc && node index.js",
-    "test": "tslint --project ."
+    "test": "tsc && node test.js",
+    "lint": "tslint --project ."
   },
   "devDependencies": {
-    "@types/express": "*",
-    "@types/express-ws": "*",
-    "@types/request-promise-native": "*",
     "@types/ws": "*",
-    "tslint": "*",
-    "typescript": "*"
+    "documentation": "*"
   },
   "dependencies": {
-    "demux": "*",
-    "demux-eos": "*",
-    "express": "*",
-    "express-session": "^1.15.6",
-    "express-ws": "*",
-    "express-ws-routes": "*",
-    "request": "*",
-    "request-promise-native": "*",
-    "socket.io": "^2.1.1",
     "ws": "*"
   }
 }
