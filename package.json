@@ -8,7 +8,7 @@
   "author": "Denis Carriere <denis@eosnation.io>",
   "license": "MIT",
   "scripts": {
-    "start": "tsc && node index.js",
+    "prepare": "tsc",
     "test": "tsc && node test.js",
     "lint": "tslint --project ."
   },

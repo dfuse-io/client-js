@@ -2,7 +2,32 @@
 
 Able to receive a push notification of a transaction (optional Block ID & Traces)
 
-## Websocket example
+## Install
+
+**npm*
+
+```
+$ npm install --save eos-websocket
+```
+
+## Javascript
+
+```
+import EosWebSocket from "eos-websocket";
+
+const ws = new EosWebSocket("ws://35.203.114.193/v1/stream");
+
+ws.on('open', () => {
+    ws.get_table_deltas("eosio", "eosio", "global");
+    ws.get_actions("eosio.token", "transfer");
+})
+
+ws.on("message", message => {
+    console.log(message);
+})
+```
+
+## Websocket
 
 Listen for all transactions from a particular contract (scope)
 
