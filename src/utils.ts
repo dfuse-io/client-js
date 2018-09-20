@@ -18,7 +18,7 @@ export function unlisten(req_id: string) {
             req_id,
         },
     };
-  }
+}
 
 export function get_actions(req_id: string, account: string, action_name: string, receiver?: string) {
     return {
@@ -26,9 +26,9 @@ export function get_actions(req_id: string, account: string, action_name: string
         req_id,
         listen: true,
         data: {
-        account,
-        action_name,
-        receiver: receiver || account,
+            account,
+            action_name,
+            receiver: receiver || account,
         },
     };
 }
@@ -39,10 +39,10 @@ export function get_table_deltas(req_id: string, code: string, scope: string, ta
         req_id,
         listen: true,
         data: {
-        code,
-        scope,
-        table_name,
-        json: true,
+            code,
+            scope,
+            table_name,
+            json: true,
         },
     };
 }
