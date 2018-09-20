@@ -15,7 +15,7 @@ $ npm install --save eos-websocket
 ```javascript
 import EosWebSocket from "eos-websocket";
 
-const ws = new EosWebSocket("ws://35.203.114.193/v1/stream");
+const ws = new EosWebSocket("ws://<SERVER>/v1/stream");
 
 ws.on('open', () => {
     ws.get_table_deltas("eosio", "eosio", "global");
@@ -32,15 +32,7 @@ ws.on("message", message => {
 Listen for all transactions from a particular contract (scope)
 
 ```
-ws://<SERVER>/v1/transaction/<SCOPE>
-ws://<SERVER>/v1/transaction/eosio.token
-```
-
-Listen for all transactions from a particular contract (scope) & action
-
-```
-ws://<SERVER>/v1/transaction/<SCOPE>/<ACTION>
-ws://<SERVER>/v1/transaction/eosio.token/transer
+ws://<SERVER>/v1/stream
 ```
 
 ## Types of Notifications
