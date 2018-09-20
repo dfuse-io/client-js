@@ -4,3 +4,4 @@ yarn.lock
 *.js
 package-lock.json
 .DS_Store
+*.d.ts
