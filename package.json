@@ -2,10 +2,13 @@
   "name": "eos-websocket",
   "version": "0.1.0",
   "description": "EOS WebSocket",
-  "main": "dist/index.js",
-  "types": "dist/index.d.js",
+  "main": "index.js",
+  "types": "index.d.js",
   "files": [
-    "dist"
+    "index.js",
+    "index.d.ts",
+    "src",
+    "types"
   ],
   "repository": "git@github.com:EOS-Nation/eos-websocket.git",
   "author": "Denis Carriere <denis@eosnation.io>",

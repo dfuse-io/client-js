@@ -4,3 +4,8 @@ yarn.lock
 package-lock.json
 .DS_Store
 dist
+
+index.js
+index.d.ts
+src/**/*.d.ts
+src/**/*.js
