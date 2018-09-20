@@ -4,7 +4,7 @@ Able to receive a push notification of a transaction (optional Block ID & Traces
 
 ## Install
 
-**npm*
+**npm**
 
 ```
 $ npm install --save eos-websocket
