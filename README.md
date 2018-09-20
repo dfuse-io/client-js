@@ -12,7 +12,7 @@ $ npm install --save eos-websocket
 
 ## Javascript
 
-```
+```javascript
 import EosWebSocket from "eos-websocket";
 
 const ws = new EosWebSocket("ws://35.203.114.193/v1/stream");
