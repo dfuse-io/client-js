@@ -13,16 +13,16 @@ $ npm install --save eos-websocket
 ## Javascript
 
 ```javascript
-import EosWebSocket from "eos-websocket";
+import EosWebSocket from "eosws";
 
-const ws = new EosWebSocket("ws://<SERVER>/v1/stream");
+const eosws = new EosWebSocket("ws://<SERVER>/v1/stream");
 
-ws.on('open', () => {
-    ws.get_table_deltas("eosio", "eosio", "global");
-    ws.get_actions("eosio.token", "transfer");
+eosws.on('open', () => {
+    eosws.get_table_deltas("eosio", "eosio", "global");
+    eosws.get_actions("eosio.token", "transfer");
 })
 
-ws.on("message", message => {
+eosws.on("message", message => {
     console.log(message);
 })
 ```
@@ -43,8 +43,8 @@ ws://<SERVER>/v1/stream
 
 ## Related Javascript
 
--   WebSockets (<https://github.com/websockets/ws>)
--   Socket.io (<https://github.com/socketio/socket.io>)
+-   [x] WebSockets (<https://github.com/websockets/ws>)
+-   [ ] Socket.io (<https://github.com/socketio/socket.io>)
 
 ## Related Video
 
@@ -63,12 +63,13 @@ ws://<SERVER>/v1/stream
 -   [EosWebSocket](#eoswebsocket)
     -   [Examples](#examples)
     -   [unlisten](#unlisten)
+        -   [Parameters](#parameters)
         -   [Examples](#examples-1)
     -   [get_actions](#get_actions)
-        -   [Parameters](#parameters)
+        -   [Parameters](#parameters-1)
         -   [Examples](#examples-2)
     -   [get_table_deltas](#get_table_deltas)
-        -   [Parameters](#parameters-1)
+        -   [Parameters](#parameters-2)
         -   [Examples](#examples-3)
 
 ### EosWebSocket
@@ -76,15 +77,19 @@ ws://<SERVER>/v1/stream
 #### Examples
 
 ```javascript
-const ws = new EosWebSocket("ws://<SERVER>/v1/stream");
+const eosws = new EosWebSocket("ws://<SERVER>/v1/stream");
 ```
 
 #### unlisten
 
+##### Parameters
+
+-   `req_id`  
+
 ##### Examples
 
 ```javascript
-ws.unlisten();
+eosws.unlisten("req123");
 ```
 
 #### get_actions
@@ -100,8 +105,10 @@ Get Actions
 ##### Examples
 
 ```javascript
-ws.get_actions("eosio.token", "transfer");
+eosws.get_actions("eosio.token", "transfer");
 ```
+
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** req_id
 
 #### get_table_deltas
 
@@ -116,5 +123,5 @@ Get Table Deltas
 ##### Examples
 
 ```javascript
-ws.get_table_deltas("eosio", "eosio", "global");
+eosws.get_table_deltas("eosio", "eosio", "global");
 ```

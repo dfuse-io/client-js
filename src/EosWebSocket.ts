@@ -6,7 +6,7 @@ export default class EosWebSocket extends WebSocket {
    * @name EosWebSocket
    * @example
    *
-   * const ws = new EosWebSocket("ws://<SERVER>/v1/stream");
+   * const eosws = new EosWebSocket("ws://<SERVER>/v1/stream");
    */
   constructor(address: string, options: WebSocket.ClientOptions = {perMessageDeflate: false}) {
     if (!options.origin) { options.origin = "https://github.com/EOS-Nation/eos-websocket"; }
@@ -16,7 +16,7 @@ export default class EosWebSocket extends WebSocket {
   /**
    * @example
    *
-   * ws.unlisten("req123");
+   * eosws.unlisten("req123");
    */
   public unlisten(req_id: string) {
     this.send(JSON.stringify(unlisten(req_id)));
@@ -31,7 +31,7 @@ export default class EosWebSocket extends WebSocket {
    * @returns {string} req_id
    * @example
    *
-   * ws.get_actions("eosio.token", "transfer");
+   * eosws.get_actions("eosio.token", "transfer");
    */
   public get_actions(account: string, action_name: string, receiver?: string) {
     const req_id = generateReqId();
@@ -47,7 +47,7 @@ export default class EosWebSocket extends WebSocket {
    * @param {string} table_name Table Name
    * @example
    *
-   * ws.get_table_deltas("eosio", "eosio", "global");
+   * eosws.get_table_deltas("eosio", "eosio", "global");
    */
   public get_table_deltas(code: string, scope: string, table_name: string) {
     const req_id = generateReqId();

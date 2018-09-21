@@ -1,5 +1,5 @@
 {
-  "name": "eos-websocket",
+  "name": "eosws",
   "version": "0.1.0",
   "description": "EOS WebSocket",
   "main": "index.js",
@@ -10,8 +10,12 @@
     "src",
     "types"
   ],
-  "repository": "git@github.com:EOS-Nation/eos-websocket.git",
-  "author": "Denis Carriere <denis@eosnation.io>",
+  "repository": "git@github.com:EOS-Nation/eosws.git",
+  "author": {
+    "name": "Denis Carriere",
+    "email": "denis@eosnation.io",
+    "url": "https://eosnation.io"
+  },
   "license": "MIT",
   "scripts": {
     "prepare": "tsc",
