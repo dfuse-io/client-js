@@ -1,14 +1,12 @@
 {
   "name": "eosws",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "EOS WebSocket",
   "main": "index.js",
   "types": "index.d.js",
   "files": [
     "index.js",
-    "index.d.ts",
-    "src",
-    "types"
+    "index.d.ts"
   ],
   "repository": "git@github.com:EOS-Nation/eosws.git",
   "author": {
