@@ -37,6 +37,34 @@ export function get_actions(account: string, action_name: string, receiver?: str
 }
 
 /**
+ * Get Actions
+ *
+ * @param {string} account Account
+ * @param {string} action_name Action Name
+ * @param {string} [receiver] Receiver
+ * @param {string} [req_id] Request ID
+ * @returns {string} Message for `ws.send`
+ * @example
+ *
+ * ws.send(get_transaction(""));
+ */
+export function get_transaction(account: string, action_name: string, receiver?: string, req_id?: string) {
+    if (!req_id) { req_id = generateReqId(); }
+    if (!receiver) { receiver = account; }
+
+    return JSON.stringify({
+        type: "get_actions",
+        req_id,
+        listen: true,
+        data: {
+            account,
+            action_name,
+            receiver,
+        },
+    });
+}
+
+/**
  * Get Table Deltas
  *
  * @param {string} code Code

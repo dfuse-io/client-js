@@ -1,7 +1,8 @@
 import WebSocket from "ws";
 import { get_table_deltas, parse_table_deltas, Eosio } from "..";
 
-const ws = new WebSocket("ws://35.203.114.193/v1/stream");
+const origin = "https://github.com/eos-nation/eosws";
+const ws = new WebSocket("wss://eosws.mainnet.eoscanada.com/v1/stream", {origin});
 
 ws.onopen = () => {
     ws.send(get_table_deltas("eosio", "eosio", "global"));
