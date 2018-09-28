@@ -3,7 +3,7 @@ import { get_actions, parse_actions, EosioToken } from "..";
 
 const ws = new WebSocket("ws://35.203.114.193/v1/stream");
 
-ws.onopen = () => {
+ws.onmessage = () => {
     ws.send(get_actions("eosio.token", "transfer"));
 };
 

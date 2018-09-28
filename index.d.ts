@@ -1,13 +1,12 @@
+/// <reference types="node" />
 import { ActionTrace, Ping, TableDelta } from "./types";
 export * from "./types";
-
 /**
  * Data represents the message payload received over the WebSocket.
  *
  * @private
  */
-type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
-
+declare type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
 /**
  * Get Actions
  *
@@ -20,22 +19,7 @@ type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
  *
  * ws.send(get_actions("eosio.token", "transfer"));
  */
-export function get_actions(account: string, action_name: string, receiver?: string, req_id?: string) {
-    if (!req_id) { req_id = generateReqId(); }
-    if (!receiver) { receiver = account; }
-
-    return JSON.stringify({
-        type: "get_actions",
-        req_id,
-        listen: true,
-        data: {
-            account,
-            action_name,
-            receiver,
-        },
-    });
-}
-
+export declare function get_actions(account: string, action_name: string, receiver?: string, req_id?: string): string;
 /**
  * Get Table Deltas
  *
@@ -48,22 +32,7 @@ export function get_actions(account: string, action_name: string, receiver?: str
  *
  * ws.send(get_table_deltas("eosio", "eosio", "global"));
  */
-export function get_table_deltas(code: string, scope: string, table_name: string, req_id?: string) {
-    if (!req_id) { req_id = generateReqId(); }
-
-    return JSON.stringify({
-        type: "get_table_deltas",
-        req_id,
-        listen: true,
-        data: {
-            code,
-            scope,
-            table_name,
-            json: true,
-        },
-    });
-}
-
+export declare function get_table_deltas(code: string, scope: string, table_name: string, req_id?: string): string;
 /**
  * Unlisten to WebSocket based on request id
  *
@@ -72,17 +41,7 @@ export function get_table_deltas(code: string, scope: string, table_name: string
  *
  * ws.send(unlisten("req123"));
  */
-export function unlisten(req_id: string) {
-    if (!req_id) { throw new Error("req_id is required"); }
-
-    return JSON.stringify({
-        type: "unlisten",
-        data: {
-            req_id,
-        },
-    });
-}
-
+export declare function unlisten(req_id: string): string;
 /**
  * Generate Req ID
  *
@@ -91,10 +50,7 @@ export function unlisten(req_id: string) {
  *
  * generateReqId() // => req123
  */
-export function generateReqId() {
-    return "req" + Math.round(Math.random() * 1000);
-}
-
+export declare function generateReqId(): string;
 /**
  * Parse Actions from `get_actions` from WebSocket `onmessage` listener
  *
@@ -104,12 +60,7 @@ export function generateReqId() {
  *
  * const actions = parse_actions<any>(message);
  */
-export function parse_actions<T>(data: WebSocketData): ActionTrace<T> | null {
-    const message = parse_message(data);
-    if (message.type === "action_trace") { return message; }
-    return null;
-}
-
+export declare function parse_actions<T>(data: WebSocketData): ActionTrace<T> | null;
 /**
  * Parse Table Deltas from `get_table_deltas` from WebSocket `onmessage` listener
  *
@@ -119,12 +70,7 @@ export function parse_actions<T>(data: WebSocketData): ActionTrace<T> | null {
  *
  * const table_deltas = parse_table_deltas<any>(message);
  */
-export function parse_table_deltas<T>(data: WebSocketData): TableDelta<T> | null {
-    const message = parse_message(data);
-    if (message.type === "action_trace") { return message; }
-    return null;
-}
-
+export declare function parse_table_deltas<T>(data: WebSocketData): TableDelta<T> | null;
 /**
  * Parse Ping from WebSocket `onmessage` listener
  *
@@ -134,12 +80,7 @@ export function parse_table_deltas<T>(data: WebSocketData): TableDelta<T> | null
  *
  * const ping = parse_ping(message);
  */
-export function parse_ping(data: WebSocketData): Ping | null {
-    const message = parse_message(data);
-    if (message.type === "ping") { return message; }
-    return null;
-}
-
+export declare function parse_ping(data: WebSocketData): Ping | null;
 /**
  * Parse MessageEvent from WebSocket `onmessage` listener
  *
@@ -147,6 +88,4 @@ export function parse_ping(data: WebSocketData): Ping | null {
  * @param {WebSocketData} data WebSocket Data from message event
  * @returns {Object} Message Data
  */
-export function parse_message(data: WebSocketData): any {
-    return JSON.parse(data.toString());
-}
+export declare function parse_message(data: WebSocketData): any;

@@ -1,12 +1,13 @@
 {
   "name": "eosws",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "EOS WebSocket",
   "main": "index.js",
   "types": "index.d.js",
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "types"
   ],
   "repository": "git@github.com:EOS-Nation/eosws.git",
   "author": {
@@ -24,9 +25,8 @@
     "@types/ws": "*",
     "documentation": "*",
     "tslint": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "ws": "ws"
   },
-  "dependencies": {
-    "ws": "*"
-  }
+  "dependencies": {}
 }

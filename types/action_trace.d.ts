@@ -4,22 +4,22 @@
 //
 //   "Set quicktype target language"
 
-export interface ActionTrace {
+export interface ActionTrace<T> {
     type:   string;
     req_id: string;
-    data:   ActionTraceData;
+    data:   ActionTraceData<T>;
 }
 
-export interface ActionTraceData {
+export interface ActionTraceData<T> {
     trx_id: string;
     idx:    number;
     depth:  number;
-    trace:  Trace;
+    trace:  Trace<T>;
 }
 
-export interface Trace {
+export interface Trace<T> {
     receipt:         Receipt;
-    act:             Act;
+    act:             Act<T>;
     elapsed:         number;
     cpu_usage:       number;
     console:         string;
@@ -28,24 +28,17 @@ export interface Trace {
     inline_traces:   any[];
 }
 
-export interface Act {
+export interface Act<T> {
     account:       string;
     name:          string;
     authorization: Authorization[];
-    data:          ActData;
+    data:          T;
     hex_data:      string;
 }
 
 export interface Authorization {
     actor:      string;
     permission: string;
-}
-
-export interface ActData {
-    from:     string;
-    to:       string;
-    quantity: string;
-    memo:     string;
 }
 
 export interface Receipt {

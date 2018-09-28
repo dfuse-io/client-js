@@ -13,5 +13,8 @@
   },
   "files": [
     "index.ts"
+  ],
+  "includes": [
+    "types/**/*.d.ts"
   ]
 }
