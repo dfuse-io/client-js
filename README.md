@@ -13,7 +13,7 @@ $ npm install --save eosws
 ## Browser (client)
 
 ```javascript
-import { get_actions, parse_actions, EosioToken } from "..";
+import { get_actions, parse_actions, EosioToken } from "eosws";
 
 const ws = new WebSocket("ws://<SERVER>/v1/stream");
 
