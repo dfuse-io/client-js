@@ -1,6 +1,8 @@
-# EOS Websockets/Webhooks
+# EOS WebSocket
 
-Able to receive a push notification of a transaction (optional Block ID & Traces)
+[EOS Devs: An Endpoint with Stronger Guarantees of Inclusion in a Block](https://www.youtube.com/watch?v=c0FNiv0aVZU&feature=youtu.be)
+
+[![EOS Devs](https://i.ytimg.com/vi/c0FNiv0aVZU/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLC9AqY7ePSHIlEPpmMJIQRTuqBAZg)](https://www.youtube.com/watch?v=c0FNiv0aVZU&feature=youtu.be)
 
 ## Install
 
