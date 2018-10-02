@@ -17,7 +17,7 @@ $ npm install --save eosws
 ```javascript
 import { get_actions, parse_actions, EosioToken } from "eosws";
 
-const ws = new WebSocket("wss://eosws.mainnet.eoscanada.com/v1/stream");
+const ws = new WebSocket("wss://<SERVER>/v1/stream");
 
 ws.onopen = () => {
     ws.send(get_actions("eosio.token", "transfer"));
@@ -39,8 +39,8 @@ ws.onmessage = (message) => {
 import WebSocket from "ws";
 import { get_table_deltas, parse_table_deltas, Eosio } from "eosws";
 
-const origin = "https://github.com/eos-nation/eosws";
-const ws = new WebSocket("wss://eosws.mainnet.eoscanada.com/v1/stream", {origin});
+const origin = "https://<URL>";
+const ws = new WebSocket("wss://<SERVER>/v1/stream", {origin});
 
 ws.onopen = () => {
     ws.send(get_table_deltas("eosio", "eosio", "global"));

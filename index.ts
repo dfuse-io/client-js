@@ -149,7 +149,7 @@ export function parse_actions<T>(data: WebSocketData): ActionTrace<T> | null {
  */
 export function parse_table_deltas<T>(data: WebSocketData): TableDelta<T> | null {
     const message = parse_message(data);
-    if (message.type === "action_trace") { return message; }
+    if (message.type === "table_delta") { return message; }
     return null;
 }
 
