@@ -127,14 +127,18 @@ export function generateReqId() {
  * Parse Actions from `get_actions` from WebSocket `onmessage` listener
  *
  * @param {WebSocketData} data WebSocket Data from message event
+ * @param {string} [req_id] Request ID
  * @returns {ActionTrace} Action Trace
  * @example
  *
  * const actions = parse_actions<any>(message);
  */
-export function parse_actions<T>(data: WebSocketData): ActionTrace<T> | null {
+export function parse_actions<T>(data: WebSocketData, req_id?: string): ActionTrace<T> | null {
     const message = parse_message(data);
-    if (message.type === "action_trace") { return message; }
+    if (message.type === "action_trace") {
+        if (req_id && message.req_id !== req_id) { return null; }
+        return message;
+    }
     return null;
 }
 
@@ -142,14 +146,18 @@ export function parse_actions<T>(data: WebSocketData): ActionTrace<T> | null {
  * Parse Table Deltas from `get_table_deltas` from WebSocket `onmessage` listener
  *
  * @param {WebSocketData} data WebSocket Data from message event
+ * @param {string} [req_id] Request ID
  * @returns {ActionTrace} Action Trace
  * @example
  *
  * const table_deltas = parse_table_deltas<any>(message);
  */
-export function parse_table_deltas<T>(data: WebSocketData): TableDelta<T> | null {
+export function parse_table_deltas<T>(data: WebSocketData, req_id?: string): TableDelta<T> | null {
     const message = parse_message(data);
-    if (message.type === "table_delta") { return message; }
+    if (message.type === "table_delta") {
+        if (req_id && message.req_id !== req_id) { return null; }
+        return message;
+    }
     return null;
 }
 
