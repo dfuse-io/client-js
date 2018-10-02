@@ -1,6 +1,6 @@
 {
   "name": "eosws",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "EOS WebSocket",
   "main": "index.js",
   "types": "index.d.js",
