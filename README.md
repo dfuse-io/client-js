@@ -97,7 +97,7 @@ Get Actions
 -   `account` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Account
 -   `action_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Action Name
 -   `receiver` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Receiver
--   `req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Request ID
+-   `options`   (optional, default `{}`)
 
 #### Examples
 
@@ -116,7 +116,10 @@ Get Table Deltas
 -   `code` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Code
 -   `scope` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Scope
 -   `table_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table Name
--   `req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Request ID
+-   `options` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Optional parameters (optional, default `{}`)
+    -   `options.req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Request ID
+    -   `options.start_block` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** Start at block number
+    -   `options.fetch` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Fetch initial request
 
 #### Examples
 
@@ -159,6 +162,7 @@ Parse Actions from `get_actions` from WebSocket `onmessage` listener
 #### Parameters
 
 -   `data` **WebSocketData** WebSocket Data from message event
+-   `req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Request ID
 
 #### Examples
 
@@ -175,6 +179,7 @@ Parse Table Deltas from `get_table_deltas` from WebSocket `onmessage` listener
 #### Parameters
 
 -   `data` **WebSocketData** WebSocket Data from message event
+-   `req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Request ID
 
 #### Examples
 

@@ -14,20 +14,29 @@ type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
  * @param {string} account Account
  * @param {string} action_name Action Name
  * @param {string} [receiver] Receiver
- * @param {string} [req_id] Request ID
+ * @param {string} [options.req_id] Request ID
+ * @param {number} [options.start_block] Start at block number
+ * @param {boolean} [options.fetch] Fetch initial request
  * @returns {string} Message for `ws.send`
  * @example
  *
  * ws.send(get_actions("eosio.token", "transfer"));
  */
-export function get_actions(account: string, action_name: string, receiver?: string, req_id?: string) {
-    if (!req_id) { req_id = generateReqId(); }
-    if (!receiver) { receiver = account; }
+export function get_actions(account: string, action_name: string, receiver?: string, options: {
+    req_id?: string,
+    start_block?: number,
+    fetch?: boolean,
+} = {}) {
+    const req_id = options.req_id ? options.req_id : generateReqId();
+    const start_block = options.start_block;
+    const fetch = options.fetch;
 
     return JSON.stringify({
         type: "get_actions",
         req_id,
         listen: true,
+        fetch,
+        start_block,
         data: {
             account,
             action_name,
@@ -37,29 +46,38 @@ export function get_actions(account: string, action_name: string, receiver?: str
 }
 
 /**
- * Get Actions
+ * Get Transaction (NOT STABLE YET)
  *
+ * @private
  * @param {string} account Account
  * @param {string} action_name Action Name
  * @param {string} [receiver] Receiver
- * @param {string} [req_id] Request ID
+ * @param {object} [options={}] Optional parameters
+ * @param {string} [options.req_id] Request ID
+ * @param {number} [options.start_block] Start at block number
+ * @param {boolean} [options.fetch] Fetch initial request
  * @returns {string} Message for `ws.send`
  * @example
  *
- * ws.send(get_transaction(""));
+ * ws.send(get_transaction("517...86d"));
  */
-export function get_transaction(account: string, action_name: string, receiver?: string, req_id?: string) {
-    if (!req_id) { req_id = generateReqId(); }
-    if (!receiver) { receiver = account; }
+export function get_transaction(trx_id: string, options: {
+    req_id?: string,
+    start_block?: number,
+    fetch?: boolean,
+} = {}) {
+    const req_id = options.req_id ? options.req_id : generateReqId();
+    const start_block = options.start_block;
+    const fetch = options.fetch;
 
     return JSON.stringify({
-        type: "get_actions",
+        type: "get_transaction",
         req_id,
         listen: true,
+        fetch,
+        start_block,
         data: {
-            account,
-            action_name,
-            receiver,
+            id: trx_id,
         },
     });
 }
@@ -70,19 +88,30 @@ export function get_transaction(account: string, action_name: string, receiver?:
  * @param {string} code Code
  * @param {string} scope Scope
  * @param {string} table_name Table Name
- * @param {string} [req_id] Request ID
+ * @param {object} [options={}] Optional parameters
+ * @param {string} [options.req_id] Request ID
+ * @param {number} [options.start_block] Start at block number
+ * @param {boolean} [options.fetch] Fetch initial request
  * @returns {string} Message for `ws.send`
  * @example
  *
  * ws.send(get_table_deltas("eosio", "eosio", "global"));
  */
-export function get_table_deltas(code: string, scope: string, table_name: string, req_id?: string) {
-    if (!req_id) { req_id = generateReqId(); }
+export function get_table_deltas(code: string, scope: string, table_name: string, options: {
+    req_id?: string,
+    start_block?: number,
+    fetch?: boolean,
+} = {}) {
+    const req_id = options.req_id ? options.req_id : generateReqId();
+    const start_block = options.start_block;
+    const fetch = options.fetch;
 
     return JSON.stringify({
         type: "get_table_deltas",
         req_id,
         listen: true,
+        fetch,
+        start_block,
         data: {
             code,
             scope,
