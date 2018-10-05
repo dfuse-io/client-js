@@ -21,7 +21,7 @@ $ npm install --save eosws
 ## Browser (client)
 
 ```javascript
-import { get_actions, parse_actions, EosioToken } from "eosws";
+import { get_actions, parse_actions } from "eosws";
 
 const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`);
 
@@ -30,7 +30,7 @@ ws.onopen = () => {
 };
 
 ws.onmessage = (message) => {
-    const actions = parse_actions<EosioToken.Transfer.Data>(message.data);
+    const actions = parse_actions(message.data);
 
     if (actions) {
         const { from, to, quantity, memo } = actions.data.trace.act.data;
@@ -43,7 +43,7 @@ ws.onmessage = (message) => {
 
 ```ts
 import WebSocket from "ws";
-import { get_table_deltas, parse_table_deltas, Eosio } from "eosws";
+import { get_table_deltas, parse_table_deltas } from "eosws";
 
 const origin = "https://<URL>";
 const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`, {origin});
@@ -53,7 +53,7 @@ ws.onopen = () => {
 };
 
 ws.onmessage = (message) => {
-    const table_deltas = parse_table_deltas<Eosio.Table.Global>(message.data);
+    const table_deltas = parse_table_deltas(message.data);
 
     if (table_deltas) {
         const { total_ram_stake, total_ram_bytes_reserved } = table_deltas.data.row;
