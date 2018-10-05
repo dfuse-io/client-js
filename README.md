@@ -1,5 +1,15 @@
 # EOS WebSocket
 
+## EOSWS Servers
+
+**Mainnet**
+
+- `wss://eosws.mainnet.eoscanada.com/v1/stream?token=[API TOKEN]`
+
+**Kylin**
+
+- `wss://eosws.kylin.eoscanada.com/v1/stream?token=[API TOKEN]`
+
 ## Install
 
 **npm**
@@ -13,7 +23,7 @@ $ npm install --save eosws
 ```javascript
 import { get_actions, parse_actions, EosioToken } from "eosws";
 
-const ws = new WebSocket("wss://<SERVER>/v1/stream");
+const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`);
 
 ws.onopen = () => {
     ws.send(get_actions("eosio.token", "transfer"));
@@ -36,7 +46,7 @@ import WebSocket from "ws";
 import { get_table_deltas, parse_table_deltas, Eosio } from "eosws";
 
 const origin = "https://<URL>";
-const ws = new WebSocket("wss://<SERVER>/v1/stream", {origin});
+const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`, {origin});
 
 ws.onopen = () => {
     ws.send(get_table_deltas("eosio", "eosio", "global"));
