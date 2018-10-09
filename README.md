@@ -26,7 +26,7 @@ import { get_actions, parse_actions } from "eosws";
 const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`);
 
 ws.onopen = () => {
-    ws.send(get_actions("eosio.token", "transfer"));
+    ws.send(get_actions("eosio.token", "transfer", "eosio.token"));
 };
 
 ws.onmessage = (message) => {
