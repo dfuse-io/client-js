@@ -18,17 +18,23 @@
 $ npm install --save eosws
 ```
 
-## Browser (client)
+## Quickstart
 
-```javascript
+```ts
+import WebSocket from "ws";
 import { get_actions, parse_actions } from "eosws";
 
-const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`);
+// Setup WebSocket connection
+const EOSWS_API_TOKEN = "eyJ...IBg";
+const origin = "https://<URL>";
+const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`, {origin});
 
+// Initialize
 ws.onopen = () => {
     ws.send(get_actions("eosio.token", "transfer", "eosio.token"));
 };
 
+// Handle Messages
 ws.onmessage = (message) => {
     const actions = parse_actions(message.data);
 
@@ -37,29 +43,6 @@ ws.onmessage = (message) => {
         console.log(from , to, quantity, memo);
     }
 };
-```
-
-## NodeJS (server)
-
-```ts
-import WebSocket from "ws";
-import { get_table_deltas, parse_table_deltas } from "eosws";
-
-const origin = "https://<URL>";
-const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`, {origin});
-
-ws.onopen = () => {
-    ws.send(get_table_deltas("eosio", "eosio", "global"));
-};
-
-ws.onmessage = (message) => {
-    const table_deltas = parse_table_deltas(message.data);
-
-    if (table_deltas) {
-        const { total_ram_stake, total_ram_bytes_reserved } = table_deltas.data.row;
-        console.log(total_ram_stake, total_ram_bytes_reserved);
-    }
-}
 ```
 
 ## Related Javascript
