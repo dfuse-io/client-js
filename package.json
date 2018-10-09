@@ -1,6 +1,6 @@
 {
   "name": "eosws",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "EOS WebSocket",
   "main": "index.js",
   "types": "index.d.js",
@@ -22,8 +22,10 @@
     "docs": "tsc && documentation readme index.js --section=API"
   },
   "devDependencies": {
+    "@types/dotenv": "*",
     "@types/ws": "*",
     "documentation": "*",
+    "dotenv": "*",
     "tslint": "*",
     "typescript": "*",
     "ws": "ws"

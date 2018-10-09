@@ -4,11 +4,11 @@
 
 **Mainnet**
 
-- `wss://eosws.mainnet.eoscanada.com/v1/stream?token=[API TOKEN]`
+-   `wss://eosws.mainnet.eoscanada.com/v1/stream?token=[API TOKEN]`
 
 **Kylin**
 
-- `wss://eosws.kylin.eoscanada.com/v1/stream?token=[API TOKEN]`
+-   `wss://eosws.kylin.eoscanada.com/v1/stream?token=[API TOKEN]`
 
 ## Install
 
@@ -19,6 +19,8 @@ $ npm install --save eosws
 ```
 
 ## Quickstart
+
+### Get Actions
 
 ```ts
 import WebSocket from "ws";
@@ -31,16 +33,35 @@ const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`, {o
 
 // Initialize
 ws.onopen = () => {
-    ws.send(get_actions("eosio.token", "transfer", "eosio.token"));
+    ws.send(get_actions("eosio.token", "transfer"));
 };
 
-// Handle Messages
+// Handle incoming messages
 ws.onmessage = (message) => {
     const actions = parse_actions(message.data);
 
     if (actions) {
         const { from, to, quantity, memo } = actions.data.trace.act.data;
         console.log(from , to, quantity, memo);
+    }
+};
+```
+
+### Get Table Rows
+
+```ts
+import { get_table_rows, parse_table_rows } from "eosws";
+
+ws.onopen = () => {
+    ws.send(get_table_rows("eosio", "eosio", "voters"));
+};
+
+ws.onmessage = (message) => {
+    const table = parse_table_rows<Voters>(message.data, voters_req_id);
+
+    if (table) {
+        const {owner, producers, last_vote_weight} = table.data.row;
+        console.log(owner, producers, last_vote_weight);
     }
 };
 ```
@@ -63,7 +84,7 @@ ws.onmessage = (message) => {
 -   [get_actions](#get_actions)
     -   [Parameters](#parameters)
     -   [Examples](#examples)
--   [get_table_deltas](#get_table_deltas)
+-   [get_table_rows](#get_table_rows)
     -   [Parameters](#parameters-1)
     -   [Examples](#examples-1)
 -   [unlisten](#unlisten)
@@ -74,7 +95,7 @@ ws.onmessage = (message) => {
 -   [parse_actions](#parse_actions)
     -   [Parameters](#parameters-3)
     -   [Examples](#examples-4)
--   [parse_table_deltas](#parse_table_deltas)
+-   [parse_table_rows](#parse_table_rows)
     -   [Parameters](#parameters-4)
     -   [Examples](#examples-5)
 -   [parse_ping](#parse_ping)
@@ -100,7 +121,7 @@ ws.send(get_actions("eosio.token", "transfer"));
 
 Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Message for `ws.send`
 
-### get_table_deltas
+### get_table_rows
 
 Get Table Deltas
 
@@ -117,7 +138,7 @@ Get Table Deltas
 #### Examples
 
 ```javascript
-ws.send(get_table_deltas("eosio", "eosio", "global"));
+ws.send(get_table_rows("eosio", "eosio", "global"));
 ```
 
 Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Message for `ws.send`
@@ -165,9 +186,9 @@ const actions = parse_actions<any>(message);
 
 Returns **ActionTrace** Action Trace
 
-### parse_table_deltas
+### parse_table_rows
 
-Parse Table Deltas from `get_table_deltas` from WebSocket `onmessage` listener
+Parse Table Deltas from `get_table_rows` from WebSocket `onmessage` listener
 
 #### Parameters
 
@@ -177,7 +198,7 @@ Parse Table Deltas from `get_table_deltas` from WebSocket `onmessage` listener
 #### Examples
 
 ```javascript
-const table_deltas = parse_table_deltas<any>(message);
+const table_deltas = parse_table_rows<any>(message);
 ```
 
 Returns **ActionTrace** Action Trace

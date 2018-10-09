@@ -4,7 +4,7 @@
 //
 //   "Set quicktype target language"
 
-export interface TableDelta<T> {
+export interface TableRows<T> {
     type:   string;
     req_id: string;
     data:   Data<T>;
