@@ -26,9 +26,9 @@ $ npm install --save eosws
 import WebSocket from "ws";
 import { get_actions, parse_actions } from "eosws";
 
-const EOSWS_API_TOKEN = "eyJ...IBg";
+const API_TOKEN = "eyJ...IBg";
 const origin = "https://example.com";
-const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${EOSWS_API_TOKEN}`, {origin});
+const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${API_TOKEN}`, {origin});
 
 ws.onopen = () => {
     ws.send(get_actions("eosio.token", "transfer"));
