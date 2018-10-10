@@ -2,7 +2,7 @@ import { ws } from "./config";
 import { get_actions, parse_actions } from "..";
 
 ws.onopen = () => {
-    ws.send(get_actions("eosio.token", "transfer", "eosbetdice11"));
+    ws.send(get_actions("eosio.token", "transfer", "eosio.token"));
 };
 
 ws.onmessage = (message) => {
