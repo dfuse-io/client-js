@@ -1,7 +1,7 @@
 {
-  "name": "eosws",
-  "version": "1.2.0",
-  "description": "EOS WebSocket",
+  "name": "eosws-js",
+  "version": "0.9.1",
+  "description": "`eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))",
   "main": "index.js",
   "types": "index.d.js",
   "files": [
@@ -9,26 +9,54 @@
     "index.d.ts",
     "types"
   ],
-  "repository": "git@github.com:EOS-Nation/eosws.git",
+  "repository": "git@github.com:dfuse-io/eosws-js.git",
   "author": {
-    "name": "Denis Carriere",
-    "email": "denis@eosnation.io",
-    "url": "https://eosnation.io"
+    "name": "EOS Canada Developers",
+    "email": "dev@eoscanada.com",
+    "url": "https://eoscanada.com"
   },
+  "contributors": [
+    {
+      "name": "Denis Carriere",
+      "email": "denis@eosnation.io",
+      "url": "https://eosnation.io"
+    }
+  ],
   "license": "MIT",
   "scripts": {
     "prepare": "tsc",
-    "test": "tslint --project .",
+    "lint": "tslint **/*.ts -",
+    "lint:specific": "tslint",
     "docs": "tsc && documentation readme index.js --section=API"
   },
+  "husky": {
+    "hooks": {
+      "_comment": "Use --no-verify to bypass",
+      "pre-commit": "lint-staged && pretty-quick --staged",
+      "pre-push": "yarn lint"
+    }
+  },
+  "lint-staged": {
+    "linters": {
+      "**/*.ts": [
+        "yarn lint:specific"
+      ]
+    },
+    "ignore": ["**/*.d.ts"]
+  },
   "devDependencies": {
-    "@types/dotenv": "*",
-    "@types/ws": "*",
-    "documentation": "*",
-    "dotenv": "*",
-    "tslint": "*",
-    "typescript": "*",
-    "ws": "ws"
+    "@types/dotenv": "^4.0.3",
+    "@types/ws": "^6.0.1",
+    "documentation": "^8.1.2",
+    "dotenv": "^6.1.0",
+    "husky": "^1.1.2",
+    "lint-staged": "^7.3.0",
+    "prettier": "^1.14.3",
+    "pretty-quick": "^1.8.0",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "typescript": "^3.1.3",
+    "ws": "^6.1.0"
   },
   "dependencies": {}
 }

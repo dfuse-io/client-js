@@ -1,0 +1,24 @@
+## Coverage
+/coverage
+
+## Generated Files
+index.js
+/types
+*.d.ts
+
+## Git
+.git
+.gitignore
+
+## NPM
+package-lock.json
+
+## Prettier
+.prettierignore
+
+## VSCode
+.vscode
+
+## Yarn
+package.json
+yarn.lock

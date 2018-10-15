@@ -1,14 +1,14 @@
-import { ActionTrace } from "./types/action_trace";
-import { Ping } from "./types/ping";
-import { TableRows } from "./types/table_rows";
-export { ActionTrace, Ping, TableRows };
+import { ActionTrace } from "./types/action_trace"
+import { Ping } from "./types/ping"
+import { TableRows } from "./types/table_rows"
+export { ActionTrace, Ping, TableRows }
 
 /**
  * Data represents the message payload received over the WebSocket.
  *
  * @private
  */
-type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
+type WebSocketData = string | Buffer | ArrayBuffer | Buffer[]
 
 /**
  * Get Actions
@@ -24,27 +24,32 @@ type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
  *
  * ws.send(get_actions("eosio.token", "transfer"));
  */
-export function get_actions(account: string, action_name: string, receiver?: string, options: {
-    req_id?: string,
-    start_block?: number,
-    fetch?: boolean,
-} = {}) {
-    const req_id = options.req_id ? options.req_id : generateReqId();
-    const start_block = options.start_block;
-    const fetch = options.fetch;
+export function get_actions(
+  account: string,
+  action_name: string,
+  receiver?: string,
+  options: {
+    req_id?: string
+    start_block?: number
+    fetch?: boolean
+  } = {}
+) {
+  const req_id = options.req_id ? options.req_id : generateReqId()
+  const start_block = options.start_block
+  const fetch = options.fetch
 
-    return JSON.stringify({
-        type: "get_actions",
-        req_id,
-        listen: true,
-        fetch,
-        start_block,
-        data: {
-            account,
-            action_name,
-            receiver,
-        },
-    });
+  return JSON.stringify({
+    type: "get_actions",
+    req_id,
+    listen: true,
+    fetch,
+    start_block,
+    data: {
+      account,
+      action_name,
+      receiver
+    }
+  })
 }
 
 /**
@@ -63,25 +68,28 @@ export function get_actions(account: string, action_name: string, receiver?: str
  *
  * ws.send(get_transaction("517...86d"));
  */
-export function get_transaction(trx_id: string, options: {
-    req_id?: string,
-    start_block?: number,
-    fetch?: boolean,
-} = {}) {
-    const req_id = options.req_id ? options.req_id : generateReqId();
-    const start_block = options.start_block;
-    const fetch = options.fetch;
+export function get_transaction(
+  trx_id: string,
+  options: {
+    req_id?: string
+    start_block?: number
+    fetch?: boolean
+  } = {}
+) {
+  const req_id = options.req_id ? options.req_id : generateReqId()
+  const start_block = options.start_block
+  const fetch = options.fetch
 
-    return JSON.stringify({
-        type: "get_transaction",
-        req_id,
-        listen: true,
-        fetch,
-        start_block,
-        data: {
-            id: trx_id,
-        },
-    });
+  return JSON.stringify({
+    type: "get_transaction",
+    req_id,
+    listen: true,
+    fetch,
+    start_block,
+    data: {
+      id: trx_id
+    }
+  })
 }
 
 /**
@@ -99,28 +107,33 @@ export function get_transaction(trx_id: string, options: {
  *
  * ws.send(get_table_rows("eosio", "eosio", "global"));
  */
-export function get_table_rows(code: string, scope: string, table_name: string, options: {
-    req_id?: string,
-    start_block?: number,
-    fetch?: boolean,
-} = {}) {
-    const req_id = options.req_id ? options.req_id : generateReqId();
-    const start_block = options.start_block;
-    const fetch = options.fetch;
+export function get_table_rows(
+  code: string,
+  scope: string,
+  table_name: string,
+  options: {
+    req_id?: string
+    start_block?: number
+    fetch?: boolean
+  } = {}
+) {
+  const req_id = options.req_id ? options.req_id : generateReqId()
+  const start_block = options.start_block
+  const fetch = options.fetch
 
-    return JSON.stringify({
-        type: "get_table_rows",
-        req_id,
-        listen: true,
-        fetch,
-        start_block,
-        data: {
-            code,
-            scope,
-            table_name,
-            json: true,
-        },
-    });
+  return JSON.stringify({
+    type: "get_table_rows",
+    req_id,
+    listen: true,
+    fetch,
+    start_block,
+    data: {
+      code,
+      scope,
+      table_name,
+      json: true
+    }
+  })
 }
 
 /**
@@ -132,14 +145,16 @@ export function get_table_rows(code: string, scope: string, table_name: string, 
  * ws.send(unlisten("req123"));
  */
 export function unlisten(req_id: string) {
-    if (!req_id) { throw new Error("req_id is required"); }
+  if (!req_id) {
+    throw new Error("req_id is required")
+  }
 
-    return JSON.stringify({
-        type: "unlisten",
-        data: {
-            req_id,
-        },
-    });
+  return JSON.stringify({
+    type: "unlisten",
+    data: {
+      req_id
+    }
+  })
 }
 
 /**
@@ -151,7 +166,7 @@ export function unlisten(req_id: string) {
  * generateReqId() // => req123
  */
 export function generateReqId() {
-    return "req" + Math.round(Math.random() * 1000);
+  return "req" + Math.round(Math.random() * 1000)
 }
 
 /**
@@ -165,12 +180,14 @@ export function generateReqId() {
  * const actions = parse_actions<any>(message);
  */
 export function parse_actions<T>(data: WebSocketData, req_id?: string): ActionTrace<T> | null {
-    const message = parse_message(data);
-    if (message.type === "action_trace") {
-        if (req_id && message.req_id !== req_id) { return null; }
-        return message;
+  const message = parse_message(data)
+  if (message.type === "action_trace") {
+    if (req_id && message.req_id !== req_id) {
+      return null
     }
-    return null;
+    return message
+  }
+  return null
 }
 
 /**
@@ -184,12 +201,14 @@ export function parse_actions<T>(data: WebSocketData, req_id?: string): ActionTr
  * const table_deltas = parse_table_rows<any>(message);
  */
 export function parse_table_rows<T>(data: WebSocketData, req_id?: string): TableRows<T> | null {
-    const message = parse_message(data);
-    if (message.type === "table_rows" || message.type === "table_delta") {
-        if (req_id && message.req_id !== req_id) { return null; }
-        return message;
+  const message = parse_message(data)
+  if (message.type === "table_rows" || message.type === "table_delta") {
+    if (req_id && message.req_id !== req_id) {
+      return null
     }
-    return null;
+    return message
+  }
+  return null
 }
 
 /**
@@ -202,9 +221,11 @@ export function parse_table_rows<T>(data: WebSocketData, req_id?: string): Table
  * const ping = parse_ping(message);
  */
 export function parse_ping(data: WebSocketData): Ping | null {
-    const message = parse_message(data);
-    if (message.type === "ping") { return message; }
-    return null;
+  const message = parse_message(data)
+  if (message.type === "ping") {
+    return message
+  }
+  return null
 }
 
 /**
@@ -215,5 +236,5 @@ export function parse_ping(data: WebSocketData): Ping | null {
  * @returns {Object} Message Data
  */
 export function parse_message(data: WebSocketData): any {
-    return JSON.parse(data.toString());
+  return JSON.parse(data.toString())
 }

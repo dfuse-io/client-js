@@ -1,15 +1,18 @@
-import { ws } from "./config";
-import { get_actions, parse_actions } from "..";
+/* tslint:disable no-console */
+import { ws } from "./config"
+import { get_actions, parse_actions } from ".."
 
 ws.onopen = () => {
-    ws.send(get_actions("eosio.token", "transfer", "eosio.token"));
-};
+  console.log("Subscribing to `get_actions` stream")
+  ws.send(get_actions("eosio.token", "transfer", "eosio.token"))
+}
 
 ws.onmessage = (message) => {
-    const actions = parse_actions<any>(message.data);
+  console.log(message)
+  const actions = parse_actions<any>(message.data)
 
-    if (actions) {
-        const { from, to, quantity, memo } = actions.data.trace.act.data;
-        console.log(from , to, quantity, memo);
-    }
-};
+  if (actions) {
+    const { from, to, quantity, memo } = actions.data.trace.act.data
+    console.log(from, to, quantity, memo)
+  }
+}
