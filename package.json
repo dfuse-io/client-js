@@ -25,7 +25,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "tsc",
-    "lint": "tslint **/*.ts -",
+    "lint": "tslint **/*.ts",
     "lint:specific": "tslint",
     "docs": "tsc && documentation readme index.js --section=API"
   },
