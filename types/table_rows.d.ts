@@ -14,5 +14,6 @@ export interface Data<T> {
     block_num: number;
     op:        string;
     key:       string;
-    row:       T;
+    payer:     string;
+    data:      T;
 }
