@@ -23,7 +23,7 @@ declare type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
  *
  * ws.send(get_actions("eosio.token", "transfer"));
  */
-export declare function get_actions(account: string, action_name: string, receiver?: string, options?: {
+export declare function get_actions(account: string, action_name?: string, receiver?: string, options?: {
     req_id?: string;
     start_block?: number;
     fetch?: boolean;
