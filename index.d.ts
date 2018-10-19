@@ -13,7 +13,7 @@ declare type WebSocketData = string | Buffer | ArrayBuffer | Buffer[];
  * Get Actions
  *
  * @param {string} account Account
- * @param {string} action_name Action Name
+ * @param {string} [action_name] Action Name
  * @param {string} [receiver] Receiver
  * @param {string} [options.req_id] Request ID
  * @param {number} [options.start_block] Start at block number
