@@ -25,7 +25,7 @@ export interface OptionalParams {
 function handleOptionalParams(base: object, options: OptionalParams) {
   return Object.assign(base, {
     req_id: options.req_id,
-    fetch: options.fetch !== undefined ? options.fetch : true,
+    fetch: options.fetch,
     start_block: options.start_block,
     with_progress: options.with_progress
   })
@@ -70,6 +70,7 @@ export function get_actions(
     handleOptionalParams(
       {
         type: "get_actions",
+        listen: true,
         data
       },
       options
@@ -128,10 +129,14 @@ export function get_table_rows(
   },
   options: OptionalParams = {}
 ) {
+  if (data.json === undefined) {
+    data.json = true
+  }
   return JSON.stringify(
     handleOptionalParams(
       {
         type: "get_table_rows",
+        listen: true,
         data
       },
       options
