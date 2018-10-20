@@ -28,6 +28,7 @@ ws.onopen = () => {
 }
 
 ws.onmessage = (message) => {
+  console.log(JSON.parse(message.data.toString()))
   const transfer_actions = parse_actions<Transfer>(message.data, transfer_req_id)
   const issue_actions = parse_actions<Issue>(message.data, transfer_req_id)
 

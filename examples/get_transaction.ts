@@ -12,5 +12,5 @@ ws.onopen = () => {
 }
 
 ws.onmessage = (message) => {
-  console.log(message.data)
+  console.log(JSON.parse(message.data.toString()))
 }
