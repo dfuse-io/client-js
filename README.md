@@ -20,12 +20,14 @@ Available endpoints:
 import WebSocket from "ws"
 import { get_actions, parse_actions } from "eosws"
 
+// Get started with a free dfuse streaming API account.
+// https://dfuse.io/#subscribe
 const API_TOKEN = "eyJ...IBg"
 const origin = "https://example.com"
 const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${API_TOKEN}`, { origin })
 
 ws.onopen = () => {
-  ws.send(get_actions("eosio.token", "transfer"))
+  ws.send(get_actions({ account: "eosio.token", action_name: "transfer" }))
 }
 
 ws.onmessage = (message) => {
@@ -44,7 +46,7 @@ ws.onmessage = (message) => {
 import { get_table_rows, parse_table_rows } from "eosws"
 
 ws.onopen = () => {
-  ws.send(get_table_rows("eosio", "eosio", "voters"))
+  ws.send(get_table_rows({ code: "eosio", scope: "eosio", table_name: "voters" }))
 }
 
 ws.onmessage = (message) => {
