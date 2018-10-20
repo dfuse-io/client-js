@@ -4,7 +4,7 @@ import { get_actions, parse_actions } from ".."
 
 ws.onopen = () => {
   console.log("Subscribing to `get_actions` stream")
-  ws.send(get_actions("eosio.token", "transfer", "eosio.token"))
+  ws.send(get_actions({ account: "eosio.token", action_name: "transfer" }))
 }
 
 ws.onmessage = (message) => {

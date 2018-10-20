@@ -17,7 +17,7 @@ Thumbs.db
 
 # TypeScript
 *.js
-index.d.js
+index.d.ts
 
 # Yarn
 yarn-error.log

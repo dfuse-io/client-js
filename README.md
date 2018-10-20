@@ -120,8 +120,8 @@ Get Actions
 
 #### Parameters
 
-- `account` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account targeted by the action.
-- `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Data Options (optional, default `{}`)
+- `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Data Parameters
+  - `data.account` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account targeted by the action.
   - `data.receiver` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Specify the receiving account executing its smart contract.
     If left blank, defaults to the same value as `account`.
   - `data.action_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Name of the action called within the account contract.
@@ -133,7 +133,7 @@ Get Actions
 #### Examples
 
 ```javascript
-ws.send(get_actions("eosio.token", { action_name: "transfer" }))
+ws.send(get_actions({ account: "eosio.token", action_name: "transfer" }))
 ```
 
 Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Message for `ws.send`
@@ -165,10 +165,10 @@ Retrieve a stream of changes to the tables, as a side effect of transactions/act
 
 #### Parameters
 
-- `code` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account which wrote to tables.
-- `scope` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table scope where table is stored.
-- `table_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table name, shown in the contract ABI.
-- `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Data Options (optional, default `{}`)
+- `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Data Parameters
+  - `data.code` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account which wrote to tables.
+  - `data.scope` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table scope where table is stored.
+  - `data.table_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table name, shown in the contract ABI.
   - `data.json` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** With json=true (or 1), table rows will be decoded to JSON, using the ABIs active on the queried block. This endpoint will thus automatically adapt to upgrades to the ABIs on chain. (optional, default `true`)
   - `data.verbose` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Return the code, table_name, scope and key alongside each row.
 - `options` **[OptionalParams](#optionalparams)** Optional parameters (optional, default `{}`)
@@ -176,7 +176,7 @@ Retrieve a stream of changes to the tables, as a side effect of transactions/act
 #### Examples
 
 ```javascript
-ws.send(get_table_rows("eosio", "eosio", "global"))
+ws.send(get_table_rows({ code: "eosio", scope: "eosio", table_name: "global" }))
 ```
 
 Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Message for `ws.send`

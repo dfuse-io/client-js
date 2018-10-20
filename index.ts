@@ -24,7 +24,7 @@ export interface OptionalParams {
  */
 function handleOptionalParams(base: object, options: OptionalParams) {
   return Object.assign(base, {
-    req_id: options.req_id ? options.req_id : generateReqId(),
+    req_id: options.req_id,
     fetch: options.fetch !== undefined ? options.fetch : true,
     start_block: options.start_block,
     with_progress: options.with_progress
@@ -41,8 +41,8 @@ type WebSocketData = string | Buffer | ArrayBuffer | Buffer[]
 /**
  * Get Actions
  *
- * @param {string} account Contract account targeted by the action.
- * @param {object} [data={}] Data Options
+ * @param {object} data Data Parameters
+ * @param {string} data.account Contract account targeted by the action.
  * @param {string} [data.receiver] Specify the receiving account executing its smart contract.
  * If left blank, defaults to the same value as `account`.
  * @param {string} [data.action_name] Name of the action called within the account contract.
@@ -53,24 +53,24 @@ type WebSocketData = string | Buffer | ArrayBuffer | Buffer[]
  * @returns {string} Message for `ws.send`
  * @example
  *
- * ws.send(get_actions("eosio.token", {action_name: "transfer"}));
+ * ws.send(get_actions({account: "eosio.token", action_name: "transfer"}));
  */
 export function get_actions(
-  account: string,
   data: {
+    account: string
     receiver?: string
     action_name?: string
     with_ramops?: boolean
     with_inline_traces?: boolean
     with_deferred?: boolean
-  } = {},
+  },
   options: OptionalParams = {}
 ) {
   return JSON.stringify(
     handleOptionalParams(
       {
         type: "get_actions",
-        data: Object.assign({ account }, data)
+        data
       },
       options
     )
@@ -106,33 +106,33 @@ export function get_transaction(id: string, options: OptionalParams = {}) {
  *
  * Retrieve a stream of changes to the tables, as a side effect of transactions/actions being executed.
  *
- * @param {string} code Contract account which wrote to tables.
- * @param {string} scope Table scope where table is stored.
- * @param {string} table_name Table name, shown in the contract ABI.
- * @param {object} [data={}] Data Options
+ * @param {object} data Data Parameters
+ * @param {string} data.code Contract account which wrote to tables.
+ * @param {string} data.scope Table scope where table is stored.
+ * @param {string} data.table_name Table name, shown in the contract ABI.
  * @param {boolean} [data.json=true] With json=true (or 1), table rows will be decoded to JSON, using the ABIs active on the queried block. This endpoint will thus automatically adapt to upgrades to the ABIs on chain.
  * @param {boolean} [data.verbose] Return the code, table_name, scope and key alongside each row.
  * @param {OptionalParams} [options={}] Optional parameters
  * @returns {string} Message for `ws.send`
  * @example
  *
- * ws.send(get_table_rows("eosio", "eosio", "global"));
+ * ws.send(get_table_rows({code: "eosio", scope: "eosio", table_name: "global"}));
  */
 export function get_table_rows(
-  code: string,
-  scope: string,
-  table_name: string,
   data: {
+    code: string
+    scope: string
+    table_name: string
     json?: boolean
     verbose?: boolean
-  } = {},
+  },
   options: OptionalParams = {}
 ) {
   return JSON.stringify(
     handleOptionalParams(
       {
         type: "get_table_rows",
-        data: Object.assign({ code, scope, table_name }, data)
+        data
       },
       options
     )
