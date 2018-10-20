@@ -1,6 +1,6 @@
 # `eosws` Js/Ts bindings (from the [dfuse API](https://dfuse.io/))
 
-WebSocket consumer for the https://dfuse.io API on EOS networks.
+WebSocket consumer for the <https://dfuse.io> API on EOS networks.
 
 ## Acknowledgement
 
@@ -59,8 +59,8 @@ ws.onmessage = (message) => {
 
 ## Related Javascript
 
-- [x] WebSockets (<https://github.com/websockets/ws>)
-- [ ] Socket.io (<https://github.com/socketio/socket.io>)
+- WebSockets (<https://github.com/websockets/ws>)
+- Socket.io (<https://github.com/socketio/socket.io>)
 
 ## Related Video
 
@@ -72,26 +72,47 @@ ws.onmessage = (message) => {
 
 #### Table of Contents
 
+- [OptionalParams](#optionalparams)
+  - [Properties](#properties)
 - [get_actions](#get_actions)
   - [Parameters](#parameters)
   - [Examples](#examples)
-- [get_table_rows](#get_table_rows)
+- [get_transaction](#get_transaction)
   - [Parameters](#parameters-1)
   - [Examples](#examples-1)
-- [unlisten](#unlisten)
+- [get_table_rows](#get_table_rows)
   - [Parameters](#parameters-2)
   - [Examples](#examples-2)
-- [generateReqId](#generatereqid)
-  - [Examples](#examples-3)
-- [parse_actions](#parse_actions)
+- [unlisten](#unlisten)
   - [Parameters](#parameters-3)
+  - [Examples](#examples-3)
+- [generateReqId](#generatereqid)
   - [Examples](#examples-4)
-- [parse_table_rows](#parse_table_rows)
+- [parse_actions](#parse_actions)
   - [Parameters](#parameters-4)
   - [Examples](#examples-5)
-- [parse_ping](#parse_ping)
+- [parse_table_rows](#parse_table_rows)
   - [Parameters](#parameters-5)
   - [Examples](#examples-6)
+- [parse_ping](#parse_ping)
+  - [Parameters](#parameters-6)
+  - [Examples](#examples-7)
+
+### OptionalParams
+
+Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)
+
+#### Properties
+
+- `req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** An ID that you want sent back to you for any responses related to this request.
+- `start_block` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Block at which you want to start processing.
+  It can be an absolute block number, or a negative value, meaning how many blocks from the current head block on the chain.
+  Ex: -2500 means 2500 blocks in the past, relative to the head block.
+- `fetch` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to fetch an initial snapshot of the requested entity.
+- `with_progress` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Frequency of the progress of blocks processing (within the scope of a req_id).
+  You will, at a maximum, receive one notification each 250 milliseconds (when processing large amounts of blocks),
+  and when blockNum % frequency == 0. When you receive a progress notification associated with a stream (again, identified by its req_id),
+  you are guaranteed to have seen all messages produced by that stream, between the previous progress notification and the one received (inclusively).
 
 ### get_actions
 
@@ -99,32 +120,58 @@ Get Actions
 
 #### Parameters
 
-- `account` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Account
-- `action_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Action Name
-- `receiver` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Receiver
-- `options` (optional, default `{}`)
+- `account` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account targeted by the action.
+- `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Data Options (optional, default `{}`)
+  - `data.receiver` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Specify the receiving account executing its smart contract.
+    If left blank, defaults to the same value as `account`.
+  - `data.action_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Name of the action called within the account contract.
+  - `data.with_ramops` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Stream RAM billing changes and reasons for costs of storage produced by each action.
+  - `data.with_inline_traces` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Stream the inline actions produced by each action.
+  - `data.with_deferred` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Stream the modifications to deferred transactions produced by each action.
+- `options` **[OptionalParams](#optionalparams)** Optional Parameters (optional, default `{}`)
 
 #### Examples
 
 ```javascript
-ws.send(get_actions("eosio.token", "transfer"))
+ws.send(get_actions("eosio.token", { action_name: "transfer" }))
+```
+
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Message for `ws.send`
+
+### get_transaction
+
+Get Transaction
+
+Retrieve a transaction and follow its life-cycle. BETA: some life-cycle events are still being rolled out.
+
+#### Parameters
+
+- `id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The transaction ID you're looking to track.
+- `options` **[OptionalParams](#optionalparams)** Optional Parameters (optional, default `{}`)
+
+#### Examples
+
+```javascript
+ws.send(get_transaction("517...86d"))
 ```
 
 Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Message for `ws.send`
 
 ### get_table_rows
 
-Get Table Deltas
+Get Table Rows
+
+Retrieve a stream of changes to the tables, as a side effect of transactions/actions being executed.
 
 #### Parameters
 
-- `code` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Code
-- `scope` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Scope
-- `table_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table Name
-- `options` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Optional parameters (optional, default `{}`)
-  - `options.req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Request ID
-  - `options.start_block` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** Start at block number
-  - `options.fetch` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Fetch initial request
+- `code` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account which wrote to tables.
+- `scope` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table scope where table is stored.
+- `table_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table name, shown in the contract ABI.
+- `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Data Options (optional, default `{}`)
+  - `data.json` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** With json=true (or 1), table rows will be decoded to JSON, using the ABIs active on the queried block. This endpoint will thus automatically adapt to upgrades to the ABIs on chain. (optional, default `true`)
+  - `data.verbose` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Return the code, table_name, scope and key alongside each row.
+- `options` **[OptionalParams](#optionalparams)** Optional parameters (optional, default `{}`)
 
 #### Examples
 
@@ -136,7 +183,9 @@ Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/G
 
 ### unlisten
 
-Unlisten to WebSocket based on request id
+Unlisten
+
+To interrupt a stream, you can `unlisten` with the original `req_id`
 
 #### Parameters
 
@@ -145,7 +194,7 @@ Unlisten to WebSocket based on request id
 #### Examples
 
 ```javascript
-ws.send(unlisten("req123"))
+ws.send(unlisten("original-request-id"))
 ```
 
 ### generateReqId
