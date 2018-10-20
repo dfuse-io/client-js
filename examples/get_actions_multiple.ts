@@ -21,8 +21,10 @@ const issue_req_id = generateReqId()
 
 ws.onopen = () => {
   console.log("Subscribing to `get_actions` stream (multiple ones)")
-  ws.send(get_actions("eosio.token", "transfer", "eosio.token", { req_id: transfer_req_id }))
-  ws.send(get_actions("eosio.token", "issue", "eosio.token", { req_id: issue_req_id }))
+  ws.send(
+    get_actions({ account: "eosio.token", action_name: "transfer" }, { req_id: transfer_req_id })
+  )
+  ws.send(get_actions({ account: "eosio.token", action_name: "issue" }, { req_id: issue_req_id }))
 }
 
 ws.onmessage = (message) => {

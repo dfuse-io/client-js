@@ -3,6 +3,34 @@ import { Ping } from "./types/ping"
 import { TableRows } from "./types/table_rows"
 export { ActionTrace, Ping, TableRows }
 
+export interface OptionalParams {
+  req_id?: string
+  start_block?: number
+  fetch?: boolean
+  with_progress?: boolean
+}
+
+/**
+ * @typedef {Object} OptionalParams
+ * @property {string} req_id An ID that you want sent back to you for any responses related to this request.
+ * @property {number} start_block Block at which you want to start processing.
+ * It can be an absolute block number, or a negative value, meaning how many blocks from the current head block on the chain.
+ * Ex: -2500 means 2500 blocks in the past, relative to the head block.
+ * @property {boolean} fetch Whether to fetch an initial snapshot of the requested entity.
+ * @property {number} with_progress Frequency of the progress of blocks processing (within the scope of a req_id).
+ * You will, at a maximum, receive one notification each 250 milliseconds (when processing large amounts of blocks),
+ * and when blockNum % frequency == 0. When you receive a progress notification associated with a stream (again, identified by its req_id),
+ * you are guaranteed to have seen all messages produced by that stream, between the previous progress notification and the one received (inclusively).
+ */
+function handleOptionalParams(base: object, options: OptionalParams) {
+  return Object.assign(base, {
+    req_id: options.req_id,
+    fetch: options.fetch !== undefined ? options.fetch : true,
+    start_block: options.start_block,
+    with_progress: options.with_progress
+  })
+}
+
 /**
  * Data represents the message payload received over the WebSocket.
  *
@@ -13,136 +41,113 @@ type WebSocketData = string | Buffer | ArrayBuffer | Buffer[]
 /**
  * Get Actions
  *
- * @param {string} account Account
- * @param {string} action_name Action Name
- * @param {string} [receiver] Receiver
- * @param {string} [options.req_id] Request ID
- * @param {number} [options.start_block] Start at block number
- * @param {boolean} [options.fetch] Fetch initial request
+ * @param {object} data Data Parameters
+ * @param {string} data.account Contract account targeted by the action.
+ * @param {string} [data.receiver] Specify the receiving account executing its smart contract.
+ * If left blank, defaults to the same value as `account`.
+ * @param {string} [data.action_name] Name of the action called within the account contract.
+ * @param {boolean} [data.with_ramops] Stream RAM billing changes and reasons for costs of storage produced by each action.
+ * @param {boolean} [data.with_inline_traces] Stream the inline actions produced by each action.
+ * @param {boolean} [data.with_deferred] Stream the modifications to deferred transactions produced by each action.
+ * @param {OptionalParams} [options={}] Optional Parameters
  * @returns {string} Message for `ws.send`
  * @example
  *
- * ws.send(get_actions("eosio.token", "transfer"));
+ * ws.send(get_actions({account: "eosio.token", action_name: "transfer"}));
  */
 export function get_actions(
-  account: string,
-  action_name: string,
-  receiver?: string,
-  options: {
-    req_id?: string
-    start_block?: number
-    fetch?: boolean
-  } = {}
+  data: {
+    account: string
+    receiver?: string
+    action_name?: string
+    with_ramops?: boolean
+    with_inline_traces?: boolean
+    with_deferred?: boolean
+  },
+  options: OptionalParams = {}
 ) {
-  const req_id = options.req_id ? options.req_id : generateReqId()
-  const start_block = options.start_block
-  const fetch = options.fetch
-
-  return JSON.stringify({
-    type: "get_actions",
-    req_id,
-    listen: true,
-    fetch,
-    start_block,
-    data: {
-      account,
-      action_name,
-      receiver
-    }
-  })
+  return JSON.stringify(
+    handleOptionalParams(
+      {
+        type: "get_actions",
+        data
+      },
+      options
+    )
+  )
 }
 
 /**
- * Get Transaction (NOT STABLE YET)
+ * Get Transaction
  *
- * @private
- * @param {string} account Account
- * @param {string} action_name Action Name
- * @param {string} [receiver] Receiver
- * @param {object} [options={}] Optional parameters
- * @param {string} [options.req_id] Request ID
- * @param {number} [options.start_block] Start at block number
- * @param {boolean} [options.fetch] Fetch initial request
+ * Retrieve a transaction and follow its life-cycle. BETA: some life-cycle events are still being rolled out.
+ *
+ * @param {string} id  The transaction ID you're looking to track.
+ * @param {OptionalParams} [options={}] Optional Parameters
  * @returns {string} Message for `ws.send`
  * @example
  *
  * ws.send(get_transaction("517...86d"));
  */
-export function get_transaction(
-  trx_id: string,
-  options: {
-    req_id?: string
-    start_block?: number
-    fetch?: boolean
-  } = {}
-) {
-  const req_id = options.req_id ? options.req_id : generateReqId()
-  const start_block = options.start_block
-  const fetch = options.fetch
-
-  return JSON.stringify({
-    type: "get_transaction",
-    req_id,
-    listen: true,
-    fetch,
-    start_block,
-    data: {
-      id: trx_id
-    }
-  })
+export function get_transaction(id: string, options: OptionalParams = {}) {
+  return JSON.stringify(
+    handleOptionalParams(
+      {
+        type: "get_transaction",
+        data: { id }
+      },
+      options
+    )
+  )
 }
 
 /**
- * Get Table Deltas
+ * Get Table Rows
  *
- * @param {string} code Code
- * @param {string} scope Scope
- * @param {string} table_name Table Name
- * @param {object} [options={}] Optional parameters
- * @param {string} [options.req_id] Request ID
- * @param {number} [options.start_block] Start at block number
- * @param {boolean} [options.fetch] Fetch initial request
+ * Retrieve a stream of changes to the tables, as a side effect of transactions/actions being executed.
+ *
+ * @param {object} data Data Parameters
+ * @param {string} data.code Contract account which wrote to tables.
+ * @param {string} data.scope Table scope where table is stored.
+ * @param {string} data.table_name Table name, shown in the contract ABI.
+ * @param {boolean} [data.json=true] With json=true (or 1), table rows will be decoded to JSON, using the ABIs active on the queried block. This endpoint will thus automatically adapt to upgrades to the ABIs on chain.
+ * @param {boolean} [data.verbose] Return the code, table_name, scope and key alongside each row.
+ * @param {OptionalParams} [options={}] Optional parameters
  * @returns {string} Message for `ws.send`
  * @example
  *
- * ws.send(get_table_rows("eosio", "eosio", "global"));
+ * ws.send(get_table_rows({code: "eosio", scope: "eosio", table_name: "global"}));
  */
 export function get_table_rows(
-  code: string,
-  scope: string,
-  table_name: string,
-  options: {
-    req_id?: string
-    start_block?: number
-    fetch?: boolean
-  } = {}
+  data: {
+    code: string
+    scope: string
+    table_name: string
+    json?: boolean
+    verbose?: boolean
+  },
+  options: OptionalParams = {}
 ) {
-  const req_id = options.req_id ? options.req_id : generateReqId()
-  const start_block = options.start_block
-  const fetch = options.fetch
-
-  return JSON.stringify({
-    type: "get_table_rows",
-    req_id,
-    listen: true,
-    fetch,
-    start_block,
-    data: {
-      code,
-      scope,
-      table_name,
-      json: true
-    }
-  })
+  return JSON.stringify(
+    handleOptionalParams(
+      {
+        type: "get_table_rows",
+        data
+      },
+      options
+    )
+  )
 }
 
 /**
- * Unlisten to WebSocket based on request id
+ * Unlisten
+ *
+ * To interrupt a stream, you can `unlisten` with the original `req_id`
  *
  * @param {string} req_id Request ID
  * @example
  *
- * ws.send(unlisten("req123"));
+ * ws.send(unlisten("original-request-id"));
  */
 export function unlisten(req_id: string) {
   if (!req_id) {
@@ -151,9 +156,7 @@ export function unlisten(req_id: string) {
 
   return JSON.stringify({
     type: "unlisten",
-    data: {
-      req_id
-    }
+    data: { req_id }
   })
 }
 
