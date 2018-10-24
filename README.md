@@ -1,4 +1,4 @@
-# `eosws` Js/Ts bindings (from the [dfuse API](https://dfuse.io/))
+# `eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))
 
 WebSocket consumer for the <https://dfuse.io> API on EOS networks.
 
@@ -7,66 +7,94 @@ WebSocket consumer for the <https://dfuse.io> API on EOS networks.
 A big thanks (and hug) to our dear friend [Denis Carriere](https://github.com/DenisCarriere) from
 [EOS Nation](https://eosnation.io) for creating the initial version of this project.
 
-## Quickstart
+## Installation
 
-Available endpoints:
+Using Yarn:
 
-- **Mainnet** `wss://mainnet.eos.dfuse.io/v1/stream?token=[API TOKEN]`
-- **Kylin** `wss://kylin.eos.dfuse.io/v1/stream?token=[API TOKEN]`
+    yarn add @dfuse/eosws-js
+
+or using NPM:
+
+    npm install --save @dfuse/eosws-js
+
+## Quick Start
+
+When targeting a browser:
+
+    import { get_actions, parse_actions } from 'eosws'
+
+    const endpoint = 'mainnet.eos.dfuse.io'
+    const origin = 'https://example.com'
+    const token = '<Paste your API token here>'
+
+    const ws = new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin })
+
+    ws.onopen = () => {
+      ws.send(get_actions({ account: 'eosio.token', action_name: 'transfer' }))
+    }
+
+    ws.onmessage = (message) => {
+      const actions = parse_actions(message.data)
+
+      if (actions) {
+        const { from, to, quantity, memo } = actions.data.trace.act.data
+        console.log(from, to, quantity, memo)
+      }
+    }
+
+If you target a `NodeJS` environment instead, import a proper `WebSocket` client
+implementation (like [ws](https://www.npmjs.com/package/ws)):
+
+    import WebSocket from 'ws'
+
+    ... rest as the browser example above
+
+Here the currently available public endpoints:
+
+- **Mainnet** `mainnet.eos.dfuse.io`
+- **Kylin** `kylin.eos.dfuse.io`
 
 ### Get Actions
 
-```ts
-import WebSocket from "ws"
-import { get_actions, parse_actions } from "eosws"
+Use [get_actions](#get_actions) to send the message:
 
-// Get started with a free dfuse streaming API account.
-// https://dfuse.io/#subscribe
-const API_TOKEN = "eyJ...IBg"
-const origin = "https://example.com"
-const ws = new WebSocket(`wss://<SERVER>/v1/stream?token=${API_TOKEN}`, { origin })
+    get_actions({ account: 'eosio.token', action_name: 'transfer' })
 
-ws.onopen = () => {
-  ws.send(get_actions({ account: "eosio.token", action_name: "transfer" }))
-}
+And [parse_actions](#parse_actions) to decode the received message:
 
-ws.onmessage = (message) => {
-  const actions = parse_actions(message.data)
-
-  if (actions) {
-    const { from, to, quantity, memo } = actions.data.trace.act.data
-    console.log(from, to, quantity, memo)
-  }
-}
-```
+    const actions = parse_actions(message.data)
 
 ### Get Table Rows
 
-```ts
-import { get_table_rows, parse_table_rows } from "eosws"
+Use [get_table_rows](#get_table_rows) to send the message:
 
-ws.onopen = () => {
-  ws.send(get_table_rows({ code: "eosio", scope: "eosio", table_name: "voters" }))
-}
+    get_table_rows({ code: 'eosio', scope: 'eosio', table_name: 'voters' })
 
-ws.onmessage = (message) => {
-  const table = parse_table_rows<Voters>(message.data, voters_req_id)
+And [parse_table_rows](#parse_table_rows) to decode the received message:
 
-  if (table) {
-    const { owner, producers, last_vote_weight } = table.data.row
-    console.log(owner, producers, last_vote_weight)
-  }
-}
-```
+    type VoterInfo = {
+      owner: string
+      proxy: string
+      producers: string[]
+      staked: number
+      last_vote_weight: number
+      proxied_vote_weight: number
+      is_proxy: boolean
+    }
 
-## Related Javascript
+    const table = parse_table_rows<VoterInfo>(message.data)
 
-- WebSockets (<https://github.com/websockets/ws>)
-- Socket.io (<https://github.com/socketio/socket.io>)
+## Resources
 
-## Related Video
+### Videos
 
 - Push Irreversible Transaction (<https://youtu.be/dO-Le3TTim0?t=34m6s>)
+
+## Publish
+
+Assuming you have been granted access rights to publish this package, the command to perform is simply:
+
+    yarn publish --access public
 
 ## API
 

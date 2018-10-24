@@ -1,6 +1,6 @@
 {
-  "name": "eosws-js",
-  "version": "0.9.1",
+  "name": "@dfuse/eosws-js",
+  "version": "0.9.2",
   "description": "`eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))",
   "main": "index.js",
   "types": "index.d.js",
@@ -42,7 +42,9 @@
         "yarn lint:specific"
       ]
     },
-    "ignore": ["**/*.d.ts"]
+    "ignore": [
+      "**/*.d.ts"
+    ]
   },
   "devDependencies": {
     "@types/dotenv": "^4.0.3",
