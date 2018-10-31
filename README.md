@@ -21,7 +21,7 @@ or using NPM:
 
 When targeting a browser:
 
-    import { get_actions, parse_actions } from 'eosws'
+    import { get_actions, parse_actions } from '@dfuse/eosws-js'
 
     const endpoint = 'mainnet.eos.dfuse.io'
     const origin = 'https://example.com'
