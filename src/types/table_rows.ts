@@ -5,15 +5,15 @@
 //   "Set quicktype target language"
 
 export interface TableRows<T> {
-    type:   string;
-    req_id: string;
-    data:   Data<T>;
+  type: string
+  req_id: string
+  data: Data<T>
 }
 
 export interface Data<T> {
-    block_num: number;
-    op:        string;
-    key:       string;
-    payer:     string;
-    data:      T;
+  block_num: number
+  op: string
+  key: string
+  payer: string
+  data: T
 }

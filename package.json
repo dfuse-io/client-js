@@ -6,9 +6,9 @@
   "types": "index.d.js",
   "files": [
     "index.js",
-    "index.d.ts",
-    "types"
+    "index.d.ts"
   ],
+  "bin": "dist",
   "repository": "git@github.com:dfuse-io/eosws-js.git",
   "author": {
     "name": "EOS Canada Developers",

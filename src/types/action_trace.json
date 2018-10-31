@@ -1,0 +1,43 @@
+{
+  "type": "action_trace",
+  "req_id": "req725",
+  "data": {
+    "trx_id": "9a94f921d09ad41eb7786d5b9a88160eb39755b4f9d2b5b9f824dc83d14b919f",
+    "idx": 0,
+    "depth": 0,
+    "trace": {
+      "receipt": {
+        "receiver": "eosio.token",
+        "act_digest": "c510bf94909b6e8ac005eea3ca395c073042d5b6dc022b76f650ef8a142d237b",
+        "global_sequence": 29888108,
+        "recv_sequence": 1279946,
+        "auth_sequence": [["deniscarrier", 78]],
+        "code_sequence": 2,
+        "abi_sequence": 2
+      },
+      "act": {
+        "account": "eosio.token",
+        "name": "transfer",
+        "authorization": [
+          {
+            "actor": "deniscarrier",
+            "permission": "active"
+          }
+        ],
+        "data": {
+          "from": "deniscarrier",
+          "to": "eosasia11111",
+          "quantity": "1.0000 EOS",
+          "memo": ""
+        },
+        "hex_data": "7095bbd720eca64a104208c1386c3055102700000000000004454f530000000000"
+      },
+      "elapsed": 332,
+      "cpu_usage": 0,
+      "console": "",
+      "total_cpu_usage": 0,
+      "trx_id": "9a94f921d09ad41eb7786d5b9a88160eb39755b4f9d2b5b9f824dc83d14b919f",
+      "inline_traces": []
+    }
+  }
+}

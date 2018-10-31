@@ -4,13 +4,15 @@
     "target": "es6",
     "module": "commonjs",
     "declaration": true,
-
+    "sourceMap": true,
     /* Strict Type-Checking Options */
     "strict": true,
 
     /* Module Resolution Options */
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "outDir": "dist"
   },
-  "files": ["index.ts"],
-  "includes": ["types/**/*.d.ts"]
+  "files": ["src/index.ts"],
+
+  "includes": ["./src/types/**/*.ts", "./src/streamers/**/*"]
 }

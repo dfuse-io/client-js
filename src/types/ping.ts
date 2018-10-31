@@ -5,6 +5,6 @@
 //   "Set quicktype target language"
 
 export interface Ping {
-    type: string;
-    data: string;
+  type: string
+  data: string
 }
