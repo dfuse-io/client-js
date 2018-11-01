@@ -1,14 +1,10 @@
 {
   "name": "@dfuse/eosws-js",
-  "version": "0.10.0-alpha.1",
+  "version": "0.10.0-alpha.3",
   "description": "`eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))",
   "main": "index.js",
   "types": "index.d.js",
-  "files": [
-    "index.js",
-    "index.d.ts",
-    "types"
-  ],
+  "files": ["dist/*"],
   "repository": "git@github.com:dfuse-io/eosws-js.git",
   "author": {
     "name": "EOS Canada Developers",
