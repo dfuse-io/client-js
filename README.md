@@ -2,11 +2,6 @@
 
 WebSocket consumer for the <https://dfuse.io> API on EOS networks.
 
-## Acknowledgement
-
-A big thanks (and hug) to our dear friend [Denis Carriere](https://github.com/DenisCarriere) from
-[EOS Nation](https://eosnation.io) for creating the initial version of this project.
-
 ## Installation
 
 Using Yarn:
@@ -340,3 +335,13 @@ const ping = parse_ping(message)
 ```
 
 Returns **Ping** Ping
+
+
+## Credits / Acknowledgement
+
+A big thanks (and hug) to our dear friend [Denis Carriere](https://github.com/DenisCarriere) from
+[EOS Nation](https://eosnation.io) for creating the initial version of this project.
+
+## License
+
+MIT
