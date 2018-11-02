@@ -2,6 +2,7 @@ import { ActionTrace } from "./types/action_trace"
 import { Ping } from "./types/ping"
 import { TableRows } from "./types/table_rows"
 export { ActionTrace, Ping, TableRows }
+export * from "./client"
 export * from "./streamers/common"
 export * from "./streamers/info-streamer"
 

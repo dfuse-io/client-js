@@ -1,5 +1,5 @@
 import * as path from "path"
-import WebSocket from "ws"
+import IsomorphicWebSocket from "isomorphic-ws"
 import dotenv from "dotenv"
 
 dotenv.config({ path: path.join(__dirname, "..", ".env") })
@@ -16,6 +16,18 @@ if (!DFUSE_IO_API_KEY) {
 }
 
 const origin = "https://github.com/dfuse-io/eosws-js"
-export const ws = new WebSocket(`wss://${DFUSE_IO_ENDPOINT}/v1/stream?token=${DFUSE_IO_API_KEY}`, {
-  origin
-})
+export const ws: WebSocket = new IsomorphicWebSocket(
+  `wss://${DFUSE_IO_ENDPOINT}/v1/stream?token=${DFUSE_IO_API_KEY}`,
+  {
+    origin
+  }
+) as any
+
+export const socketFactory = (): WebSocket => {
+  return (new IsomorphicWebSocket(
+    `wss://${DFUSE_IO_ENDPOINT}/v1/stream?token=${DFUSE_IO_API_KEY}`,
+    {
+      origin
+    }
+  ) as any) as WebSocket
+}
