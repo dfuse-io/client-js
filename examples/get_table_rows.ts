@@ -1,6 +1,6 @@
 /* tslint:disable no-console */
 import { ws } from "./config"
-import { get_table_rows, parse_table_rows } from ".."
+import { get_table_rows, parse_table_rows } from "@dfuse/eosws-js"
 
 ws.onopen = () => {
   console.log("Subscribing to `get_table_rows` stream")

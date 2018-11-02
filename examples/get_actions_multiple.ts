@@ -1,6 +1,6 @@
 /* tslint:disable no-console */
 import { ws } from "./config"
-import { get_actions, parse_actions, generateReqId } from ".."
+import { get_actions, parse_actions, generateReqId } from "@dfuse/eosws-js"
 
 interface Transfer {
   from: string

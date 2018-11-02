@@ -1,6 +1,6 @@
 /* tslint:disable no-console */
 import { ws } from "./config"
-import { get_transaction } from ".."
+import { get_transaction } from "@dfuse/eosws-js"
 
 ws.onopen = () => {
   console.log("Subscribing to `get_transaction` stream")
