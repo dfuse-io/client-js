@@ -1,5 +1,6 @@
-# Autoenv
+# Autoenv/Direnv
 .env
+.envrc
 
 # Build
 dist/

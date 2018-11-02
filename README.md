@@ -54,6 +54,51 @@ Here the currently available public endpoints:
 - **Mainnet** `mainnet.eos.dfuse.io`
 - **Kylin** `kylin.eos.dfuse.io`
 
+## Development
+
+The best way to develop this library is through modifying and adding examples
+to the project.
+
+To run the examples, it's quite simple, follow this instructions:
+
+1.  Install project dependencies so that you get development tools at the same time:
+
+    ```
+    yarn install
+    ```
+
+1.  Link the project inside itself, that will be necessary to correct run the
+    examples which import `@dfuse/eosws-js`:
+
+    ```
+    yarn link
+    yarn link @dfuse/eosws-js
+    ```
+
+1.  Start the build watcher so distribution files are always up-to-date. Forgetting
+    to do that will prevent examples from picking latest changes you've made to
+    source files!
+
+    ```
+    yarn build
+    ```
+
+1.  Last step is to add `.env` file containing the [dfuse](https://dfuse.io) API key
+    required to run the examples. Create a file `.env` at the root of the project
+    with the following content:
+
+    ```
+    DFUSE_IO_API_KEY=Replace this with API key!
+    ```
+
+1.  Final check, let's run an example to ensure everything is working:
+
+    ```
+    yarn run ts-node examples/get_actions.ts
+    ```
+
+### Messages
+
 ### Get Actions
 
 Use [get_actions](#get_actions) to send the message:

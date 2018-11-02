@@ -2,14 +2,18 @@
   "name": "@dfuse/eosws-js",
   "version": "0.10.0-alpha.3",
   "description": "`eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))",
-  "main": "index.js",
-  "types": "index.d.js",
-  "files": ["dist/*"],
-  "repository": "git@github.com:dfuse-io/eosws-js.git",
+
+
+  "main": "dist/index.js",
+  "types": "dist/index.d.js",
+  "files": [
+    "dist/*"
+  ],
+  "repository": "https://github.com/dfuse-io/eosws-js",
   "author": {
-    "name": "EOS Canada Developers",
-    "email": "dev@eoscanada.com",
-    "url": "https://eoscanada.com"
+    "name": "dfuse Developers",
+    "email": "dev@dfuse.io",
+    "url": "https://dfuse.io"
   },
   "contributors": [
     {
@@ -20,6 +24,7 @@
   ],
   "license": "MIT",
   "scripts": {
+    "build": "tsc --watch",
     "prepare": "tsc",
     "lint": "tslint **/*.ts",
     "lint:specific": "tslint",
@@ -51,6 +56,7 @@
     "lint-staged": "^7.3.0",
     "prettier": "^1.14.3",
     "pretty-quick": "^1.8.0",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "typescript": "^3.1.3",
