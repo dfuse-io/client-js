@@ -9,7 +9,8 @@
     "ordered-imports": false,
     "no-console": false,
     "only-arrow-functions": false,
-    "no-bitwise": false
+    "no-bitwise": false,
+    "member-ordering": false
   },
   "rulesDirectory": []
 }

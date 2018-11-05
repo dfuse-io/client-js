@@ -1,7 +1,5 @@
 export interface InboundMessage<T> {
-  type: InboundMessageType
+  type: string
   req_id?: string
   data: T
 }
-
-export enum InboundMessageType {}

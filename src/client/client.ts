@@ -1,5 +1,5 @@
 import { OutboundMessage } from "./outbound"
-import { InboundMessage, InboundMessageType } from "./inbound"
+import { InboundMessage } from "./inbound"
 
 export function createClient(socketFactory: () => WebSocket, options: ClientOptions = {}) {
   return clientFactory(socketFactory, options)
@@ -10,8 +10,8 @@ export interface Client {
   disconnect(): Promise<{}>
   isConnected(): boolean
 
-  send<T>(message: OutboundMessage<T>): Promise<{}>
-  onMessage(handler: (type: InboundMessageType, message: InboundMessage<any>) => void): void
+  send<T extends OutboundMessage>(message: T): Promise<{}>
+  onMessage(handler: (type: string, message: InboundMessage<any>) => void): void
 }
 
 export interface ClientOptions {
@@ -27,7 +27,7 @@ export interface ClientOptions {
 
 const noop = () => undefined
 
-function clientFactory(socketFactory: () => WebSocket, options: ClientOptions): Client {
+export function clientFactory(socketFactory: () => WebSocket, options: ClientOptions = {}): Client {
   let socket: WebSocket
 
   const isConnected = () => {
@@ -90,7 +90,7 @@ function clientFactory(socketFactory: () => WebSocket, options: ClientOptions): 
     })
   }
 
-  const send = <T>(message: OutboundMessage<T>): Promise<{}> => {
+  const send = <T extends OutboundMessage>(message: T): Promise<{}> => {
     return createPromise((resolve) => {
       // FIXME: Reconnect! here when socket is null!
 
@@ -99,7 +99,7 @@ function clientFactory(socketFactory: () => WebSocket, options: ClientOptions): 
     })
   }
 
-  const onMessage = (handler: (type: InboundMessageType, message: InboundMessage<any>) => void) => {
+  const onMessage = (handler: (type: string, message: InboundMessage<any>) => void) => {
     if (socket == null) {
       throw new Error("Cannot send, not connected.")
     }

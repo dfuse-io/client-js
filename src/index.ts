@@ -1,7 +1,6 @@
-import { ActionTrace } from "./types/action_trace"
 import { Ping } from "./types/ping"
 import { TableRows } from "./types/table_rows"
-export { ActionTrace, Ping, TableRows }
+export { Ping, TableRows }
 export * from "./client"
 export * from "./streamers/common"
 export * from "./streamers/info-streamer"
@@ -40,46 +39,6 @@ function handleOptionalParams(base: object, options: OptionalParams) {
  * @private
  */
 type WebSocketData = string | Buffer | ArrayBuffer | Buffer[]
-
-/**
- * Get Actions
- *
- * @param {object} data Data Parameters
- * @param {string} data.account Contract account targeted by the action.
- * @param {string} [data.receiver] Specify the receiving account executing its smart contract.
- * If left blank, defaults to the same value as `account`.
- * @param {string} [data.action_name] Name of the action called within the account contract.
- * @param {boolean} [data.with_ramops] Stream RAM billing changes and reasons for costs of storage produced by each action.
- * @param {boolean} [data.with_inline_traces] Stream the inline actions produced by each action.
- * @param {boolean} [data.with_deferred] Stream the modifications to deferred transactions produced by each action.
- * @param {OptionalParams} [options={}] Optional Parameters
- * @returns {string} Message for `ws.send`
- * @example
- *
- * ws.send(get_actions({account: "eosio.token", action_name: "transfer"}));
- */
-export function get_actions(
-  data: {
-    account: string
-    receiver?: string
-    action_name?: string
-    with_ramops?: boolean
-    with_inline_traces?: boolean
-    with_deferred?: boolean
-  },
-  options: OptionalParams = {}
-) {
-  return JSON.stringify(
-    handleOptionalParams(
-      {
-        type: "get_actions",
-        listen: true,
-        data
-      },
-      options
-    )
-  )
-}
 
 /**
  * Get Transaction
@@ -178,27 +137,6 @@ export function unlisten(req_id: string) {
  */
 export function generateReqId() {
   return "req" + Math.round(Math.random() * 1000)
-}
-
-/**
- * Parse Actions from `get_actions` from WebSocket `onmessage` listener
- *
- * @param {WebSocketData} data WebSocket Data from message event
- * @param {string} [req_id] Request ID
- * @returns {ActionTrace} Action Trace
- * @example
- *
- * const actions = parse_actions<any>(message);
- */
-export function parse_actions<T>(data: WebSocketData, req_id?: string): ActionTrace<T> | null {
-  const message = parse_message(data)
-  if (message.type === "action_trace") {
-    if (req_id && message.req_id !== req_id) {
-      return null
-    }
-    return message
-  }
-  return null
 }
 
 /**
