@@ -3,9 +3,13 @@ import { EOSClient } from "../src/client/eos-client"
 const client = new EOSClient()
 
 client.connect().then(() => {
-  const request = client.getTableRows({}, { code: "eosio", scope: "eosio", table_name: "global" })
+  const request = client.send(
+    "get_table_rows",
+    {},
+    { code: "eosio", scope: "eosio", table_name: "global" }
+  )
 
-  request.listen((data) => {
+  request.listen("table_delta", (data) => {
     console.log("data: ", data)
   })
 

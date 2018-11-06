@@ -48,7 +48,6 @@ export class EOSClient {
     this.listenerEnabled = true
 
     this.client.onMessage((type: string, message: InboundMessage<any>) => {
-      console.log(message)
       this.registeredListeners.map((listener: ListenerObject<any>) => {
         if (
           type === listener.type &&
@@ -64,7 +63,7 @@ export class EOSClient {
     })
   }
 
-  private send<T>(
+  private sendSimple<T>(
     type: string,
     baseParams: { req_id?: string; start_block?: number; listen?: boolean },
     params: T
@@ -77,6 +76,27 @@ export class EOSClient {
       data: params
     }
     this.client.send<OutboundEOSMessage<T>>(options)
+  }
+
+  public send<T>(
+    type: string,
+    baseParams: { req_id?: string; start_block?: number; listen?: boolean },
+    params: T
+  ) {
+    const reqId = baseParams.req_id ? baseParams.req_id : type
+
+    this.sendSimple<T>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
+
+    const listener = (
+      listenType: string,
+      callback: (message: InboundMessage<ActionTrace>) => void
+    ) => {
+      this.registerListener<any>(listenType, reqId, callback)
+    }
+    return {
+      listen: listener,
+      reqId
+    }
   }
 
   public unlisten(reqId: string) {
@@ -94,7 +114,11 @@ export class EOSClient {
     const type = "get_actions"
     const reqId = baseParams.req_id ? baseParams.req_id : type
 
-    this.send<GetActionsParams>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
+    this.sendSimple<GetActionsParams>(
+      type,
+      Object.assign({}, baseParams, { req_id: reqId }),
+      params
+    )
 
     const listener = (callback: (message: InboundMessage<ActionTrace>) => void) => {
       this.registerListener<ActionTrace>("action_trace", reqId, callback)
@@ -112,7 +136,11 @@ export class EOSClient {
     const type = "get_table_rows"
     const reqId = baseParams.req_id ? baseParams.req_id : type
 
-    this.send<GetTableRowsParams>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
+    this.sendSimple<GetTableRowsParams>(
+      type,
+      Object.assign({}, baseParams, { req_id: reqId }),
+      params
+    )
 
     const listener = (callback: (message: InboundMessage<TableRow>) => void) => {
       this.registerListener<TableRow>("table_delta", reqId, callback)
@@ -131,7 +159,7 @@ export class EOSClient {
     const type = "get_transaction"
     const reqId = baseParams.req_id ? baseParams.req_id : type
 
-    this.send<{ id: string }>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
+    this.sendSimple<{ id: string }>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
 
     const listener = (callback: (message: InboundMessage<TransactionLifeCycle>) => void) => {
       this.registerListener<TransactionLifeCycle>("transaction_lifecycle", reqId, callback)
