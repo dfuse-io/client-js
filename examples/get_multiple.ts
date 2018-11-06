@@ -8,23 +8,23 @@ client.connect().then(() => {
     { code: "eosio", scope: "eosio", table_name: "global" }
   )
 
-  requestRows.listen((data) => {
-    console.log("received data of type: ", data.type)
+  requestRows.listen((message) => {
+    console.log("received message of type: ", message.type)
   })
 
   setTimeout(() => {
     console.log("unlistening on table rows................")
-    client.unlisten(requestRows.reqId)
+    requestRows.unlisten()
   }, 1000)
 
   const requestActions = client.getActions({}, { account: "eosio.token", action_name: "transfer" })
 
-  requestActions.listen((data) => {
-    console.log("received data of type: ", data.type)
+  requestActions.listen((message) => {
+    console.log("received message of type: ", message.type)
   })
 
   setTimeout(() => {
     console.log("unlistening on actions...............")
-    client.unlisten(requestActions.reqId)
+    requestActions.unlisten()
   }, 2000)
 })

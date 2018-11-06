@@ -95,7 +95,8 @@ export class EOSClient {
     }
     return {
       listen: listener,
-      reqId
+      reqId,
+      unlisten: () => this.unlisten(reqId)
     }
   }
 
@@ -125,7 +126,8 @@ export class EOSClient {
     }
     return {
       listen: listener,
-      reqId
+      reqId,
+      unlisten: () => this.unlisten(reqId)
     }
   }
 
@@ -148,7 +150,8 @@ export class EOSClient {
 
     return {
       listen: listener,
-      reqId
+      reqId,
+      unlisten: () => this.unlisten(reqId)
     }
   }
 
@@ -167,7 +170,8 @@ export class EOSClient {
 
     return {
       listen: listener,
-      reqId
+      reqId,
+      unlisten: () => this.unlisten(reqId)
     }
   }
 }

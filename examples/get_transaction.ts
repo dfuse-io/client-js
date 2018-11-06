@@ -8,12 +8,12 @@ client.connect().then(() => {
     { id: "d9e98cec9fcb5604da38ca250eb22246520bfeee2c35298032c2fbb825eb406d" }
   )
 
-  request.listen((data) => {
-    console.log("data: ", data)
+  request.listen((message) => {
+    console.log("message: ", message)
   })
 
   setTimeout(() => {
     console.log("unlistening................")
-    client.unlisten(request.reqId)
+    request.unlisten()
   }, 4000)
 })
