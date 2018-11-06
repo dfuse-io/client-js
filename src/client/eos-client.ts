@@ -5,14 +5,16 @@ import { InboundMessage } from "./inbound"
 import { ActionTrace, TransactionLifeCycle } from "../types/transaction"
 import { TableRow } from "../types/table_rows"
 
+export interface ListenerObject<T> {
+  type: string
+  reqId: string
+  callback: (message: T) => void
+}
+
 export class EOSClient {
   public client: Client
   private listenerEnabled = false
-  private registeredListeners: Array<{
-    type: string
-    reqId: string
-    callBack: (message: any) => void
-  }> = []
+  private registeredListeners: Array<ListenerObject<any>> = []
 
   constructor(client?: Client) {
     if (client) {
@@ -22,32 +24,44 @@ export class EOSClient {
     }
   }
 
-  private registerListener(type: string, reqId: string, callBack: (message: any) => void) {
+  private registerListener<T>(
+    type: string,
+    reqId: string,
+    callback: (message: InboundMessage<T>) => void
+  ) {
+    this.createListener()
+
     this.registeredListeners.push({
       type,
       reqId,
-      callBack
+      callback
     })
+
+    return callback
   }
 
-  private createListener<T>(typeRef: string, reqId: string) {
+  private createListener() {
     if (this.listenerEnabled) {
       return
     }
 
     this.listenerEnabled = true
 
-    return (callback: (message: InboundMessage<T>) => any) => {
-      this.client.onMessage((type: string, message: InboundMessage<T>) => {
-        if (type === typeRef && (message.req_id === reqId || message.req_id === undefined)) {
-          return callback(message)
-        }
-
-        if (type === "unlistened") {
-          console.log(`unlistened (req_id: ${reqId}): `, message)
+    this.client.onMessage((type: string, message: InboundMessage<any>) => {
+      console.log(message)
+      this.registeredListeners.map((listener: ListenerObject<any>) => {
+        if (
+          type === listener.type &&
+          (message.req_id === listener.reqId || message.req_id === undefined)
+        ) {
+          listener.callback(message)
         }
       })
-    }
+
+      if (type === "unlistened") {
+        console.log(`unlistened: `, message)
+      }
+    })
   }
 
   private send<T>(
@@ -82,8 +96,12 @@ export class EOSClient {
 
     this.send<GetActionsParams>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
 
+    const listener = (callback: (message: InboundMessage<ActionTrace>) => void) => {
+      this.registerListener<ActionTrace>("action_trace", reqId, callback)
+    }
     return {
-      listen: this.createListener<ActionTrace>("action_trace", reqId)
+      listen: listener,
+      reqId
     }
   }
 
@@ -96,8 +114,12 @@ export class EOSClient {
 
     this.send<GetTableRowsParams>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
 
+    const listener = (callback: (message: InboundMessage<TableRow>) => void) => {
+      this.registerListener<TableRow>("table_delta", reqId, callback)
+    }
+
     return {
-      listen: this.createListener<TableRow>("table_delta", reqId),
+      listen: listener,
       reqId
     }
   }
@@ -111,8 +133,12 @@ export class EOSClient {
 
     this.send<{ id: string }>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
 
+    const listener = (callback: (message: InboundMessage<TransactionLifeCycle>) => void) => {
+      this.registerListener<TransactionLifeCycle>("transaction_lifecycle", reqId, callback)
+    }
+
     return {
-      listen: this.createListener<TransactionLifeCycle>("transaction_lifecycle", reqId),
+      listen: listener,
       reqId
     }
   }
