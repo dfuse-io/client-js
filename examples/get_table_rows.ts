@@ -1,18 +1,16 @@
-/* tslint:disable no-console */
-import { ws } from "./config"
-import { get_table_rows, parse_table_rows } from "@dfuse/eosws-js"
+import { EOSClient } from "../src/client/eos-client"
 
-ws.onopen = () => {
-  console.log("Subscribing to `get_table_rows` stream")
-  ws.send(get_table_rows({ code: "eosio", scope: "eosio", table_name: "global" }))
-}
+const client = new EOSClient()
 
-ws.onmessage = (message) => {
-  console.log(JSON.parse(message.data.toString()))
-  const table = parse_table_rows<any>(message.data)
+client.connect().then(() => {
+  const request = client.getTableRows({}, { code: "eosio", scope: "eosio", table_name: "global" })
 
-  if (table) {
-    const { owner, producers, last_vote_weight } = table.data.data
-    console.log(owner, producers, last_vote_weight)
-  }
-}
+  request.listen((data) => {
+    console.log("data: ", data)
+  })
+
+  setTimeout(() => {
+    console.log("unlistening................")
+    client.unlisten(request.reqId)
+  }, 4000)
+})

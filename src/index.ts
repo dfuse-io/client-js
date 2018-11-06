@@ -1,6 +1,5 @@
 import { Ping } from "./types/ping"
-import { TableRows } from "./types/table_rows"
-export { Ping, TableRows }
+export { Ping }
 export * from "./client"
 export * from "./streamers/common"
 export * from "./streamers/info-streamer"
@@ -65,48 +64,6 @@ export function get_transaction(id: string, options: OptionalParams = {}) {
 }
 
 /**
- * Get Table Rows
- *
- * Retrieve a stream of changes to the tables, as a side effect of transactions/actions being executed.
- *
- * @param {object} data Data Parameters
- * @param {string} data.code Contract account which wrote to tables.
- * @param {string} data.scope Table scope where table is stored.
- * @param {string} data.table_name Table name, shown in the contract ABI.
- * @param {boolean} [data.json=true] With json=true (or 1), table rows will be decoded to JSON, using the ABIs active on the queried block. This endpoint will thus automatically adapt to upgrades to the ABIs on chain.
- * @param {boolean} [data.verbose] Return the code, table_name, scope and key alongside each row.
- * @param {OptionalParams} [options={}] Optional parameters
- * @returns {string} Message for `ws.send`
- * @example
- *
- * ws.send(get_table_rows({code: "eosio", scope: "eosio", table_name: "global"}));
- */
-export function get_table_rows(
-  data: {
-    code: string
-    scope: string
-    table_name: string
-    json?: boolean
-    verbose?: boolean
-  },
-  options: OptionalParams = {}
-) {
-  if (data.json === undefined) {
-    data.json = true
-  }
-  return JSON.stringify(
-    handleOptionalParams(
-      {
-        type: "get_table_rows",
-        listen: true,
-        data
-      },
-      options
-    )
-  )
-}
-
-/**
  * Unlisten
  *
  * To interrupt a stream, you can `unlisten` with the original `req_id`
@@ -137,27 +94,6 @@ export function unlisten(req_id: string) {
  */
 export function generateReqId() {
   return "req" + Math.round(Math.random() * 1000)
-}
-
-/**
- * Parse Table Deltas from `get_table_rows` from WebSocket `onmessage` listener
- *
- * @param {WebSocketData} data WebSocket Data from message event
- * @param {string} [req_id] Request ID
- * @returns {ActionTrace} Action Trace
- * @example
- *
- * const table_deltas = parse_table_rows<any>(message);
- */
-export function parse_table_rows<T>(data: WebSocketData, req_id?: string): TableRows<T> | null {
-  const message = parse_message(data)
-  if (message.type === "table_rows" || message.type === "table_delta") {
-    if (req_id && message.req_id !== req_id) {
-      return null
-    }
-    return message
-  }
-  return null
 }
 
 /**
