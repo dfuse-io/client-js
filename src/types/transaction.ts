@@ -1,3 +1,5 @@
+import { Receipt, ActionTrace, Action } from "./action_trace"
+
 export interface TransactionLifeCycle {
   id: string
   transaction: Transaction
@@ -21,11 +23,11 @@ export interface Transaction {
   max_net_usage_words: number
   max_cpu_usage_ms: number
   delay_sec: number
-  context_free_actions: Action[]
-  actions: Action[]
+  context_free_actions: Array<Action<any>>
+  actions: Array<Action<any>>
   transaction_extensions: any[]
   signatures?: string[]
-  context_free_data?: Action[]
+  context_free_data?: Array<Action<any>>
 }
 
 export interface ExtDTrxOp extends DTrxOp {
@@ -74,19 +76,6 @@ export interface RAMOp {
   usage: number
 }
 
-export interface Action {
-  account: string
-  name: string
-  authorization: Authorization[]
-  data: any
-  hex_data?: string
-}
-
-export interface Authorization {
-  actor: string
-  permission: string
-}
-
 export interface TransactionTrace {
   id: string
   block_num: number
@@ -96,26 +85,9 @@ export interface TransactionTrace {
   elapsed: number
   net_usage: number
   scheduled: boolean
-  action_traces: ActionTrace[]
+  action_traces: Array<ActionTrace<any>>
   failed_dtrx_trace: TransactionTrace
   except: null
-}
-
-export interface ActionTrace {
-  receipt: Receipt
-  act: Action
-  elapsed: number
-  cpu_usage: number
-  console: string
-  total_cpu_usage: number
-  trx_id: string
-  inline_traces: ActionTrace[]
-}
-
-export interface Receipt {
-  status: string
-  cpu_usage_us: number
-  net_usage_words: number
 }
 
 export interface BlockHeader {

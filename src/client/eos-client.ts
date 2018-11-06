@@ -1,177 +1,90 @@
-import { Client, clientFactory } from "./client"
-import { socketFactory } from "../../examples/config"
-import { GetActionsParams, GetTableRowsParams, OutboundEOSMessage } from "./outbound"
-import { InboundMessage } from "./inbound"
-import { ActionTrace, TransactionLifeCycle } from "../types/transaction"
-import { TableRow } from "../types/table_rows"
-
-export interface ListenerObject<T> {
-  type: string
-  reqId: string
-  callback: (message: T) => void
-}
+import { SocketFactory, Client, ClientOptions, createClient, ClientMessageListener } from "./client"
+import {
+  GetTableRowsMessageParameters,
+  unlistenMessage,
+  GetActionsMessageParameters,
+  getActionsMessage,
+  StreamOptions,
+  getTableRowsMessage,
+  getTransactionMessage
+} from "./outbound"
+import { InboundMessage, InboundMessageType } from "./inbound"
 
 export class EOSClient {
-  public client: Client
-  private listenerEnabled = false
-  private registeredListeners: Array<ListenerObject<any>> = []
+  private client: Client
+  private registeredListeners: ListenerObject[] = []
 
-  constructor(client?: Client) {
-    if (client) {
-      this.client = client
-    } else {
-      this.client = clientFactory(socketFactory)
-    }
+  constructor(socketFactory: SocketFactory, options?: ClientOptions) {
+    this.client = createClient(socketFactory, options)
   }
 
-  private registerListener<T>(
-    type: string,
-    reqId: string,
-    callback: (message: InboundMessage<T>) => void
-  ) {
-    this.createListener()
-
-    this.registeredListeners.push({
-      type,
-      reqId,
-      callback
-    })
-
-    return callback
+  private registerListener(listener: ListenerObject) {
+    this.registeredListeners.push(listener)
   }
 
-  private createListener() {
-    if (this.listenerEnabled) {
-      return
-    }
-
-    this.listenerEnabled = true
-
-    this.client.onMessage((type: string, message: InboundMessage<any>) => {
-      this.registeredListeners.map((listener: ListenerObject<any>) => {
+  public connect(): Promise<void> {
+    const onMessage = (type: InboundMessageType, message: InboundMessage<any>) => {
+      this.registeredListeners.forEach((listener: ListenerObject) => {
         if (
-          type === listener.type &&
-          (message.req_id === listener.reqId || message.req_id === undefined)
+          listener.handledMessageTypes.indexOf(type) > -1 &&
+          message.req_id === listener.requestId
         ) {
-          listener.callback(message)
+          listener.callback(type, message)
         }
       })
-
-      if (type === "unlistened") {
-        console.log(`unlistened: `, message)
-      }
-    })
-  }
-
-  private sendSimple<T>(
-    type: string,
-    baseParams: { req_id?: string; start_block?: number; listen?: boolean },
-    params: T
-  ) {
-    const options = {
-      type,
-      req_id: baseParams.req_id,
-      start_block: baseParams.start_block,
-      listen: baseParams.listen === undefined ? true : baseParams.listen,
-      data: params
     }
-    this.client.send<OutboundEOSMessage<T>>(options)
+
+    return this.client.connect(onMessage)
   }
 
-  public send<T>(
-    type: string,
-    baseParams: { req_id?: string; start_block?: number; listen?: boolean },
-    params: T
-  ) {
-    const reqId = baseParams.req_id ? baseParams.req_id : type
+  public getActions(parameters: GetActionsMessageParameters, options: StreamOptions = {}) {
+    options = withDefaults({ listen: true }, options)
+    this.client.send(getActionsMessage(parameters, options))
 
-    this.sendSimple<T>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
-
-    const listener = (
-      listenType: string,
-      callback: (message: InboundMessage<ActionTrace>) => void
-    ) => {
-      this.registerListener<any>(listenType, reqId, callback)
-    }
-    return {
-      listen: listener,
-      reqId,
-      unlisten: () => this.unlisten(reqId)
-    }
+    return this.createListener(options.requestId!, InboundMessageType.ACTION_TRACE)
   }
 
-  public unlisten(reqId: string) {
-    this.client.send({ type: "unlisten", data: { req_id: reqId } })
+  public getTableRows(parameters: GetTableRowsMessageParameters, options: StreamOptions = {}) {
+    options = withDefaults({ listen: true }, options)
+    this.client.send(getTableRowsMessage(parameters, options))
+
+    return this.createListener(options.requestId!, InboundMessageType.TABLE_DELTA)
   }
 
-  public connect(): Promise<{}> {
-    return this.client.connect()
+  public getTransaction(id: string, options: StreamOptions = {}) {
+    options = withDefaults({ fetch: true, listen: true }, options)
+    this.client.send(getTransactionMessage(id, options))
+
+    return this.createListener(options.requestId!, InboundMessageType.TRANSACTION_LIFECYCLE)
   }
 
-  public getActions(
-    baseParams: { req_id?: string; start_block?: number; listen?: boolean },
-    params: GetActionsParams
-  ) {
-    const type = "get_actions"
-    const reqId = baseParams.req_id ? baseParams.req_id : type
-
-    this.sendSimple<GetActionsParams>(
-      type,
-      Object.assign({}, baseParams, { req_id: reqId }),
-      params
-    )
-
-    const listener = (callback: (message: InboundMessage<ActionTrace>) => void) => {
-      this.registerListener<ActionTrace>("action_trace", reqId, callback)
-    }
-    return {
-      listen: listener,
-      reqId,
-      unlisten: () => this.unlisten(reqId)
-    }
-  }
-
-  public getTableRows(
-    baseParams: { req_id?: string; start_block?: number; listen?: boolean },
-    params: GetTableRowsParams
-  ) {
-    const type = "get_table_rows"
-    const reqId = baseParams.req_id ? baseParams.req_id : type
-
-    this.sendSimple<GetTableRowsParams>(
-      type,
-      Object.assign({}, baseParams, { req_id: reqId }),
-      params
-    )
-
-    const listener = (callback: (message: InboundMessage<TableRow>) => void) => {
-      this.registerListener<TableRow>("table_delta", reqId, callback)
+  private createListener(requestId: string, ...handledMessageTypes: InboundMessageType[]) {
+    const listen = (callback: ClientMessageListener) => {
+      this.registerListener({ handledMessageTypes, requestId, callback })
     }
 
     return {
-      listen: listener,
-      reqId,
-      unlisten: () => this.unlisten(reqId)
+      listen,
+      requestId,
+      unlisten: () => this.unlisten(requestId)
     }
   }
 
-  public getTransaction(
-    baseParams: { req_id?: string; start_block?: number; listen?: boolean },
-    params: { id: string }
-  ) {
-    const type = "get_transaction"
-    const reqId = baseParams.req_id ? baseParams.req_id : type
-
-    this.sendSimple<{ id: string }>(type, Object.assign({}, baseParams, { req_id: reqId }), params)
-
-    const listener = (callback: (message: InboundMessage<TransactionLifeCycle>) => void) => {
-      this.registerListener<TransactionLifeCycle>("transaction_lifecycle", reqId, callback)
-    }
-
-    return {
-      listen: listener,
-      reqId,
-      unlisten: () => this.unlisten(reqId)
-    }
+  private unlisten(requestId: string) {
+    this.client.send(unlistenMessage(requestId))
   }
+}
+
+function withDefaults(defaults: any, options: StreamOptions): StreamOptions {
+  const randomRequestId = `r${Math.random()
+    .toString(16)
+    .substr(2)}`
+
+  return Object.assign({}, { requestId: randomRequestId }, defaults, options)
+}
+
+interface ListenerObject {
+  handledMessageTypes: InboundMessageType[]
+  requestId: string
+  callback: ClientMessageListener
 }

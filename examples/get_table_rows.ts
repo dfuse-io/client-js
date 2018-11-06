@@ -1,16 +1,12 @@
 import { EOSClient } from "../src/client/eos-client"
-import { GetTableRowsParams } from "../src/client"
+import { socketFactory } from "./config"
 
-const client = new EOSClient()
+const client = new EOSClient(socketFactory)
 
 client.connect().then(() => {
-  const request = client.send<GetTableRowsParams>(
-    "get_table_rows",
-    {},
-    { code: "eosio", scope: "eosio", table_name: "global" }
-  )
+  const request = client.getTableRows({ code: "eosio", scope: "eosio", tableName: "global" })
 
-  request.listen("table_delta", (message) => {
+  request.listen((type, message) => {
     console.log("message: ", message)
   })
 

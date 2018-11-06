@@ -16,10 +16,6 @@ package-lock.json
 .DS_Store
 Thumbs.db
 
-# TypeScript
-*.js
-index.d.ts
-
 # Yarn
 yarn-error.log
 node_modules/

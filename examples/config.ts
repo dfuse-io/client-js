@@ -16,13 +16,6 @@ if (!DFUSE_IO_API_KEY) {
 }
 
 const origin = "https://github.com/dfuse-io/eosws-js"
-export const ws: WebSocket = new IsomorphicWebSocket(
-  `wss://${DFUSE_IO_ENDPOINT}/v1/stream?token=${DFUSE_IO_API_KEY}`,
-  {
-    origin
-  }
-) as any
-
 export const socketFactory = (): WebSocket => {
   return (new IsomorphicWebSocket(
     `wss://${DFUSE_IO_ENDPOINT}/v1/stream?token=${DFUSE_IO_API_KEY}`,

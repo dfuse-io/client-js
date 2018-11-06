@@ -1,6 +1,8 @@
-import { Ping } from "./types/ping"
-export { Ping }
 export * from "./client"
+export * from "./types/action_trace"
+export * from "./types/ping"
+export * from "./types/table_rows"
+export * from "./types/transaction"
 export * from "./streamers/common"
 export * from "./streamers/info-streamer"
 
@@ -94,23 +96,6 @@ export function unlisten(req_id: string) {
  */
 export function generateReqId() {
   return "req" + Math.round(Math.random() * 1000)
-}
-
-/**
- * Parse Ping from WebSocket `onmessage` listener
- *
- * @param {WebSocketData} data WebSocket Data from message event
- * @returns {Ping} Ping
- * @example
- *
- * const ping = parse_ping(message);
- */
-export function parse_ping(data: WebSocketData): Ping | null {
-  const message = parse_message(data)
-  if (message.type === "ping") {
-    return message
-  }
-  return null
 }
 
 /**
