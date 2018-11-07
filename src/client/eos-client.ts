@@ -1,12 +1,16 @@
-import { SocketFactory, Client, ClientOptions, createClient, ClientMessageListener } from "./client"
+import { Client, ClientMessageListener, ClientOptions, createClient, SocketFactory } from "./client"
 import {
-  GetTableRowsMessageParameters,
-  unlistenMessage,
-  GetActionsMessageParameters,
   getActionsMessage,
-  StreamOptions,
+  GetActionsMessageBackendParameters,
+  GetActionsMessageParameters,
   getTableRowsMessage,
-  getTransactionMessage
+  GetTableRowsMessageBackendParameters,
+  GetTableRowsMessageParameters,
+  getTransactionMessage,
+  OutboundMessage,
+  OutboundMessageType,
+  StreamOptions,
+  unlistenMessage
 } from "./outbound"
 import { InboundMessage, InboundMessageType } from "./inbound"
 
@@ -25,10 +29,7 @@ export class EOSClient {
   public connect(): Promise<void> {
     const onMessage = (type: InboundMessageType, message: InboundMessage<any>) => {
       this.registeredListeners.forEach((listener: ListenerObject) => {
-        if (
-          listener.handledMessageTypes.indexOf(type) > -1 &&
-          message.req_id === listener.requestId
-        ) {
+        if (listener.messageTypes.indexOf(type) > -1 && message.req_id === listener.requestId) {
           listener.callback(type, message)
         }
       })
@@ -37,30 +38,79 @@ export class EOSClient {
     return this.client.connect(onMessage)
   }
 
+  public send<T extends OutboundMessage<{}>>(
+    type: OutboundMessageType,
+    messageOptions: T,
+    ...messageTypes: InboundMessageType[]
+  ) {
+    return this.sendAndListen<T>(
+      messageOptions,
+      messageOptions.req_id === undefined ? type : messageOptions.req_id,
+      messageOptions.listen === undefined ? true : messageOptions.listen,
+      ...messageTypes
+    )
+  }
+
   public getActions(parameters: GetActionsMessageParameters, options: StreamOptions = {}) {
     options = withDefaults({ listen: true }, options)
-    this.client.send(getActionsMessage(parameters, options))
+    const messageOptions = getActionsMessage(parameters, options)
 
-    return this.createListener(options.requestId!, InboundMessageType.ACTION_TRACE)
+    return this.sendAndListen<OutboundMessage<GetActionsMessageBackendParameters>>(
+      messageOptions,
+      options.requestId!,
+      options.listen!,
+      InboundMessageType.ACTION_TRACE
+    )
   }
 
   public getTableRows(parameters: GetTableRowsMessageParameters, options: StreamOptions = {}) {
     options = withDefaults({ listen: true }, options)
-    this.client.send(getTableRowsMessage(parameters, options))
-
-    return this.createListener(options.requestId!, InboundMessageType.TABLE_DELTA)
+    const messageOptions = getTableRowsMessage(parameters, options)
+    return this.sendAndListen<OutboundMessage<GetTableRowsMessageBackendParameters>>(
+      messageOptions,
+      options.requestId!,
+      options.listen!,
+      InboundMessageType.TABLE_DELTA
+    )
   }
 
   public getTransaction(id: string, options: StreamOptions = {}) {
     options = withDefaults({ fetch: true, listen: true }, options)
-    this.client.send(getTransactionMessage(id, options))
+    const messageOptions = getTransactionMessage(id, options)
 
-    return this.createListener(options.requestId!, InboundMessageType.TRANSACTION_LIFECYCLE)
+    return this.sendAndListen<OutboundMessage<{ id: string }>>(
+      messageOptions,
+      options.requestId!,
+      options.listen!,
+      InboundMessageType.TRANSACTION_LIFECYCLE
+    )
   }
 
-  private createListener(requestId: string, ...handledMessageTypes: InboundMessageType[]) {
+  private sendAndListen<T extends OutboundMessage<{}>>(
+    messageOptions: T,
+    requestId: string,
+    listen: boolean,
+    ...messageTypes: InboundMessageType[]
+  ) {
+    if (listen) {
+      return this.createListenerWithSend<T>(requestId!, messageOptions, ...messageTypes)
+    }
+
+    this.client.send(messageOptions)
+    return null
+  }
+
+  private createListenerWithSend<T extends OutboundMessage<{}>>(
+    requestId: string,
+    parameters: T,
+    ...messageTypes: InboundMessageType[]
+  ) {
     const listen = (callback: ClientMessageListener) => {
-      this.registerListener({ handledMessageTypes, requestId, callback })
+      try {
+        this.registerListener({ messageTypes, requestId, callback })
+      } finally {
+        this.client.send(parameters)
+      }
     }
 
     return {
@@ -84,7 +134,7 @@ function withDefaults(defaults: any, options: StreamOptions): StreamOptions {
 }
 
 interface ListenerObject {
-  handledMessageTypes: InboundMessageType[]
+  messageTypes: InboundMessageType[]
   requestId: string
   callback: ClientMessageListener
 }

@@ -17,6 +17,7 @@ export enum OutboundMessageType {
 }
 
 export interface StreamOptions {
+  listen?: boolean
   requestId?: string
   startBlock?: number
   fetch?: boolean
@@ -42,13 +43,23 @@ export interface GetActionsMessageParameters {
   withInlineTraces?: boolean
 }
 
+export interface GetActionsMessageBackendParameters {
+  account: string
+  receiver?: string
+  action_name?: string
+  with_dbops?: boolean
+  with_dtrxops?: boolean
+  with_ramops?: boolean
+  with_inline_traces?: boolean
+}
+
 export function getActionsMessage(
   data: GetActionsMessageParameters,
   streamOptions: StreamOptions = {}
-) {
+): OutboundMessage<GetActionsMessageBackendParameters> {
   return {
     type: OutboundMessageType.GET_ACTIONS,
-    listen: true,
+    listen: streamOptions.listen,
     req_id: streamOptions.requestId,
     with_progress: streamOptions.withProgress,
     fetch: streamOptions.fetch,
@@ -71,10 +82,18 @@ export interface GetTableRowsMessageParameters {
   upperBound?: string
 }
 
+export interface GetTableRowsMessageBackendParameters {
+  code: string
+  scope: string
+  table_name: string
+  lower_bound?: string
+  upper_bound?: string
+}
+
 export function getTableRowsMessage(
   data: GetTableRowsMessageParameters,
   streamOptions: StreamOptions = {}
-) {
+): OutboundMessage<GetTableRowsMessageBackendParameters> {
   return {
     type: OutboundMessageType.GET_TABLE_ROWS,
     req_id: streamOptions.requestId,
