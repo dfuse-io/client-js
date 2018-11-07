@@ -16,7 +16,7 @@ client.connect().then(() => {
     requestRows!.unlisten()
   }, 1000)
 
-  const requestActions = client.getActions({ account: "eosio.token", actionName: "transfer" })
+  const requestActions = client.getActionTraces({ account: "eosio.token", actionName: "transfer" })
 
   requestActions!.listen((type: InboundMessageType) => {
     console.log("received message of type: ", type)
