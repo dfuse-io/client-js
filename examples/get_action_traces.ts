@@ -12,10 +12,9 @@ interface Transfer {
 
 client.connect().then(() => {
   client
-    .getActions({ account: "eosio.token", actionName: "transfer" })!
-    .listen((type: string, rawMessage) => {
+    .getActionTraces({ account: "eosio.token", actionName: "transfer" })!
+    .listen((type: InboundMessageType, message: InboundMessage<ActionTrace<Transfer>>) => {
       if (type === InboundMessageType.ACTION_TRACE) {
-        const message = rawMessage as InboundMessage<ActionTrace<Transfer>>
         const transfer = message.data.trace.act.data
 
         console.log(

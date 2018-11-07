@@ -1,8 +1,8 @@
 import { Client, ClientMessageListener, ClientOptions, createClient, SocketFactory } from "./client"
 import {
-  getActionsMessage,
-  GetActionsMessageBackendParameters,
-  GetActionsMessageParameters,
+  getActionTracesMessage,
+  GetActionTracesMessageBackendParameters,
+  GetActionTracesMessageParameters,
   getTableRowsMessage,
   GetTableRowsMessageBackendParameters,
   GetTableRowsMessageParameters,
@@ -51,11 +51,14 @@ export class EOSClient {
     )
   }
 
-  public getActions(parameters: GetActionsMessageParameters, options: StreamOptions = {}) {
+  public getActionTraces(
+    parameters: GetActionTracesMessageParameters,
+    options: StreamOptions = {}
+  ) {
     options = withDefaults({ listen: true }, options)
-    const messageOptions = getActionsMessage(parameters, options)
+    const messageOptions = getActionTracesMessage(parameters, options)
 
-    return this.sendAndListen<OutboundMessage<GetActionsMessageBackendParameters>>(
+    return this.sendAndListen<OutboundMessage<GetActionTracesMessageBackendParameters>>(
       messageOptions,
       options.requestId!,
       options.listen!,

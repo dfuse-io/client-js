@@ -10,7 +10,7 @@ export interface OutboundMessage<T> {
 
 // The key must be the same as the API type but in upper snake case
 export enum OutboundMessageType {
-  GET_ACTIONS = "get_actions",
+  GET_ACTION_TRACES = "get_action_traces",
   GET_TABLE_ROWS = "get_table_rows",
   GET_TRANSACTION = "get_transaction",
   UNLISTEN = "unlisten"
@@ -33,7 +33,7 @@ export function unlistenMessage(requestId: string) {
   }
 }
 
-export interface GetActionsMessageParameters {
+export interface GetActionTracesMessageParameters {
   account: string
   receiver?: string
   actionName?: string
@@ -43,7 +43,7 @@ export interface GetActionsMessageParameters {
   withInlineTraces?: boolean
 }
 
-export interface GetActionsMessageBackendParameters {
+export interface GetActionTracesMessageBackendParameters {
   account: string
   receiver?: string
   action_name?: string
@@ -53,12 +53,12 @@ export interface GetActionsMessageBackendParameters {
   with_inline_traces?: boolean
 }
 
-export function getActionsMessage(
-  data: GetActionsMessageParameters,
+export function getActionTracesMessage(
+  data: GetActionTracesMessageParameters,
   streamOptions: StreamOptions = {}
-): OutboundMessage<GetActionsMessageBackendParameters> {
+): OutboundMessage<GetActionTracesMessageBackendParameters> {
   return {
-    type: OutboundMessageType.GET_ACTIONS,
+    type: OutboundMessageType.GET_ACTION_TRACES,
     listen: streamOptions.listen,
     req_id: streamOptions.requestId,
     with_progress: streamOptions.withProgress,
