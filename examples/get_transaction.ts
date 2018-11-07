@@ -1,16 +1,22 @@
-/* tslint:disable no-console */
-import { ws } from "./config"
-import { get_transaction } from "@dfuse/eosws-js"
+import { EOSClient } from "../src/client/eos-client"
+import { socketFactory } from "./config"
+import { InboundMessage, InboundMessageType } from "../src/client"
+import { TransactionLifeCycle } from "../src"
 
-ws.onopen = () => {
-  console.log("Subscribing to `get_transaction` stream")
-  ws.send(
-    get_transaction("d9e98cec9fcb5604da38ca250eb22246520bfeee2c35298032c2fbb825eb406d", {
-      fetch: true
-    })
+const client = new EOSClient(socketFactory)
+
+client.connect().then(() => {
+  const request = client.getTransaction(
+    "d9e98cec9fcb5604da38ca250eb22246520bfeee2c35298032c2fbb825eb406d"
   )
-}
 
-ws.onmessage = (message) => {
-  console.log(JSON.parse(message.data.toString()))
-}
+  request!.listen(
+    (type: InboundMessageType, message: InboundMessage<{ lifecycle: TransactionLifeCycle }>) => {
+      console.log("message: ", message.data.lifecycle)
+    }
+  )
+
+  setTimeout(() => {
+    request!.unlisten()
+  }, 4000)
+})

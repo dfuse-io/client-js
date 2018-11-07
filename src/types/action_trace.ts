@@ -5,12 +5,6 @@
 //   "Set quicktype target language"
 
 export interface ActionTrace<T> {
-  type: string
-  req_id: string
-  data: ActionTraceData<T>
-}
-
-export interface ActionTraceData<T> {
   trx_id: string
   idx: number
   depth: number
@@ -19,16 +13,16 @@ export interface ActionTraceData<T> {
 
 export interface Trace<T> {
   receipt: Receipt
-  act: Act<T>
+  act: Action<T>
   elapsed: number
   cpu_usage: number
   console: string
   total_cpu_usage: number
   trx_id: string
-  inline_traces: any[]
+  inline_traces: Array<Trace<any>>
 }
 
-export interface Act<T> {
+export interface Action<T> {
   account: string
   name: string
   authorization: Authorization[]
