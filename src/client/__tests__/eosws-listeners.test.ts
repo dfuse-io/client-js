@@ -1,7 +1,7 @@
-import { EOSListeners, ListenerObject } from "../eos-listeners"
+import { EoswsListeners, ListenerObject } from "../eosws-listeners"
 import { InboundMessageType } from "../inbound"
 
-describe("EOSListeners", function() {
+describe("EoswsListeners", function() {
   describe("addListener", () => {
     it("should add a listener to the list", () => {
       const listenerObject: ListenerObject = {
@@ -12,7 +12,7 @@ describe("EOSListeners", function() {
         }
       }
 
-      const listeners = new EOSListeners()
+      const listeners = new EoswsListeners()
 
       listeners.addListener(listenerObject)
 
@@ -38,7 +38,7 @@ describe("EOSListeners", function() {
         }
       }
 
-      const listeners = new EOSListeners()
+      const listeners = new EoswsListeners()
 
       listeners.addListener(listenerObject1)
       listeners.addListener(listenerObject2)
@@ -69,7 +69,7 @@ describe("EOSListeners", function() {
           console.log("test")
         }
       }
-      const listeners = new EOSListeners()
+      const listeners = new EoswsListeners()
 
       listeners.addListener(listenerObject1)
       listeners.addListener(listenerObject2)

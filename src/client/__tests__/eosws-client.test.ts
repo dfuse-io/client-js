@@ -1,4 +1,4 @@
-import { EOSClient } from "../eos-client"
+import { EoswsClient } from "../eosws-client"
 import { InboundMessage } from "../inbound"
 import {
   GetActionTracesMessageBackendParameters,
@@ -6,7 +6,7 @@ import {
   OutboundMessageType
 } from "../outbound"
 
-describe("EOSClient", function() {
+describe("EoswsClient", function() {
   let controller: ReturnType<typeof createSocketController>
   let factory: () => WebSocket
   let receivedMessages: Array<InboundMessage<any>>
@@ -19,14 +19,14 @@ describe("EOSClient", function() {
 
   describe("constructor", () => {
     it("should build the client", () => {
-      const client = new EOSClient(factory)
+      const client = new EoswsClient(factory)
       expect(client.client).toBeDefined()
     })
   })
 
   describe("connect", () => {
     it("should add a listener", () => {
-      const client = new EOSClient(factory)
+      const client = new EoswsClient(factory)
       spyOn(client.client, "connect")
       client.connect()
       expect(client.client.connect).toHaveBeenCalled()
@@ -35,14 +35,14 @@ describe("EOSClient", function() {
 
   describe("send", () => {
     it("return a listener if listen is set to true", () => {
-      const client = new EOSClient(factory)
+      const client = new EoswsClient(factory)
       expect(
         client.send<OutboundMessage<GetActionTracesMessageBackendParameters>>(basicGetActionMessage)
       ).toEqual({ requestId: "abc", listen: expect.any(Function), unlisten: expect.any(Function) })
     })
 
     it("should return null if listen is set to false", () => {
-      const client = new EOSClient(factory)
+      const client = new EoswsClient(factory)
       expect(
         client.send<OutboundMessage<GetActionTracesMessageBackendParameters>>(
           Object.assign({}, basicGetActionMessage, { listen: false })
@@ -53,7 +53,7 @@ describe("EOSClient", function() {
 
   describe("getActionTraces", () => {
     it("should return the same object as the basic send", () => {
-      const client = new EOSClient(factory)
+      const client = new EoswsClient(factory)
 
       expect(
         client.getActionTraces(
@@ -66,7 +66,7 @@ describe("EOSClient", function() {
 
   describe("getTableRows", () => {
     it("should return the same object as the basic send", () => {
-      const client = new EOSClient(factory)
+      const client = new EoswsClient(factory)
 
       expect(
         client.getTableRows(
@@ -79,7 +79,7 @@ describe("EOSClient", function() {
 
   describe("getTransaction", () => {
     it("should return the same object as the basic send", () => {
-      const client = new EOSClient(factory)
+      const client = new EoswsClient(factory)
 
       expect(client.getTransaction("id", { listen: true, requestId: "abc" })).toEqual({
         requestId: "abc",

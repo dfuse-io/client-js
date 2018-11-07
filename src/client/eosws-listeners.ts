@@ -1,7 +1,7 @@
 import { InboundMessage, InboundMessageType } from "./inbound"
 import { ClientMessageListener } from "./client"
 
-export class EOSListeners {
+export class EoswsListeners {
   public registeredListeners: ListenerObject[] = []
 
   public handleMessage(type: InboundMessageType, message: InboundMessage<any>) {

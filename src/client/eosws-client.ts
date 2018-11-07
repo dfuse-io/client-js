@@ -8,20 +8,19 @@ import {
   GetTableRowsMessageParameters,
   getTransactionMessage,
   OutboundMessage,
-  OutboundMessageType,
   StreamOptions,
   unlistenMessage
 } from "./outbound"
 import { InboundMessage, InboundMessageType } from "./inbound"
-import { EOSListeners } from "./eos-listeners"
+import { EoswsListeners } from "./eosws-listeners"
 
-export class EOSClient {
+export class EoswsClient {
   public client: Client
-  public listeners: EOSListeners
+  public listeners: EoswsListeners
 
   constructor(socketFactory: SocketFactory, options?: ClientOptions) {
     this.client = createClient(socketFactory, options)
-    this.listeners = new EOSListeners()
+    this.listeners = new EoswsListeners()
   }
 
   public connect(): Promise<void> {

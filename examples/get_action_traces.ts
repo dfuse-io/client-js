@@ -1,7 +1,7 @@
 import { socketFactory } from "./config"
-import { EOSClient, InboundMessage, InboundMessageType, ActionTrace } from "@dfuse/eosws-js"
+import { EoswsClient, InboundMessage, InboundMessageType, ActionTrace } from "@dfuse/eosws-js"
 
-const client = new EOSClient(socketFactory)
+const client = new EoswsClient(socketFactory)
 
 interface Transfer {
   from: string

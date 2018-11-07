@@ -1,8 +1,7 @@
 import { socketFactory } from "./config"
-import { EOSClient, OutboundMessageType } from "@dfuse/eosws-js"
-import { InboundMessageType } from "../src/client"
+import { EoswsClient, OutboundMessageType, InboundMessageType } from "@dfuse/eosws-js"
 
-const client = new EOSClient(socketFactory)
+const client = new EoswsClient(socketFactory)
 
 client.connect().then(() => {
   const requestRows = client.getTableRows({ code: "eosio", scope: "eosio", tableName: "global" })

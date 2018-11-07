@@ -1,7 +1,7 @@
-import { EOSClient } from "../src/client/eos-client"
+import { EoswsClient } from "../src/client/eosws-client"
 import { socketFactory } from "./config"
 
-const client = new EOSClient(socketFactory)
+const client = new EoswsClient(socketFactory)
 
 client.connect().then(() => {
   const request = client.getTableRows({ code: "eosio", scope: "eosio", tableName: "global" })
