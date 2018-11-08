@@ -31,18 +31,6 @@ export class EoswsClient {
     return this.client.connect(onMessage)
   }
 
-  public send<T extends OutboundMessage<{}>>(
-    messageOptions: T,
-    ...messageTypes: InboundMessageType[]
-  ) {
-    return this.sendAndListen<T>(
-      messageOptions,
-      messageOptions.req_id === undefined ? messageOptions.type : messageOptions.req_id,
-      messageOptions.listen === undefined ? true : messageOptions.listen,
-      ...messageTypes
-    )
-  }
-
   public getActionTraces(
     parameters: GetActionTracesMessageParameters,
     options: StreamOptions = {}
@@ -50,10 +38,9 @@ export class EoswsClient {
     options = withDefaults({ listen: true }, options)
     const messageOptions = getActionTracesMessage(parameters, options)
 
-    return this.sendAndListen<OutboundMessage<GetActionTracesMessageBackendParameters>>(
-      messageOptions,
+    return this.createListenerWithSend<OutboundMessage<GetActionTracesMessageBackendParameters>>(
       options.requestId!,
-      options.listen!,
+      messageOptions,
       InboundMessageType.ACTION_TRACE
     )
   }
@@ -61,38 +48,22 @@ export class EoswsClient {
   public getTableRows(parameters: GetTableRowsMessageParameters, options: StreamOptions = {}) {
     options = withDefaults({ listen: true }, options)
     const messageOptions = getTableRowsMessage(parameters, options)
-    return this.sendAndListen<OutboundMessage<GetTableRowsMessageBackendParameters>>(
-      messageOptions,
+    return this.createListenerWithSend<OutboundMessage<GetTableRowsMessageBackendParameters>>(
       options.requestId!,
-      options.listen!,
+      messageOptions,
       InboundMessageType.TABLE_DELTA
     )
   }
 
-  public getTransaction(id: string, options: StreamOptions = {}) {
+  public getTransactionLifeCycle(id: string, options: StreamOptions = {}) {
     options = withDefaults({ fetch: true, listen: true }, options)
-    const messageOptions = getTransactionMessage(id, options)
+    const messageOptions = getTransactionMessage({ id }, options)
 
-    return this.sendAndListen<OutboundMessage<{ id: string }>>(
-      messageOptions,
+    return this.createListenerWithSend<OutboundMessage<{ id: string }>>(
       options.requestId!,
-      options.listen!,
+      messageOptions,
       InboundMessageType.TRANSACTION_LIFECYCLE
     )
-  }
-
-  private sendAndListen<T extends OutboundMessage<{}>>(
-    messageOptions: T,
-    requestId: string,
-    listen: boolean,
-    ...messageTypes: InboundMessageType[]
-  ) {
-    if (listen) {
-      return this.createListenerWithSend<T>(requestId!, messageOptions, ...messageTypes)
-    }
-
-    this.client.send(messageOptions)
-    return null
   }
 
   private createListenerWithSend<T extends OutboundMessage<{}>>(
@@ -100,7 +71,7 @@ export class EoswsClient {
     parameters: T,
     ...messageTypes: InboundMessageType[]
   ) {
-    const listen = (callback: ClientMessageListener) => {
+    const onMessage = (callback: ClientMessageListener) => {
       try {
         this.listeners.addListener({ messageTypes, requestId, callback })
       } finally {
@@ -108,8 +79,9 @@ export class EoswsClient {
       }
     }
 
+    // TODO: listen => onMessage
     return {
-      listen,
+      onMessage,
       requestId,
       unlisten: () => this.unlisten(requestId)
     }

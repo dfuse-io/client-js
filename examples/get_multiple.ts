@@ -4,9 +4,14 @@ import { EoswsClient, OutboundMessageType, InboundMessageType } from "@dfuse/eos
 const client = new EoswsClient(socketFactory)
 
 client.connect().then(() => {
-  const requestRows = client.getTableRows({ code: "eosio", scope: "eosio", tableName: "global" })
+  const requestRows = client.getTableRows({
+    json: true,
+    code: "eosio",
+    scope: "eosio",
+    tableName: "global"
+  })
 
-  requestRows!.listen((type: InboundMessageType) => {
+  requestRows.onMessage((type: InboundMessageType) => {
     console.log("received message of type: ", type)
   })
 
@@ -17,12 +22,12 @@ client.connect().then(() => {
 
   const requestActions = client.getActionTraces({ account: "eosio.token", actionName: "transfer" })
 
-  requestActions!.listen((type: InboundMessageType) => {
+  requestActions.onMessage((type: InboundMessageType) => {
     console.log("received message of type: ", type)
   })
 
   setTimeout(() => {
     console.log("unlistening on actions...............")
-    requestActions!.unlisten()
+    requestActions.unlisten()
   }, 2000)
 })

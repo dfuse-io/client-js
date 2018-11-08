@@ -13,7 +13,7 @@ interface Transfer {
 client.connect().then(() => {
   client
     .getActionTraces({ account: "eosio.token", actionName: "transfer" })!
-    .listen((type: InboundMessageType, message: InboundMessage<ActionTrace<Transfer>>) => {
+    .onMessage((type: InboundMessageType, message: InboundMessage<ActionTrace<Transfer>>) => {
       if (type === InboundMessageType.ACTION_TRACE) {
         const transfer = message.data.trace.act.data
 

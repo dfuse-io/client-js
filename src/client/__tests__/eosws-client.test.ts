@@ -33,24 +33,6 @@ describe("EoswsClient", function() {
     })
   })
 
-  describe("send", () => {
-    it("return a listener if listen is set to true", () => {
-      const client = new EoswsClient(factory)
-      expect(
-        client.send<OutboundMessage<GetActionTracesMessageBackendParameters>>(basicGetActionMessage)
-      ).toEqual({ requestId: "abc", listen: expect.any(Function), unlisten: expect.any(Function) })
-    })
-
-    it("should return null if listen is set to false", () => {
-      const client = new EoswsClient(factory)
-      expect(
-        client.send<OutboundMessage<GetActionTracesMessageBackendParameters>>(
-          Object.assign({}, basicGetActionMessage, { listen: false })
-        )
-      ).toEqual(null)
-    })
-  })
-
   describe("getActionTraces", () => {
     it("should return the same object as the basic send", () => {
       const client = new EoswsClient(factory)
@@ -70,18 +52,18 @@ describe("EoswsClient", function() {
 
       expect(
         client.getTableRows(
-          { scope: "test", code: "code", tableName: "test" },
+          { json: true, scope: "test", code: "code", tableName: "test" },
           { listen: true, requestId: "abc" }
         )
       ).toEqual({ requestId: "abc", listen: expect.any(Function), unlisten: expect.any(Function) })
     })
   })
 
-  describe("getTransaction", () => {
+  describe("getTransactionLifeCycle", () => {
     it("should return the same object as the basic send", () => {
       const client = new EoswsClient(factory)
 
-      expect(client.getTransaction("id", { listen: true, requestId: "abc" })).toEqual({
+      expect(client.getTransactionLifeCycle("id", { listen: true, requestId: "abc" })).toEqual({
         requestId: "abc",
         listen: expect.any(Function),
         unlisten: expect.any(Function)

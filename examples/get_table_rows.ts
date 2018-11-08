@@ -4,14 +4,19 @@ import { socketFactory } from "./config"
 const client = new EoswsClient(socketFactory)
 
 client.connect().then(() => {
-  const request = client.getTableRows({ code: "eosio", scope: "eosio", tableName: "global" })
+  const request = client.getTableRows({
+    json: true,
+    code: "eosio",
+    scope: "eosio",
+    tableName: "global"
+  })
 
-  request!.listen((type, message) => {
+  request.onMessage((type, message) => {
     console.log("message: ", message)
   })
 
   setTimeout(() => {
     console.log("unlistening................")
-    request!.unlisten()
+    request.unlisten()
   }, 4000)
 })

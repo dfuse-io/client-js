@@ -4,7 +4,7 @@ export interface OutboundMessage<T> {
   listen?: boolean
   fetch?: boolean
   start_block?: number
-  with_progress?: boolean
+  with_progress?: number
   data: T
 }
 
@@ -12,7 +12,7 @@ export interface OutboundMessage<T> {
 export enum OutboundMessageType {
   GET_ACTION_TRACES = "get_action_traces",
   GET_TABLE_ROWS = "get_table_rows",
-  GET_TRANSACTION = "get_transaction",
+  GET_TRANSACTION_LIFECYCLE = "get_transaction_lifecycle",
   UNLISTEN = "unlisten"
 }
 
@@ -21,7 +21,7 @@ export interface StreamOptions {
   requestId?: string
   startBlock?: number
   fetch?: boolean
-  withProgress?: boolean
+  withProgress?: number
 }
 
 export function unlistenMessage(requestId: string) {
@@ -67,6 +67,7 @@ export function getActionTracesMessage(
       account: data.account,
       receiver: data.receiver,
       action_name: data.actionName,
+      with_inline_traces: data.withInlineTraces,
       with_dbops: data.withDbOps,
       with_dtrxops: data.withDtrxOps,
       with_ramops: data.withRamOps
@@ -78,16 +79,14 @@ export interface GetTableRowsMessageParameters {
   code: string
   scope: string
   tableName: string
-  lowerBound?: string
-  upperBound?: string
+  json: boolean
 }
 
 export interface GetTableRowsMessageBackendParameters {
   code: string
   scope: string
   table_name: string
-  lower_bound?: string
-  upper_bound?: string
+  json: boolean
 }
 
 export function getTableRowsMessage(
@@ -97,28 +96,27 @@ export function getTableRowsMessage(
   return {
     type: OutboundMessageType.GET_TABLE_ROWS,
     req_id: streamOptions.requestId,
-    listen: true,
+    listen: streamOptions.listen,
     fetch: streamOptions.fetch,
     with_progress: streamOptions.withProgress,
     data: {
+      json: data.json,
       code: data.code,
       scope: data.scope,
-      table_name: data.tableName,
-      lower_bound: data.lowerBound,
-      upper_bound: data.upperBound
+      table_name: data.tableName
     }
   }
 }
 
-export function getTransactionMessage(id: string, streamOptions: StreamOptions = {}) {
+export function getTransactionMessage(data: { id: string }, streamOptions: StreamOptions = {}) {
   return {
-    type: OutboundMessageType.GET_TRANSACTION,
-    listen: true,
-    fetch: true,
+    type: OutboundMessageType.GET_TRANSACTION_LIFECYCLE,
+    listen: streamOptions.listen,
+    fetch: streamOptions.fetch,
     req_id: streamOptions.requestId,
     with_progress: streamOptions.withProgress,
     data: {
-      id
+      id: data.id
     }
   }
 }
