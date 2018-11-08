@@ -27,11 +27,8 @@ export type ClientMessageListener = (type: InboundMessageType, message: InboundM
 
 export interface ClientOptions {
   id?: string
-
   autoReconnect?: boolean
-
   onInvalidMessage?: (message: object) => void
-
   onReconnect?: () => void
   onError?: () => void
   onClose?: () => void

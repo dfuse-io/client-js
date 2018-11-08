@@ -1,4 +1,4 @@
-import { createClient, getActionsMessage, InboundMessage, InboundMessageType } from ".."
+import { createClient, getActionTracesMessage, InboundMessage, InboundMessageType } from ".."
 
 describe("client", () => {
   let controller: ReturnType<typeof createSocketController>
@@ -145,7 +145,7 @@ describe("client", () => {
     setTimeout(() => {
       openConnection()
     }, 0)
-    await client.send(getActionsMessage({ account: "test" }))
+    await client.send(getActionTracesMessage({ account: "test" }))
 
     expect(controller.send).toHaveBeenCalledTimes(1)
   })
@@ -161,7 +161,7 @@ describe("client", () => {
       openConnection()
     }, 0)
 
-    await client.send(getActionsMessage({ account: "test" }))
+    await client.send(getActionTracesMessage({ account: "test" }))
     expect(controller.send).toHaveBeenCalledTimes(1)
   })
 
@@ -173,11 +173,11 @@ describe("client", () => {
 
     expect.hasAssertions()
     await expect(client.connect(noopListener)).resolves.toBeUndefined()
-    await client.send(getActionsMessage({ account: "test" }))
+    await client.send(getActionTracesMessage({ account: "test" }, { listen: true }))
 
     expect(controller.send).toHaveBeenCalledTimes(1)
     expect(controller.send).toHaveBeenCalledWith(
-      '{"type":"get_actions","listen":true,"data":{"account":"test"}}'
+      '{"type":"get_action_traces","listen":true,"data":{"account":"test"}}'
     )
   })
 

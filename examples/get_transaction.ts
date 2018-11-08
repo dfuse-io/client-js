@@ -1,9 +1,13 @@
-import { EOSClient } from "../src/client/eos-client"
 import { socketFactory } from "./config"
-import { InboundMessage, InboundMessageType } from "../src/client"
-import { TransactionLifeCycle } from "../src"
+import {
+  EoswsClient,
+  OutboundMessageType,
+  InboundMessageType,
+  TransactionLifeCycle,
+  InboundMessage
+} from "@dfuse/eosws-js"
 
-const client = new EOSClient(socketFactory)
+const client = new EoswsClient(socketFactory)
 
 client.connect().then(() => {
   const request = client.getTransaction(

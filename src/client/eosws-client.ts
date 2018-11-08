@@ -8,44 +8,36 @@ import {
   GetTableRowsMessageParameters,
   getTransactionMessage,
   OutboundMessage,
-  OutboundMessageType,
   StreamOptions,
   unlistenMessage
 } from "./outbound"
 import { InboundMessage, InboundMessageType } from "./inbound"
+import { EoswsListeners } from "./eosws-listeners"
 
-export class EOSClient {
-  private client: Client
-  private registeredListeners: ListenerObject[] = []
+export class EoswsClient {
+  public client: Client
+  public listeners: EoswsListeners
 
   constructor(socketFactory: SocketFactory, options?: ClientOptions) {
     this.client = createClient(socketFactory, options)
-  }
-
-  private registerListener(listener: ListenerObject) {
-    this.registeredListeners.push(listener)
+    this.listeners = new EoswsListeners()
   }
 
   public connect(): Promise<void> {
     const onMessage = (type: InboundMessageType, message: InboundMessage<any>) => {
-      this.registeredListeners.forEach((listener: ListenerObject) => {
-        if (listener.messageTypes.indexOf(type) > -1 && message.req_id === listener.requestId) {
-          listener.callback(type, message)
-        }
-      })
+      this.listeners.handleMessage(type, message)
     }
 
     return this.client.connect(onMessage)
   }
 
   public send<T extends OutboundMessage<{}>>(
-    type: OutboundMessageType,
     messageOptions: T,
     ...messageTypes: InboundMessageType[]
   ) {
     return this.sendAndListen<T>(
       messageOptions,
-      messageOptions.req_id === undefined ? type : messageOptions.req_id,
+      messageOptions.req_id === undefined ? messageOptions.type : messageOptions.req_id,
       messageOptions.listen === undefined ? true : messageOptions.listen,
       ...messageTypes
     )
@@ -110,7 +102,7 @@ export class EOSClient {
   ) {
     const listen = (callback: ClientMessageListener) => {
       try {
-        this.registerListener({ messageTypes, requestId, callback })
+        this.listeners.addListener({ messageTypes, requestId, callback })
       } finally {
         this.client.send(parameters)
       }
@@ -124,6 +116,7 @@ export class EOSClient {
   }
 
   private unlisten(requestId: string) {
+    this.listeners.removeListener(requestId)
     this.client.send(unlistenMessage(requestId))
   }
 }
@@ -134,10 +127,4 @@ function withDefaults(defaults: any, options: StreamOptions): StreamOptions {
     .substr(2)}`
 
   return Object.assign({}, { requestId: randomRequestId }, defaults, options)
-}
-
-interface ListenerObject {
-  messageTypes: InboundMessageType[]
-  requestId: string
-  callback: ClientMessageListener
 }
