@@ -1,6 +1,10 @@
 # Changes (per version)
 
-## 0.11.0 (November 8, 2018)
+## 0.11.1 (November 9, 2018)
+
+- Fixed README to read `getTransactionLifecycle` in the API section.
+
+## 0.11.0 (November 9, 2018)
 
 ### Breaking Changes
 
@@ -8,7 +12,7 @@
 - Renamed `getTransactionMessage` to `getTransactionLifecycleMessage`.
 - Renamed `OutboundMessageType.TRANSACTION` to `OutboundMessageType.TRANSACTION_LIFECYCLE`.
 
-## 0.10.0 (November 8, 2018)
+## 0.10.0 (November 9, 2018)
 
 ### Breaking Changes
 

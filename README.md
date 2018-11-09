@@ -215,7 +215,7 @@ and stop listening by calling `unlisten` on it.
 A [ListenerObject](#listenerobject) on which you can start listening for message related to the stream by calling `listen` on it
 and stop listening by calling `unlisten` on it.
 
-##### `getTransaction`
+##### `getTransactionLifecycle`
 
 ##### Parameters
 
