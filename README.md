@@ -91,6 +91,12 @@ To run the examples, it's quite simple, follow this instructions:
 
 ### Publishing
 
+First, ensure you have a pristine state of your working directory, and check tests & compilation:
+
+    rm -rf dist
+    tsc
+    yarn test
+
 Assuming you have been granted access rights to publish this package, the command to perform is simply:
 
     yarn publish --access public

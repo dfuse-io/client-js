@@ -18,6 +18,19 @@
 
 - Removed all previous code, everything has been replaced by a proper `EoswsClient` object.
 
+#### Package
+
+The previous package was mostly released on name `eosws`. The package has been migrated to
+our `dfuse` branding instead, so first, you will need to update that.
+
+    yarn remove eosws
+    yarn add @dfuse/eosws-js
+
+or using NPM:
+
+    npm uninstall --save @dfuse/eosws-js
+    npm install --save @dfuse/eosws-js
+
 #### Listening
 
 Instead of:
