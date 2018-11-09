@@ -12,7 +12,7 @@ export interface OutboundMessage<T> {
 export enum OutboundMessageType {
   GET_ACTION_TRACES = "get_action_traces",
   GET_TABLE_ROWS = "get_table_rows",
-  GET_TRANSACTION = "get_transaction",
+  GET_TRANSACTION_LIFECYCLE = "get_transaction_lifecycle",
   UNLISTEN = "unlisten"
 }
 
@@ -59,29 +59,28 @@ export function getTableRowsMessage(
   data: GetTableRowsMessageData,
   streamOptions: StreamOptions = {}
 ): OutboundMessage<GetTableRowsMessageData> {
-  return {
-    type: OutboundMessageType.GET_TABLE_ROWS,
-    listen: true,
-    ...streamOptions,
-    data
-  }
+  return createOutboundMessage(
+    OutboundMessageType.GET_TABLE_ROWS,
+    data,
+    { listen: true },
+    streamOptions
+  )
 }
 
-export interface GetTransactionMessageData {
+export interface GetTransactionLifecycleMessageData {
   id: string
 }
 
-export function getTransactionMessage(
-  data: GetTransactionMessageData,
+export function getTransactionLifecycleMessage(
+  data: GetTransactionLifecycleMessageData,
   streamOptions: StreamOptions = {}
-): OutboundMessage<GetTransactionMessageData> {
-  return {
-    type: OutboundMessageType.GET_TRANSACTION,
-    listen: true,
-    fetch: true,
-    ...streamOptions,
-    data
-  }
+): OutboundMessage<GetTransactionLifecycleMessageData> {
+  return createOutboundMessage(
+    OutboundMessageType.GET_TRANSACTION_LIFECYCLE,
+    data,
+    { listen: true, fetch: true },
+    streamOptions
+  )
 }
 
 export interface UnlistenMessageData {

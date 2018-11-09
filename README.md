@@ -110,7 +110,7 @@ You can see various examples in the [examples](./examples) folder. Here the refe
 - [Get Action Traces From Multiple Contracts](./examples/get-action-traces-multi-contracts.ts)
 - [Get Table Rows](./examples/get-table-rows.ts)
 - [Get Table Snapshot Only](./examples/get-table-snapshot-only.ts)
-- [Get Transaction](./examples/get-transaction.ts)
+- [Get Transaction Lifecycle](./examples/get-transaction-lifecycle.ts)
 - [Multi Listen](./examples/multi-listen.ts)
 
 ## API

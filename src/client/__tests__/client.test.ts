@@ -55,7 +55,7 @@ describe("client", function() {
     it("should return the same object as the basic send", () => {
       const client = new EoswsClient(socket)
 
-      expect(client.getTransaction("id", { listen: true, req_id: "abc" })).toEqual({
+      expect(client.getTransactionLifecycle("id", { listen: true, req_id: "abc" })).toEqual({
         reqId: "abc",
         onMessage: expect.any(Function),
         unlisten: expect.any(Function)

@@ -4,10 +4,10 @@ import {
   GetActionTracesMessageData,
   getTableRowsMessage,
   GetTableRowsMessageData,
-  getTransactionMessage,
   OutboundMessage,
   StreamOptions,
-  unlistenMessage
+  unlistenMessage,
+  getTransactionLifecycleMessage
 } from "../message/outbound"
 import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { EoswsListeners } from "./listeners"
@@ -47,13 +47,13 @@ export class EoswsClient {
     return this.createListenerWithSend(getTableRowsMessage(parameters, options))
   }
 
-  public getTransaction(id: string, options: StreamOptions = {}) {
+  public getTransactionLifecycle(id: string, options: StreamOptions = {}) {
     options = mergeDefaultsStreamOptions(options, {
       fetch: true,
       listen: true
     })
 
-    return this.createListenerWithSend(getTransactionMessage({ id }, options))
+    return this.createListenerWithSend(getTransactionLifecycleMessage({ id }, options))
   }
 
   private createListenerWithSend(message: OutboundMessage<any>) {

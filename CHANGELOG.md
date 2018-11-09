@@ -1,5 +1,13 @@
 # Changes (per version)
 
+## 0.11.0 (November 8, 2018)
+
+### Breaking Changes
+
+- Renamed `EoswsClient.getTransaction` to `EoswsClient.getTransactionLifecycle`.
+- Renamed `getTransactionMessage` to `getTransactionLifecycleMessage`.
+- Renamed `OutboundMessageType.TRANSACTION` to `OutboundMessageType.TRANSACTION_LIFECYCLE`.
+
 ## 0.10.0 (November 8, 2018)
 
 ### Breaking Changes

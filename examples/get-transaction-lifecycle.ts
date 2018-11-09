@@ -12,7 +12,7 @@ async function main() {
   const client = new EoswsClient(createEoswsSocket(socketFactory))
   await client.connect()
 
-  const stream = client.getTransaction(
+  const stream = client.getTransactionLifecycle(
     "d9e98cec9fcb5604da38ca250eb22246520bfeee2c35298032c2fbb825eb406d"
   )
 
