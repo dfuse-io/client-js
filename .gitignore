@@ -16,6 +16,9 @@ package-lock.json
 .DS_Store
 Thumbs.db
 
+# VSCode
+.vscode/launch.json
+
 # Yarn
 yarn-error.log
 node_modules/
