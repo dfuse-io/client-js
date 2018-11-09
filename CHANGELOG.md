@@ -35,7 +35,7 @@ or using NPM:
 
 Instead of:
 
-    import { get_actions, parse_actions } from '@dfuse/eosws-js'
+    import { get_actions, parse_actions } from 'eoswjs'
 
     const endpoint = 'mainnet.eos.dfuse.io'
     const origin = 'https://example.com'
@@ -90,7 +90,27 @@ This functionality has been removed completely, you will need to make the checki
 
 If you only want to create messages, the functionality is still available. Instead of doing:
 
-    get_actions
+    import { get_actions } from 'eoswjs'
+
+    // ... WebSocket stuff here
+
+    ws.send(get_actions({ account: 'eosio.token', action_name: 'transfer' }))
+
+Do this instead:
+
+    import { getActionTracesMessage } from '@dfuse/eosws-js'
+
+    ws.send(getActionTracesMessage({ account: 'eosio.token', action_name: 'transfer' }))
+
+Here the list of available message constructors:
+
+- `getActionTracesMessage`
+- `getTableRowsMessage`
+- `getTransactionLifecycleMessage`
+
+**Note** Those constructors are not documented yet as part of the API and might be removed
+in the future, this has not been decided yet. Refer to the [src/message/outbound.ts](./src/message/outbound.ts)
+file for available parameters for each constructors.
 
 ### Improvements
 
