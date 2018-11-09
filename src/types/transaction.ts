@@ -1,8 +1,13 @@
-import { Receipt, ActionTrace, Action } from "./action_trace"
+import { ActionTrace, Action } from "./action_trace"
 
-export interface TransactionLifeCycle {
+export interface TransactionData {
+  lifecycle: TransactionLifecycle
+}
+
+export interface TransactionLifecycle {
   id: string
   transaction: Transaction
+  transaction_status: string
   execution_trace: TransactionTrace
   execution_block_header: BlockHeader
   dtrxops: DTrxOp[]
@@ -76,18 +81,24 @@ export interface RAMOp {
   usage: number
 }
 
+export interface TransactionReceipt {
+  status: string
+  cpu_usage_us: number
+  net_usage_words: number
+}
+
 export interface TransactionTrace {
   id: string
   block_num: number
   block_time: string
   producer_block_id: string
-  receipt: Receipt
+  receipt: TransactionReceipt
   elapsed: number
   net_usage: number
   scheduled: boolean
   action_traces: Array<ActionTrace<any>>
   failed_dtrx_trace: TransactionTrace
-  except: null
+  except: any
 }
 
 export interface BlockHeader {
@@ -99,5 +110,5 @@ export interface BlockHeader {
   action_mroot: string
   schedule_version: number
   new_producers: null
-  header_extensions: []
+  header_extensions: any[]
 }

@@ -1,15 +1,16 @@
-import { EoswsListeners, ListenerObject } from "../eosws-listeners"
-import { InboundMessageType } from "../inbound"
+import { EoswsListeners, ListenerObject } from "../listeners"
+import { InboundMessageType } from "../../message/inbound"
 
-describe("EoswsListeners", function() {
+describe("listeners", function() {
+  const noopCallback = () => {
+    return
+  }
+
   describe("addListener", () => {
     it("should add a listener to the list", () => {
       const listenerObject: ListenerObject = {
-        requestId: "abc",
-        messageTypes: [InboundMessageType.TABLE_DELTA],
-        callback: () => {
-          console.log("test")
-        }
+        reqId: "abc",
+        callback: noopCallback
       }
 
       const listeners = new EoswsListeners()
@@ -23,19 +24,13 @@ describe("EoswsListeners", function() {
   describe("removeListener", () => {
     it("should add a listener to the list", () => {
       const listenerObject1: ListenerObject = {
-        requestId: "abc",
-        messageTypes: [InboundMessageType.TABLE_DELTA],
-        callback: () => {
-          console.log("test")
-        }
+        reqId: "abc",
+        callback: noopCallback
       }
 
       const listenerObject2: ListenerObject = {
-        requestId: "abcd",
-        messageTypes: [InboundMessageType.TABLE_DELTA],
-        callback: () => {
-          console.log("test")
-        }
+        reqId: "abcd",
+        callback: noopCallback
       }
 
       const listeners = new EoswsListeners()
@@ -52,35 +47,28 @@ describe("EoswsListeners", function() {
 
   describe("handleMessage", () => {
     it("should process the callback given the right id and type", () => {
+      const customCallback = jest.fn()
       const listenerObject1: ListenerObject = {
-        requestId: "abc",
-        messageTypes: [InboundMessageType.TABLE_DELTA],
-        callback: () => {
-          console.log("test")
-        }
+        reqId: "abc",
+        callback: customCallback
       }
-
-      spyOn(listenerObject1, "callback")
 
       const listenerObject2: ListenerObject = {
-        requestId: "abcd",
-        messageTypes: [InboundMessageType.TABLE_DELTA],
-        callback: () => {
-          console.log("test")
-        }
+        reqId: "abcd",
+        callback: noopCallback
       }
-      const listeners = new EoswsListeners()
 
+      const listeners = new EoswsListeners()
       listeners.addListener(listenerObject1)
       listeners.addListener(listenerObject2)
 
-      listeners.handleMessage(InboundMessageType.TABLE_DELTA, {
+      listeners.handleMessage({
         type: InboundMessageType.TABLE_DELTA,
         req_id: "abc",
         data: { test: "foo" }
       })
 
-      expect(listenerObject1.callback).toHaveBeenCalledWith(InboundMessageType.TABLE_DELTA, {
+      expect(customCallback).toHaveBeenCalledWith({
         type: InboundMessageType.TABLE_DELTA,
         req_id: "abc",
         data: { test: "foo" }

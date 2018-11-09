@@ -1,6 +1,77 @@
 # Changes (per version)
 
-## In Progress
+## 0.10.0 (November 8, 2018)
+
+### Breaking Changes
+
+- Removed all previous code, everything has been replaced by a proper `EoswsClient` object.
+
+#### Listening
+
+Instead of:
+
+    import { get_actions, parse_actions } from '@dfuse/eosws-js'
+
+    const endpoint = 'mainnet.eos.dfuse.io'
+    const origin = 'https://example.com'
+    const token = '<Paste your API token here>'
+
+    const ws = new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin })
+
+    ws.onopen = () => {
+      ws.send(get_actions({ account: 'eosio.token', action_name: 'transfer' }))
+    }
+
+    ws.onmessage = (message) => {
+      const actions = parse_actions(message.data)
+
+      if (actions) {
+        const { from, to, quantity, memo } = actions.data.trace.act.data
+        console.log(from, to, quantity, memo)
+      }
+    }
+
+You should replace with:
+
+    import { EoswsClient, createEoswsSocket, InboundMessageType } from '@dfuse/eosws-js'
+
+    const endpoint = 'mainnet.eos.dfuse.io'
+    const token = '<Paste your API token here>'
+    const client = new EoswsClient(createEoswsSocket(() =>
+        new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin: 'https://example.com' })))
+
+    client.connect().then(() => {
+        client
+            .getActionTraces({ account: 'eosio.token', action_name: 'transfer' })
+            onMessage((message) => {
+                if (message === InboundMessageType.ACTION_TRACES) {
+                    const { from, to, quantity, memo } = message.data.trace.act.data
+                    console.log(from, to, quantity, memo)
+                }
+            })
+    })
+
+#### Parsing Messages
+
+This functionality has been removed completely, you will need to make the checking by "hand":
+
+    onMessage = (message) => {
+        if (message.type === 'action_trace') {
+            console.log('Action trace, do something useful.')
+        }
+    }
+
+#### Creating Messages
+
+If you only want to create messages, the functionality is still available. Instead of doing:
+
+    get_actions
+
+### Improvements
+
+- Added a proper `EoswsSocket` that automatically re-connects on abnormal closing.
+- Added a proper `EoswsClient` to wrap all operations correctly.
+- Overhaul of examples and supporting documentation.
 
 ## 0.9.2 (October 31, 2018)
 

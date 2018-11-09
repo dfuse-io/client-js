@@ -1,0 +1,86 @@
+import { socketFactory, runMain, waitFor } from "./config"
+import {
+  EoswsClient,
+  InboundMessageType,
+  InboundMessage,
+  createEoswsSocket,
+  TableDeltaData,
+  ActionTraceData,
+  ErrorData
+} from "@dfuse/eosws-js"
+
+interface Transfer {
+  from: string
+  to: string
+  quantity: string
+  memo: string
+}
+
+async function main() {
+  const client = new EoswsClient(createEoswsSocket(socketFactory))
+  await client.connect()
+
+  const tableRowsStream = client.getTableRows({
+    code: "eosio",
+    scope: "eosio",
+    table: "global",
+    json: true
+  })
+
+  const actionTracesStream = client.getActionTraces({
+    account: "eosio.token",
+    action_name: "transfer"
+  })
+
+  tableRowsStream.onMessage((message: InboundMessage<any>) => {
+    switch (message.type) {
+      case InboundMessageType.TABLE_DELTA:
+        const tableDelta = message.data as TableDeltaData
+        console.log(
+          `Table eosio/eosio#global delta operation ${tableDelta.dbop.op} at block #${
+            tableDelta.block_num
+          }`
+        )
+        break
+
+      case InboundMessageType.ERROR:
+        const error = message.data as ErrorData
+        console.log(`Received error: ${error.message} (${error.code})`, error.details)
+        break
+
+      default:
+        console.log(`Unhandled message of type [${message.type}].`)
+    }
+  })
+
+  actionTracesStream.onMessage((message: InboundMessage<any>) => {
+    switch (message.type) {
+      case InboundMessageType.ACTION_TRACE:
+        const transfer = (message.data as ActionTraceData<Transfer>).trace.act.data
+        console.log(
+          `Transfer [${transfer.from} -> ${transfer.to}, ${transfer.quantity}] (${transfer.memo})`
+        )
+        break
+
+      case InboundMessageType.ERROR:
+        const error = message.data as ErrorData
+        console.log(`Received error: ${error.message} (${error.code})`, error.details)
+        break
+
+      default:
+        console.log(`Unhandled message of type [${message.type}].`)
+    }
+  })
+
+  await waitFor(1000)
+  console.log("Unlistening from table row updates...")
+  tableRowsStream.unlisten()
+
+  await waitFor(2000)
+  console.log("Unlistening from action trace updates...")
+  actionTracesStream.unlisten()
+
+  client.disconnect()
+}
+
+runMain(main)

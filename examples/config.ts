@@ -24,3 +24,19 @@ export const socketFactory = (): WebSocket => {
     }
   ) as any) as WebSocket
 }
+
+export function waitFor(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export function runMain(runner: () => Promise<void>) {
+  runner()
+    .then(() => {
+      console.log("Example completed.")
+      process.exit(0)
+    })
+    .catch((error) => {
+      console.log("An untrapped error occurred.", error)
+      process.exit(1)
+    })
+}
