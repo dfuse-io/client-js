@@ -256,7 +256,7 @@ An object containing the various common properties for the Eosws base messaging 
 - `start_block` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Block at which you want to start processing.
   It can be an absolute block number, or a negative value, meaning how many blocks from the current head block on the chain.
   Ex: -2500 means 2500 blocks in the past, relative to the head block.
-- `listem` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to listen for new
+- `listen` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to listen for new
   events upcoming for this type of stream.
 - `fetch` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to fetch an initial snapshot of the requested entity.
 - `with_progress` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Frequency of the progress of blocks processing (within the scope of a req_id).
