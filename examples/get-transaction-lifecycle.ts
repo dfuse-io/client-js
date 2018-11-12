@@ -5,7 +5,8 @@ import {
   InboundMessageType,
   InboundMessage,
   TransactionData,
-  ErrorData
+  ErrorData,
+  ListeningData
 } from "@dfuse/eosws-js"
 
 async function main() {
@@ -22,6 +23,15 @@ async function main() {
         const transactionData = message.data as TransactionData
         console.log(
           `Received transasction lifecycle event for id '${transactionData.lifecycle.id}'`
+        )
+        break
+
+      case InboundMessageType.LISTENING:
+        const listeningResp = message as InboundMessage<ListeningData>
+        console.log(
+          `Received Listening message event, reqID: ${listeningResp.req_id}, next_block: ${
+            listeningResp.data.next_block
+          }`
         )
         break
 

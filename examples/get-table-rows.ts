@@ -5,6 +5,7 @@ import {
   InboundMessageType,
   InboundMessage,
   TableDeltaData,
+  ListeningData,
   ErrorData
 } from "@dfuse/eosws-js"
 
@@ -21,6 +22,15 @@ async function main() {
         console.log(
           `Table eosio/eosio#global delta operation ${tableDelta.dbop.op} at block #${
             tableDelta.block_num
+          }`
+        )
+        break
+
+      case InboundMessageType.LISTENING:
+        const listeningResp = message as InboundMessage<ListeningData>
+        console.log(
+          `Received Listening message event, reqID: ${listeningResp.req_id}, next_block: ${
+            listeningResp.data.next_block
           }`
         )
         break

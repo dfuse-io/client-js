@@ -5,6 +5,7 @@ import {
   InboundMessageType,
   createEoswsSocket,
   ActionTraceData,
+  ListeningData,
   ErrorData
 } from "@dfuse/eosws-js"
 
@@ -27,6 +28,15 @@ async function main() {
           const transfer = (message.data as ActionTraceData<Transfer>).trace.act.data
           console.log(
             `Transfer [${transfer.from} -> ${transfer.to}, ${transfer.quantity}] (${transfer.memo})`
+          )
+          break
+
+        case InboundMessageType.LISTENING:
+          const listeningResp = message as InboundMessage<ListeningData>
+          console.log(
+            `Received Listening message event, reqID: ${listeningResp.req_id}, next_block: ${
+              listeningResp.data.next_block
+            }`
           )
           break
 
