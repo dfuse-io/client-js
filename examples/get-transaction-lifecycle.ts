@@ -22,7 +22,15 @@ async function main() {
       case InboundMessageType.TRANSACTION_LIFECYCLE:
         const transactionData = message.data as TransactionData
         console.log(
-          `Received transasction lifecycle event for id '${transactionData.lifecycle.id}'`
+          `Received transaction lifecycle event for id '${transactionData.lifecycle.id}' with:`,
+          `\n  * Receipt: `,
+          transactionData.lifecycle.execution_trace.receipt,
+          `\n  * Number of DB Operations: `,
+          transactionData.lifecycle.dbops.length,
+          `\n  * Produced by: `,
+          transactionData.lifecycle.execution_block_header.producer,
+          `\n  * Irreversibility of execution: `,
+          transactionData.lifecycle.execution_irreversible
         )
         break
 
