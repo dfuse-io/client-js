@@ -12,7 +12,7 @@ export interface TransactionLifecycle {
   execution_block_header: BlockHeader
   dtrxops: DTrxOp[]
   dbops: DBOp[]
-  ramops: RAMOp[]
+  ramops?: RAMOp[]
   pub_keys: string[]
   created_by?: ExtDTrxOp
   canceled_by?: ExtDTrxOp
@@ -63,6 +63,7 @@ export interface DBOp {
   scope: string
   old: DBRow
   new: DBRow
+  key: string
 }
 
 export interface DBRow {
