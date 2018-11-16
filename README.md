@@ -14,7 +14,7 @@ or using NPM:
 
 ## Quick Start
 
-When targeting a browser (you will need a bundler like Webpack since we only ship for now ES5 modules files):
+When targeting a browser (you will need a bundler like Webpack since we only ship ES5 modules files for now):
 
     import { EoswsClient, createEoswsSocket, InboundMessageType } from '@dfuse/eosws-js'
 
@@ -26,7 +26,7 @@ When targeting a browser (you will need a bundler like Webpack since we only shi
     client.connect().then(() => {
         client
             .getActionTraces({ account: 'eosio.token', action_name: 'transfer' })
-            onMessage((message) => {
+            .onMessage((message) => {
                 if (message === InboundMessageType.ACTION_TRACES) {
                     const { from, to, quantity, memo } = message.data.trace.act.data
                     console.log(from, to, quantity, memo)
@@ -34,12 +34,37 @@ When targeting a browser (you will need a bundler like Webpack since we only shi
             })
     })
 
-If you target a `NodeJS` environment instead, import a proper `WebSocket` client
-implementation (like [ws](https://www.npmjs.com/package/ws)):
+### Node.js
+
+If you target a `Node.js` environment instead, import a proper `WebSocket` client
+implementation.
+
+For now, the library only accepts a `WebSocket` that follows the [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+interface. We will provide adapter for the most used packages in the near feature.
+
+For now, the preferred method in `Node.js` is to use the [ws](https://www.npmjs.com/package/ws).
+This package is compatible with the [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket).
+
+#### Package [ws](https://www.npmjs.com/package/ws)
+
+Ensure the you added [ws](https://www.npmjs.com/package/ws) as a dependency of your project.
+Then, do the following:
 
     import WebSocket from 'ws'
 
     ... rest as the browser example above
+
+#### Package [websocket](https://www.npmjs.com/package/websocket)
+
+The client of this package does **not** follow [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) specification. As such, it's
+currently not supported by this library.
+
+We might provide an adapter in the future, but nothing is planned yet, pull request welcome!
+
+**Note** It can be used standalone (i.e. without this library), if you really need it, but won't
+be able to leverage all the goodies this library provides for you.
+
+### Endpoints
 
 Here the currently available public endpoints:
 
@@ -51,7 +76,7 @@ Here the currently available public endpoints:
 The best way to develop this library is through modifying and adding examples
 to the project.
 
-To run the examples, it's quite simple, follow this instructions:
+To run the examples, it's quite simple, follow these instructions:
 
 1.  Install project dependencies so that you get development tools at the same time:
 
@@ -72,7 +97,7 @@ To run the examples, it's quite simple, follow this instructions:
     source files!
 
     ```
-    yarn build
+    yarn build:watch
     ```
 
 1.  Last step is to add `.env` file containing the [dfuse](https://dfuse.io) API key
@@ -86,7 +111,7 @@ To run the examples, it's quite simple, follow this instructions:
 1.  Final check, let's run an example to ensure everything is working:
 
     ```
-    yarn run ts-node examples/get_actions.ts
+    yarn run ts-node examples/get-action-traces.ts
     ```
 
 ### Publishing
@@ -94,7 +119,7 @@ To run the examples, it's quite simple, follow this instructions:
 First, ensure you have a pristine state of your working directory, and check tests & compilation:
 
     rm -rf dist
-    tsc
+    yarn build
     yarn test
 
 Assuming you have been granted access rights to publish this package, the command to perform is simply:
@@ -155,10 +180,10 @@ A factory method responsible of creating a `EoswsSocket` object that is consumed
 - `id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** An id to identify the actual socket for debugging purposes. (Optional, `undefined` by default)
 - `autoReconnect` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Determine if the socket should auto-reconnect to the remote endpoint when connection is closed abnormally. (Optional, `true` by default).
 - `reconnectDelayInMs` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The amount of time in milliseconds to wait before trying a second reconnection attempt.
-- onInvalidMessage **(message: object) => void** A function that is invoked back when a message of an unknown `type` is returned to the client.
-- onReconnect **(message: object) => void** A function that is invoked back when a successful reconnection happen.
-- onError **(message: object) => void** A function that is invoked back when socket receive an `ErrorEvent` according to the WebSocket protocol.
-- onClose **(message: object) => void** A function that is invoked back when socket receives a `CloseEvent` according to the WebSocket protocol.
+- `onInvalidMessage` **(message: object) => void** A function that is invoked back when a message of an unknown `type` is returned to the client.
+- `onReconnect` **(message: object) => void** A function that is invoked back when a successful reconnection happen.
+- `onError` **(message: object) => void** A function that is invoked back when socket receive an `ErrorEvent` according to the WebSocket protocol.
+- `onClose` **(message: object) => void** A function that is invoked back when socket receives a `CloseEvent` according to the WebSocket protocol.
 
 #### EoswsClient
 
@@ -240,11 +265,9 @@ and `unlisten` on the stream.
 
 ##### Properties
 
-- `listen` **(listener: (message: InboundMessage) => void)** A function that when called, send the starting message to the server
-  and route back all specific stream message for this request back to the `listener` parameter of the project.
+- `listen` **(listener: (message: InboundMessage) => void)** A function that when called, send the starting message to the server and route back all specific stream message for this request back to the `listener` parameter of the project.
 - `reqId` **string** The request id used to map back messages from socket to this specific stream.
-- `unlisten` **()** A function that when called, stop listening from the stream. The `unlisten` message is sent to the remote
-  endpoint to stop it.
+- `unlisten` **()** A function that when called, stop listening from the stream. The `unlisten` message is sent to the remote endpoint to stop it.
 
 #### StreamOptions
 
