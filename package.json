@@ -1,6 +1,6 @@
 {
   "name": "@dfuse/eosws-js",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "description": "`eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
