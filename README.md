@@ -27,7 +27,7 @@ When targeting a browser (you will need a bundler like Webpack since we only shi
         client
             .getActionTraces({ account: 'eosio.token', action_name: 'transfer' })
             .onMessage((message) => {
-                if (message === InboundMessageType.ACTION_TRACES) {
+                if (message.type === InboundMessageType.ACTION_TRACE) {
                     const { from, to, quantity, memo } = message.data.trace.act.data
                     console.log(from, to, quantity, memo)
                 }

@@ -79,8 +79,8 @@ You should replace with:
     client.connect().then(() => {
         client
             .getActionTraces({ account: 'eosio.token', action_name: 'transfer' })
-            onMessage((message) => {
-                if (message === InboundMessageType.ACTION_TRACES) {
+            .onMessage((message) => {
+                if (message.type === InboundMessageType.ACTION_TRACE) {
                     const { from, to, quantity, memo } = message.data.trace.act.data
                     console.log(from, to, quantity, memo)
                 }
