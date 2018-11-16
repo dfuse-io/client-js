@@ -16,7 +16,7 @@ or using NPM:
 
 When targeting a browser (you will need a bundler like Webpack since we only ship ES5 modules files for now):
 
-    import { EoswsClient, createEoswsSocket, InboundMessageType } from '@dfuse/eosws-js'
+    var { EoswsClient, createEoswsSocket, InboundMessageType }  = require('@dfuse/eosws-js')
 
     const endpoint = 'mainnet.eos.dfuse.io'
     const token = '<Paste your API token here>'
@@ -32,6 +32,8 @@ When targeting a browser (you will need a bundler like Webpack since we only shi
                     console.log(from, to, quantity, memo)
                 }
             })
+    }).catch((error) => {
+        console.log('Unable to connect to dfuse endpoint.', error)
     })
 
 ### Node.js
@@ -50,7 +52,7 @@ This package is compatible with the [WebSocket Web API](https://developer.mozill
 Ensure the you added [ws](https://www.npmjs.com/package/ws) as a dependency of your project.
 Then, do the following:
 
-    import WebSocket from 'ws'
+    var WebSocket = require('ws')
 
     ... rest as the browser example above
 
