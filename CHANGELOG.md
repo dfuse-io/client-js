@@ -1,5 +1,12 @@
 # Changes (per version)
 
+## 0.11.2 (November 16, 2018)
+
+- Fixed version
+- Fix DBOp interface
+- Fix client connection flow
+- Update examples
+
 ## 0.11.1 (November 9, 2018)
 
 - Fixed README to read `getTransactionLifecycle` in the API section.
