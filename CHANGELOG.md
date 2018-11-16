@@ -1,5 +1,9 @@
 # Changes (per version)
 
+## 0.11.3 (November 16, 2018)
+
+- Reverted `Fix client connection flow`, this was preventing examples from running correctly.
+
 ## 0.11.2 (November 16, 2018)
 
 - Fixed version
