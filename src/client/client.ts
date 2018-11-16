@@ -15,7 +15,6 @@ import { EoswsListeners } from "./listeners"
 export class EoswsClient {
   public socket: EoswsSocket
   public listeners: EoswsListeners
-  public isConnected = false
 
   constructor(socket: EoswsSocket) {
     this.socket = socket
@@ -24,7 +23,6 @@ export class EoswsClient {
 
   public connect(): Promise<void> {
     return this.socket.connect((message: InboundMessage<any>) => {
-      this.isConnected = true
       this.listeners.handleMessage(message)
     })
   }
@@ -59,12 +57,7 @@ export class EoswsClient {
   }
 
   private createListenerWithSend(message: OutboundMessage<any>) {
-    if (!this.isConnected) {
-      this.connect()
-    }
-
     const reqId = message.req_id!
-
     const onMessage = (callback: SocketMessageListener) => {
       this.listeners.addListener({ reqId, callback })
       this.socket.send(message)

@@ -49,7 +49,7 @@ type Rejecter = (reason?: any) => void
 const DEFAULT_RECONNECT_DELAY_IN_MS = 5000
 
 class DefaultEoswsSocket implements EoswsSocket {
-  public isConnected = false
+  public isConnected: boolean = false
   public socket?: any // FIXME: See comment on type `WebSocketFactory` for details
 
   private socketFactory: WebSocketFactory
@@ -104,7 +104,7 @@ class DefaultEoswsSocket implements EoswsSocket {
     }
 
     if (!this.isConnected) {
-      this.debug("Socket not connected, unable to send message correctly.")
+      this.debug("Socket not connected, unable to send message correclty.")
       return false
     }
 
@@ -174,7 +174,6 @@ class DefaultEoswsSocket implements EoswsSocket {
 
   private onSocketMessage = (event: MessageEvent) => {
     let payload: any
-
     try {
       payload = JSON.parse(event.data) as { [key: string]: any }
     } catch (error) {
