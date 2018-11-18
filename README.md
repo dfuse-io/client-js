@@ -16,25 +16,27 @@ or using NPM:
 
 When targeting a browser (you will need a bundler like Webpack since we only ship ES5 modules files for now):
 
-    var { EoswsClient, createEoswsSocket, InboundMessageType }  = require('@dfuse/eosws-js')
+```js
+const { EoswsClient, createEoswsSocket, InboundMessageType }  = require('@dfuse/eosws-js')
 
-    const endpoint = 'mainnet.eos.dfuse.io'
-    const token = '<Paste your API token here>'
-    const client = new EoswsClient(createEoswsSocket(() =>
-        new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin: 'https://example.com' })))
+const endpoint = 'mainnet.eos.dfuse.io'
+const token = '<Paste your API token here>'
+const client = new EoswsClient(createEoswsSocket(() =>
+    new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin: 'https://example.com' })))
 
-    client.connect().then(() => {
-        client
-            .getActionTraces({ account: 'eosio.token', action_name: 'transfer' })
-            .onMessage((message) => {
-                if (message.type === InboundMessageType.ACTION_TRACE) {
-                    const { from, to, quantity, memo } = message.data.trace.act.data
-                    console.log(from, to, quantity, memo)
-                }
-            })
-    }).catch((error) => {
-        console.log('Unable to connect to dfuse endpoint.', error)
-    })
+client.connect().then(() => {
+    client
+        .getActionTraces({ account: 'eosio.token', action_name: 'transfer' })
+        .onMessage((message) => {
+            if (message.type === InboundMessageType.ACTION_TRACE) {
+                const { from, to, quantity, memo } = message.data.trace.act.data
+                console.log(from, to, quantity, memo)
+            }
+        })
+}).catch((error) => {
+    console.log('Unable to connect to dfuse endpoint.', error)
+})
+```
 
 ### Node.js
 
@@ -52,9 +54,11 @@ This package is compatible with the [WebSocket Web API](https://developer.mozill
 Ensure the you added [ws](https://www.npmjs.com/package/ws) as a dependency of your project.
 Then, do the following:
 
-    var WebSocket = require('ws')
+```js
+const WebSocket = require('ws')
 
-    ... rest as the browser example above
+// ... rest as the browser example above
+```
 
 #### Package [websocket](https://www.npmjs.com/package/websocket)
 
