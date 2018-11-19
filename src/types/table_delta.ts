@@ -1,8 +1,7 @@
 export interface TableDeltaData<T = { [key: string]: any }> {
   block_num: number
   dbop: DbOp<T>
-  redo: boolean
-  undo: boolean
+  step: string
 }
 
 export interface DbOp<T> {

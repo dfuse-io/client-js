@@ -22,7 +22,7 @@ async function main() {
         console.log(
           `Table eosio/eosio#global delta operation ${tableDelta.dbop.op} at block #${
             tableDelta.block_num
-          }`
+          } step: ${tableDelta.step}`
         )
         break
 
