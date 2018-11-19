@@ -72,14 +72,18 @@ class DefaultEoswsSocket implements EoswsSocket {
   }
 
   public async connect(listener: SocketMessageListener): Promise<void> {
+    this.debug("About to connect to remote endpoint.")
+
     this.listener = listener
     this.connectionPromise = new Promise<void>((resolve, reject) => {
+      this.debug("Connection promise started, creating and opening socket.")
       this.socket = this.createAnOpenSocket(
         this.onSocketConnectOpenFactory(resolve),
         this.onSocketErrorFactory(reject)
       )
     })
 
+    this.debug("Connection to remote endpoint initialized, returning promise to caller.")
     return this.connectionPromise
   }
 
@@ -104,7 +108,7 @@ class DefaultEoswsSocket implements EoswsSocket {
     }
 
     if (!this.isConnected) {
-      this.debug("Socket not connected, unable to send message correclty.")
+      this.debug("Socket not connected, unable to send message correctly.")
       return false
     }
 
