@@ -41,6 +41,17 @@ describe("socket", () => {
     expect(socket.isConnected).toBeTruthy()
   })
 
+  it("handle 2 connections", async () => {
+    const mockFactory = jest.fn().mockImplementation(factory)
+
+    const socket = createEoswsSocket(mockFactory)
+
+    expect.hasAssertions()
+    socket.connect(noopListener)
+    socket.connect(noopListener)
+    expect(mockFactory).toHaveBeenCalledTimes(1)
+  })
+
   it("handles connection error properly", async () => {
     const socket = createEoswsSocket(factory)
     setTimeout(() => rejectConnection({ reason: "test" }), 0)
