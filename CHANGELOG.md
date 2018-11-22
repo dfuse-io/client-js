@@ -1,5 +1,13 @@
 # Changes (per version)
 
+## In progress
+
+- TBA
+
+## 0.11.4 (November 22, 2018)
+
+- Fix back to back connect()
+
 ## 0.11.3 (November 16, 2018)
 
 - Reverted `Fix client connection flow`, this was preventing examples from running correctly.
