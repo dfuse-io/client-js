@@ -27,7 +27,8 @@
     "prepare": "tsc",
     "lint": "tslint **/*.ts",
     "lint:specific": "tslint",
-    "test": "jest"
+    "test": "jest",
+    "examples": "yarn run ts-node examples/get-table-rows.ts && yarn run ts-node examples/multi-listen.ts && yarn run ts-node examples/get-action-traces.ts && yarn run ts-node examples/get-table-snapshot-only.ts && yarn run ts-node examples/get-action-traces-multi-contracts.ts && yarn run ts-node examples/get-transaction-lifecycle.ts"
   },
   "husky": {
     "hooks": {
