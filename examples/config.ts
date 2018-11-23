@@ -8,7 +8,7 @@ export let DFUSE_IO_ENDPOINT = process.env.DFUSE_IO_ENDPOINT
 export const DFUSE_IO_API_KEY = process.env.DFUSE_IO_API_KEY
 
 if (!DFUSE_IO_ENDPOINT) {
-  DFUSE_IO_ENDPOINT = "kylin.eos.dfuse.io"
+  DFUSE_IO_ENDPOINT = "mainnet.eos.dfuse.io"
 }
 
 if (!DFUSE_IO_API_KEY) {
