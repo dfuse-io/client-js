@@ -13,7 +13,7 @@ async function main() {
   await client.connect()
 
   const stream = client.getTableRows(
-    { code: "eosio", scope: "eosio", table: "global" },
+    { code: "eosio.token", scope: "eosio.token", table: "accounts" },
     { listen: false, fetch: true }
   )
 
