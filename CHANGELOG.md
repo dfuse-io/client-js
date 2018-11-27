@@ -2,7 +2,17 @@
 
 ## In progress
 
-- TBA
+- Updated multi contracts example to use the new `accounts` parameter.
+- Updated library to support new version of `get_action_traces` (added `accounts`, `receivers` and `action_names`).
+
+### Deprecations
+
+Those are deprecation notices, they are still available in the current pre-release major version
+(`0.11.x` in this case). You are welcome to upgrade right now however.
+
+- Renamed `GetActionTracesMessageData#account` to `GetActionTracesMessageData#accounts`.
+- Renamed `GetActionTracesMessageData#receiver` to `GetActionTracesMessageData#receivers`.
+- Renamed `GetActionTracesMessageData#action_name` to `GetActionTracesMessageData#action_names`.
 
 ## 0.11.4 (November 22, 2018)
 
