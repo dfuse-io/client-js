@@ -13,18 +13,18 @@ const CONTRACTS = ["eosmechanics", "eosknightsio", "eosiotokener"]
 
 const onMessage = (message: InboundMessage<any>) => {
   switch (message.type) {
+    case InboundMessageType.LISTENING:
+      const listeningMessage = message as InboundMessage<ListeningData>
+      console.log(
+        `Received Listening message event (reqID: ${listeningMessage.req_id}, next_block: ${
+          listeningMessage.data.next_block
+        })`
+      )
+      break
+
     case InboundMessageType.ACTION_TRACE:
       const action = (message.data as ActionTraceData<any>).trace.act
       console.log(`Action "${action.name}" received for account "${action.account}".`)
-      break
-
-    case InboundMessageType.LISTENING:
-      const listeningResp = message as InboundMessage<ListeningData>
-      console.log(
-        `Received Listening message event, reqID: ${listeningResp.req_id}, next_block: ${
-          listeningResp.data.next_block
-        }`
-      )
       break
 
     case InboundMessageType.ERROR:
@@ -41,9 +41,7 @@ async function main() {
   const client = new EoswsClient(createEoswsSocket(socketFactory))
   await client.connect()
 
-  for (const account of CONTRACTS) {
-    client.getActionTraces({ account }).onMessage(onMessage)
-  }
+  client.getActionTraces({ accounts: CONTRACTS.join("|") }).onMessage(onMessage)
 
   console.log("Listening for messages for 20 seconds.")
   await waitFor(20000)

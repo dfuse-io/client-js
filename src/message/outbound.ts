@@ -25,9 +25,12 @@ export interface StreamOptions {
 }
 
 export interface GetActionTracesMessageData {
-  account: string
-  receiver?: string
-  action_name?: string
+  account?: string // @deprecated, will be removed in next major bump
+  accounts?: string
+  receiver?: string // @deprecated, will be removed in next major bump
+  receivers?: string
+  action_name?: string // @deprecated, will be removed in next major bump
+  action_names?: string
   with_dbops?: boolean
   with_dtrxops?: boolean
   with_ramops?: boolean
