@@ -1,5 +1,7 @@
 # Changelog
 
+## In Progress
+
 ## 0.11.5 (November 28, 2018)
 
 - Updated multi contracts example to use the new `accounts` parameter.
