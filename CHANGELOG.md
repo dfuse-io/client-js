@@ -1,6 +1,6 @@
-# Changes (per version)
+# Changelog
 
-## In progress
+## 0.11.5 (November 28, 2018)
 
 - Updated multi contracts example to use the new `accounts` parameter.
 - Updated library to support new version of `get_action_traces` (added `accounts`, `receivers` and `action_names`).
