@@ -1,6 +1,6 @@
 # Changelog
 
-## In Progress
+## 0.11.6 (December 02, 2018)
 
 - Fixed progress message not forwarded correctly to message handler.
 - Fixed `with_progress` accepting a `number` and not a `boolean`.
