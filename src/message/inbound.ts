@@ -10,6 +10,7 @@ export enum InboundMessageType {
   ERROR = "error",
   LISTENING = "listening",
   PING = "ping",
+  PROGRESS = "progress",
   UNLISTENED = "unlistened",
   TABLE_DELTA = "table_delta",
   TABLE_SNAPSHOT = "table_snapshot",

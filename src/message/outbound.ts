@@ -4,7 +4,7 @@ export interface OutboundMessage<T> {
   listen?: boolean
   fetch?: boolean
   start_block?: number
-  with_progress?: boolean
+  with_progress?: number
   data: T
 }
 
@@ -21,7 +21,7 @@ export interface StreamOptions {
   req_id?: string
   start_block?: number
   fetch?: boolean
-  with_progress?: boolean
+  with_progress?: number
 }
 
 export interface GetActionTracesMessageData {

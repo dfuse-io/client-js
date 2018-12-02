@@ -2,6 +2,9 @@
 
 ## In Progress
 
+- Fixed progress message not forwarded correctly to message handler.
+- Fixed `with_progress` accepting a `number` and not a `boolean`.
+
 ## 0.11.5 (November 28, 2018)
 
 - Updated multi contracts example to use the new `accounts` parameter.
