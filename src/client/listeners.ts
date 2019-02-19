@@ -5,6 +5,8 @@ import { SocketMessageListener } from "./socket"
 export interface ListenerObject {
   reqId: string
   callback: SocketMessageListener
+  blockNum?: number
+  blockId?: string
 }
 
 export class EoswsListeners {
@@ -29,8 +31,21 @@ export class EoswsListeners {
         message.req_id,
         message.type
       )
+      if (message.type === "progress") {
+        this.saveBlockProgress(message.req_id, message.data.block_num, message.data.block_id)
+      }
       listener.callback(message)
     })
+  }
+
+  public saveBlockProgress(reqId: string, blockNum?: number, blockID?: string) {
+    const listener = this.registeredListeners.find((ref: ListenerObject) => {
+      return reqId !== ref.reqId
+    })
+    if (listener && blockNum && blockID) {
+      listener.blockNum = blockNum
+      listener.blockId = blockID
+    }
   }
 
   public addListener(listener: ListenerObject) {
