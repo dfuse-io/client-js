@@ -12,6 +12,18 @@ import {
 import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { EoswsListeners } from "./listeners"
 
+/**
+ * Represents a single WebSocket stream operation against the client. This is what
+ * you actually as return type of calling one of the listening operator like
+ * `getActionTraces`, `getTableRows`, `getTransactionLifecycle` and other
+ * stream listening method.
+ */
+export interface EoswsStream {
+  onMessage: (callback: SocketMessageListener) => void
+  reqId: string
+  unlisten: () => void
+}
+
 export class EoswsClient {
   public socket: EoswsSocket
   public listeners: EoswsListeners
@@ -27,11 +39,22 @@ export class EoswsClient {
     })
   }
 
+  public async reconnect(): Promise<void> {
+    await this.disconnect()
+    await this.connect()
+
+    // Re-subscribe to all streams!
+    this.listeners.resubscribeAll(this)
+  }
+
   public disconnect(): Promise<void> {
     return this.socket.disconnect()
   }
 
-  public getActionTraces(data: GetActionTracesMessageData, options: StreamOptions = {}) {
+  public getActionTraces(
+    data: GetActionTracesMessageData,
+    options: StreamOptions = {}
+  ): EoswsStream {
     options = mergeDefaultsStreamOptions(options, {
       listen: true
     })
@@ -39,7 +62,10 @@ export class EoswsClient {
     return this.createListenerWithSend(getActionTracesMessage(data, options))
   }
 
-  public getTableRows(parameters: GetTableRowsMessageData, options: StreamOptions = {}) {
+  public getTableRows(
+    parameters: GetTableRowsMessageData,
+    options: StreamOptions = {}
+  ): EoswsStream {
     options = mergeDefaultsStreamOptions(options, {
       listen: true
     })
@@ -47,7 +73,7 @@ export class EoswsClient {
     return this.createListenerWithSend(getTableRowsMessage(parameters, options))
   }
 
-  public getTransactionLifecycle(id: string, options: StreamOptions = {}) {
+  public getTransactionLifecycle(id: string, options: StreamOptions = {}): EoswsStream {
     options = mergeDefaultsStreamOptions(options, {
       fetch: true,
       listen: true
@@ -59,7 +85,7 @@ export class EoswsClient {
   private createListenerWithSend(message: OutboundMessage<any>) {
     const reqId = message.req_id!
     const onMessage = (callback: SocketMessageListener) => {
-      this.listeners.addListener({ reqId, callback })
+      this.listeners.addListener({ reqId, callback, subscribtionMessage: message })
       this.socket.send(message)
     }
 
