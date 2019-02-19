@@ -16,7 +16,7 @@ if (!DFUSE_IO_API_KEY) {
 }
 
 const origin = "https://github.com/dfuse-io/eosws-js"
-export const socketFactory = (): WebSocket => {
+export const socketFactory = async (): Promise<WebSocket> => {
   return (new WebSocketClient(`wss://${DFUSE_IO_ENDPOINT}/v1/stream?token=${DFUSE_IO_API_KEY}`, {
     origin
   }) as any) as WebSocket

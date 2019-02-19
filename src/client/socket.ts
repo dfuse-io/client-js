@@ -9,7 +9,7 @@ import { InboundMessage, InboundMessageType } from "../message/inbound"
 //        and the library compilation will fail even if the type def is in
 //        our own library. Not sure what is the best course of action to
 //        fix this!
-export type WebSocketFactory = () => any
+export type WebSocketFactory = () => Promise<any>
 
 export function createEoswsSocket(webSocketFactory: WebSocketFactory, options: SocketOptions = {}) {
   return new DefaultEoswsSocket(
@@ -81,10 +81,16 @@ class DefaultEoswsSocket implements EoswsSocket {
     this.listener = listener
     this.connectionPromise = new Promise<void>((resolve, reject) => {
       this.debug("Connection promise started, creating and opening socket.")
-      this.socket = this.createAnOpenSocket(
+      if (this.isConnected) {
+        return
+      }
+      return this.createAnOpenSocket(
         this.onSocketConnectOpenFactory(resolve),
         this.onSocketErrorFactory(reject)
-      )
+      ).then((socket: any) => {
+        this.socket = socket
+        return Promise.resolve(socket)
+      })
     })
 
     this.debug("Connection to remote endpoint initialized, returning promise to caller.")
@@ -121,11 +127,12 @@ class DefaultEoswsSocket implements EoswsSocket {
     return true
   }
 
-  private createAnOpenSocket<T>(
+  private async createAnOpenSocket<T>(
     onSocketOpen: () => void,
     onSocketError: (event: Event) => void
-  ): WebSocket {
-    const socket = this.socketFactory()
+  ): Promise<WebSocket> {
+    let socket: WebSocket
+    socket = await this.socketFactory()
     socket.onopen = onSocketOpen
     socket.onerror = onSocketError
     socket.onclose = this.onSocketClose
