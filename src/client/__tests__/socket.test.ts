@@ -4,7 +4,7 @@ import { getActionTracesMessage } from "../../message/outbound"
 
 describe("socket", () => {
   let mockedWebSocket: ReturnType<typeof createSocketController>
-  let factory: () => WebSocket
+  let factory: () => Promise<WebSocket>
   let receivedMessages: Array<InboundMessage<any>>
   const noopListener = () => null
   const accumulatingListener = (message: InboundMessage<any>) => {
@@ -25,11 +25,11 @@ describe("socket", () => {
 
   it("configures handlers on connect", () => {
     const socket = createEoswsSocket(factory)
-    socket.connect(noopListener)
-
-    expect(mockedWebSocket.onclose).toBeDefined()
-    expect(mockedWebSocket.onerror).toBeDefined()
-    expect(mockedWebSocket.onopen).toBeDefined()
+    socket.connect(noopListener).then(() => {
+      expect(mockedWebSocket.onclose).toBeDefined()
+      expect(mockedWebSocket.onerror).toBeDefined()
+      expect(mockedWebSocket.onopen).toBeDefined()
+    })
   })
 
   it("switch to connected on successful connect", async () => {
@@ -275,15 +275,17 @@ describe("socket", () => {
     const onReconnect = jest.fn()
     const socket = createEoswsSocket(factory, { onReconnect })
 
-    expect.hasAssertions()
-    socket.connect(noopListener)
-    socket.send(getActionTracesMessage({ account: "test1" }))
-    socket.send(getActionTracesMessage({ account: "test2" }))
-    socket.send(getActionTracesMessage({ account: "test3" }))
+    socket.connect(noopListener).then(() => {
+      expect.hasAssertions()
 
-    openConnection()
+      socket.send(getActionTracesMessage({ account: "test1" }))
+      socket.send(getActionTracesMessage({ account: "test2" }))
+      socket.send(getActionTracesMessage({ account: "test3" }))
 
-    expect(onReconnect).toHaveBeenCalledTimes(0)
+      openConnection()
+
+      expect(onReconnect).toHaveBeenCalledTimes(0)
+    })
   })
 
   const createHandlerExecutor = (handlerName: string) => {

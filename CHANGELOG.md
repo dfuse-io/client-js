@@ -2,6 +2,12 @@
 
 ## In Progress
 
+## 0.12.0 (February 21 2019)
+
+- pre-release tag
+- Make socketFactory async
+- Prepare reconnection pattern
+
 ## 0.11.6 (December 02, 2018)
 
 - Fixed progress message not forwarded correctly to message handler.
