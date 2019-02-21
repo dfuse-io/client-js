@@ -12,13 +12,35 @@ import {
 import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { EoswsListeners } from "./listeners"
 
+export interface ApiTokenInfo {
+  token: string
+  expires_at: number
+}
+
+export type HttpClient = <T = any>(url: string, options?: any) => Promise<T>
+
 export class EoswsClient {
   public socket: EoswsSocket
   public listeners: EoswsListeners
+  public baseUrl: string
+  private httpClient: HttpClient = fetch
+  private apiTokenInfo?: ApiTokenInfo
 
-  constructor(socket: EoswsSocket) {
+  constructor(socket: EoswsSocket, baseUrl: string, httpClient?: HttpClient) {
     this.socket = socket
     this.listeners = new EoswsListeners()
+    this.baseUrl = baseUrl
+    if (httpClient) {
+      this.httpClient = httpClient
+    }
+  }
+
+  public async getNewApiToken(apiKey: string): Promise<ApiTokenInfo> {
+    this.apiTokenInfo = await this.httpClient<ApiTokenInfo>(`${this.baseUrl}/v1/auth/issue`, {
+      method: "post",
+      body: JSON.stringify({ api_key: apiKey })
+    })
+    return this.apiTokenInfo
   }
 
   public connect(): Promise<void> {
