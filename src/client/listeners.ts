@@ -1,10 +1,13 @@
 import debugFactory, { IDebugger } from "debug"
-import { InboundMessage, InboundMessageType } from "../message/inbound"
+import { InboundMessage } from "../message/inbound"
 import { SocketMessageListener } from "./socket"
+import { OutboundMessage } from "../message/outbound"
+import { EoswsClient } from "./client"
 
 export interface ListenerObject {
   reqId: string
   callback: SocketMessageListener
+  subscriptionMessage: OutboundMessage<any>
   blockNum?: number
   blockId?: string
 }
@@ -46,6 +49,13 @@ export class EoswsListeners {
       listener.blockNum = blockNum
       listener.blockId = blockID
     }
+  }
+
+  public resubscribeAll(client: EoswsClient) {
+    this.registeredListeners.forEach((listener: ListenerObject) => {
+      this.debug("Re-subscribing to listener with request id [%s].", listener.reqId)
+      client.socket.send(listener.subscriptionMessage)
+    })
   }
 
   public addListener(listener: ListenerObject) {
