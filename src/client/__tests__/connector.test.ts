@@ -6,7 +6,7 @@ import fetch from "jest-fetch-mock"
 import { createMockEoswsSocket } from "./mocks"
 import { RefreshScheduler } from "../refresh-scheduler"
 
-describe("ApiTokenStore", function() {
+describe("EoswsConnector", function() {
   describe("isExpiring", () => {
     it("should return true when it is expiring", () => {
       spyOn(Date, "now").and.returnValue(12120000)
@@ -27,6 +27,32 @@ describe("ApiTokenStore", function() {
       const connector = getTestConnector()
 
       expect(connector.isExpiring({ token: "token", expires_at: 13000 })).toBe(false)
+    })
+  })
+
+  describe("connect", () => {
+    it("should call getToken first if nothing in store", () => {
+      spyOn(Date, "now").and.returnValue(12120000)
+      const connector = getTestConnector()
+      spyOn(connector, "getToken").and.returnValue(
+        Promise.resolve({ expires_at: 13000, token: "token" })
+      )
+      spyOn(connector.client, "connect")
+      return connector.connect().then(() => {
+        expect(connector.getToken).toHaveBeenCalled()
+        expect(connector.client.connect).toHaveBeenCalled()
+      })
+    })
+
+    it("should connect with token from store if it exists", () => {
+      spyOn(Date, "now").and.returnValue(12120000)
+      const connector = getTestConnector()
+      spyOn(connector.tokenStorage, "get").and.returnValue({ expires_at: 13000, token: "token" })
+      spyOn(connector.client, "connect")
+
+      return connector.connect().then(() => {
+        expect(connector.client.connect).toHaveBeenCalled()
+      })
     })
   })
 

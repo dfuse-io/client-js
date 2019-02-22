@@ -1,5 +1,5 @@
 import debugFactory, { IDebugger } from "debug"
-import { InboundMessage } from "../message/inbound"
+import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { SocketMessageListener } from "./socket"
 import { OutboundMessage } from "../message/outbound"
 import { EoswsClient } from "./client"
@@ -34,7 +34,7 @@ export class EoswsListeners {
         message.req_id,
         message.type
       )
-      if (message.type === "progress") {
+      if (message.type === InboundMessageType.PROGRESS) {
         this.saveBlockProgress(message.req_id, message.data.block_num, message.data.block_id)
       }
       listener.callback(message)
@@ -43,7 +43,7 @@ export class EoswsListeners {
 
   public saveBlockProgress(reqId: string, blockNum?: number, blockID?: string) {
     const listener = this.registeredListeners.find((ref: ListenerObject) => {
-      return reqId !== ref.reqId
+      return reqId === ref.reqId
     })
     if (listener && blockNum && blockID) {
       listener.blockNum = blockNum
