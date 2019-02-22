@@ -54,7 +54,11 @@ export class EoswsListeners {
   public resubscribeAll(client: EoswsClient) {
     this.registeredListeners.forEach((listener: ListenerObject) => {
       this.debug("Re-subscribing to listener with request id [%s].", listener.reqId)
-      client.socket.send(listener.subscriptionMessage)
+      if (listener.blockNum) {
+        client.socket.send({ ...listener.subscriptionMessage, start_block: listener.blockNum })
+      } else {
+        client.socket.send(listener.subscriptionMessage)
+      }
     })
   }
 

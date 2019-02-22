@@ -1,6 +1,7 @@
 import { createEoswsSocket } from "../socket"
 import { InboundMessage, InboundMessageType } from "../../message/inbound"
 import { getActionTracesMessage } from "../../message/outbound"
+import { ApiTokenStorage } from "../api-token-storage"
 
 describe("socket", () => {
   let mockedWebSocket: ReturnType<typeof createSocketController>
@@ -11,6 +12,9 @@ describe("socket", () => {
     receivedMessages.push(message)
   }
 
+  const storage = new ApiTokenStorage()
+  storage.set({ token: "token", expires_at: 1234500 })
+
   beforeEach(() => {
     mockedWebSocket = createSocketController()
     factory = () => mockedWebSocket as any
@@ -19,12 +23,15 @@ describe("socket", () => {
 
   it("starts disconnected by default", () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
 
     expect(socket.isConnected).toBeFalsy()
   })
 
   it("configures handlers on connect", () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     socket.connect(noopListener).then(() => {
       expect(mockedWebSocket.onclose).toBeDefined()
       expect(mockedWebSocket.onerror).toBeDefined()
@@ -34,6 +41,8 @@ describe("socket", () => {
 
   it("switch to connected on successful connect", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => openConnection(), 0)
 
     expect.hasAssertions()
@@ -45,6 +54,7 @@ describe("socket", () => {
     const mockFactory = jest.fn().mockImplementation(factory)
 
     const socket = createEoswsSocket(mockFactory)
+    socket.setTokenStorage(storage)
 
     expect.hasAssertions()
     socket.connect(noopListener)
@@ -54,6 +64,8 @@ describe("socket", () => {
 
   it("handles connection error properly", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => rejectConnection({ reason: "test" }), 0)
 
     expect.hasAssertions()
@@ -64,6 +76,8 @@ describe("socket", () => {
   it("notifies onReconnect when reconnection", async () => {
     const onReconnect = jest.fn()
     const socket = createEoswsSocket(factory, { reconnectDelayInMs: 0, onReconnect })
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
       closeConnection({ code: 1001 })
@@ -82,6 +96,8 @@ describe("socket", () => {
   it("notifies onError when error occurred on connect", async () => {
     const onError = jest.fn()
     const socket = createEoswsSocket(factory, { onError })
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       rejectConnection()
     }, 0)
@@ -95,6 +111,8 @@ describe("socket", () => {
   it("notifies onError when error occurred after succesfull connection", async () => {
     const onError = jest.fn()
     const socket = createEoswsSocket(factory, { onError })
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
       rejectConnection()
@@ -108,6 +126,8 @@ describe("socket", () => {
 
   it("reconnects on abnormal close code ", async () => {
     const socket = createEoswsSocket(factory, { reconnectDelayInMs: 0 })
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
       closeConnection({ code: 1001 })
@@ -125,6 +145,8 @@ describe("socket", () => {
   it("reconnects on abnormal close code even with other custom stream options ", async () => {
     const onError = jest.fn()
     const socket = createEoswsSocket(factory, { reconnectDelayInMs: 0, onError })
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
       closeConnection({ code: 1001 })
@@ -141,6 +163,8 @@ describe("socket", () => {
 
   it("doesn't try to reconnect on close code 1000 (normal closure)", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
       closeConnection({ code: 1000 })
@@ -155,6 +179,8 @@ describe("socket", () => {
 
   it("doesn't try to reconnect on close code 1005 (no status code present)", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
       closeConnection({ code: 1005 })
@@ -169,6 +195,8 @@ describe("socket", () => {
 
   it("doesn't try to reconnect when autoReconnect is false", async () => {
     const socket = createEoswsSocket(factory, { autoReconnect: false })
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
       closeConnection({ code: 1001 })
@@ -183,6 +211,8 @@ describe("socket", () => {
 
   it("send message correctly when connected", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
     }, 0)
@@ -200,6 +230,7 @@ describe("socket", () => {
 
   it("send waits for connect before sending", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
 
     expect.hasAssertions()
 
@@ -215,6 +246,8 @@ describe("socket", () => {
 
   it("send correctly reconnects when not connected", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
     }, 0)
@@ -231,6 +264,8 @@ describe("socket", () => {
 
   it("forwards received message to listener", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
     }, 0)
@@ -246,6 +281,8 @@ describe("socket", () => {
   it("notifies onInvalidMessage when message type is invalid", async () => {
     const onInvalidMessage = jest.fn()
     const socket = createEoswsSocket(factory, { onInvalidMessage })
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
     }, 0)
@@ -260,6 +297,8 @@ describe("socket", () => {
 
   it("does not forward received message to listener when invalid type", async () => {
     const socket = createEoswsSocket(factory)
+    socket.setTokenStorage(storage)
+
     setTimeout(() => {
       openConnection()
     }, 0)
@@ -274,6 +313,7 @@ describe("socket", () => {
   it("performs a single connect on multiple send calls without being connected yet", async () => {
     const onReconnect = jest.fn()
     const socket = createEoswsSocket(factory, { onReconnect })
+    socket.setTokenStorage(storage)
 
     socket.connect(noopListener).then(() => {
       expect.hasAssertions()

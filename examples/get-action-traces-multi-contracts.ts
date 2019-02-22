@@ -1,4 +1,4 @@
-import { socketFactory, runMain, waitFor } from "./config"
+import { socketFactory, runMain, waitFor, DFUSE_REST_URL, DFUSE_API_TOKEN } from "./config"
 import {
   EoswsClient,
   InboundMessage,
@@ -6,8 +6,11 @@ import {
   createEoswsSocket,
   ActionTraceData,
   ListeningData,
-  ErrorData
+  ErrorData,
+  ApiTokenStorage,
+  EoswsConnector
 } from "@dfuse/eosws-js"
+import fetch from "node-fetch"
 
 const CONTRACTS = ["eosmechanics", "eosknightsio", "eosiotokener"]
 
@@ -38,8 +41,14 @@ const onMessage = (message: InboundMessage<any>) => {
 }
 
 async function main() {
-  const client = new EoswsClient(createEoswsSocket(socketFactory))
-  await client.connect()
+  const socket = createEoswsSocket(socketFactory)
+  const client = new EoswsClient({ socket, baseUrl: DFUSE_REST_URL!, httpClient: fetch as any })
+  const connector = new EoswsConnector({
+    client,
+    apiKey: DFUSE_API_TOKEN!,
+    tokenStorage: new ApiTokenStorage()
+  })
+  await connector.connect()
 
   client.getActionTraces({ accounts: CONTRACTS.join("|") }).onMessage(onMessage)
 

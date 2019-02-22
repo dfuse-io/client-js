@@ -1,4 +1,4 @@
-import { socketFactory, runMain, waitFor } from "./config"
+import { socketFactory, runMain, waitFor, DFUSE_REST_URL, DFUSE_API_TOKEN } from "./config"
 import {
   createEoswsSocket,
   EoswsClient,
@@ -6,12 +6,21 @@ import {
   InboundMessage,
   TransactionData,
   ErrorData,
-  ListeningData
+  ListeningData,
+  ApiTokenStorage,
+  EoswsConnector
 } from "@dfuse/eosws-js"
+import fetch from "node-fetch"
 
 async function main() {
-  const client = new EoswsClient(createEoswsSocket(socketFactory))
-  await client.connect()
+  const socket = createEoswsSocket(socketFactory)
+  const client = new EoswsClient({ socket, baseUrl: DFUSE_REST_URL!, httpClient: fetch as any })
+  const connector = new EoswsConnector({
+    client,
+    apiKey: DFUSE_API_TOKEN!,
+    tokenStorage: new ApiTokenStorage()
+  })
+  await connector.connect()
 
   const stream = client.getTransactionLifecycle(
     "d9e98cec9fcb5604da38ca250eb22246520bfeee2c35298032c2fbb825eb406d"

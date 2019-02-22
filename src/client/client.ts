@@ -12,6 +12,28 @@ import {
 import { InboundMessage } from "../message/inbound"
 import { EoswsListeners } from "./listeners"
 
+interface HttpBody {
+  readonly body: any | null
+  readonly bodyUsed: boolean
+  arrayBuffer(): Promise<any>
+  blob(): Promise<any>
+  formData(): Promise<any>
+  json(): Promise<any>
+  text(): Promise<string>
+}
+
+interface HttpResponse extends HttpBody {
+  readonly headers: any
+  readonly ok: boolean
+  readonly redirected: boolean
+  readonly status: number
+  readonly statusText: string
+  readonly trailer: Promise<any>
+  readonly type: string
+  readonly url: string
+  clone(): HttpResponse | undefined
+}
+
 /**
  * Represents a single WebSocket stream operation against the client. This is what
  * you actually as return type of calling one of the listening operator like
@@ -29,30 +51,40 @@ export interface ApiTokenInfo {
   expires_at: number
 }
 
-export type HttpClient = <T = any>(url: string, options?: any) => Promise<T>
+export interface EoswsClientParams {
+  socket: EoswsSocket
+  baseUrl: string
+  httpClient?: HttpClient
+}
+
+export type HttpClient = (url: string, options?: any) => Promise<HttpResponse>
 
 export class EoswsClient {
   public socket: EoswsSocket
   public listeners: EoswsListeners
   public baseUrl: string
-  private httpClient: HttpClient = fetch
-  private apiTokenInfo?: ApiTokenInfo
+  private httpClient?: HttpClient = typeof fetch !== "undefined" ? fetch : undefined
 
-  constructor(socket: EoswsSocket, baseUrl: string, httpClient?: HttpClient) {
-    this.socket = socket
+  constructor(params: EoswsClientParams) {
+    this.socket = params.socket
     this.listeners = new EoswsListeners()
-    this.baseUrl = baseUrl
-    if (httpClient) {
-      this.httpClient = httpClient
+    this.baseUrl = params.baseUrl
+    if (params.httpClient) {
+      this.httpClient = params.httpClient
+    }
+    if (!this.httpClient) {
+      throw new Error(
+        "The httpClient cannot be undefined, the default value 'fetch' is not defined in this context"
+      )
     }
   }
 
   public async getNewApiToken(apiKey: string): Promise<ApiTokenInfo> {
-    this.apiTokenInfo = await this.httpClient<ApiTokenInfo>(`${this.baseUrl}/v1/auth/issue`, {
+    const response = await this.httpClient!(`${this.baseUrl}/v1/auth/issue`, {
       method: "post",
       body: JSON.stringify({ api_key: apiKey })
     })
-    return this.apiTokenInfo
+    return (await response.json()) as ApiTokenInfo
   }
 
   public connect(): Promise<void> {
@@ -62,7 +94,9 @@ export class EoswsClient {
   }
 
   public async reconnect(): Promise<void> {
-    await this.disconnect()
+    if (this.socket && this.socket.isConnected) {
+      await this.disconnect()
+    }
     await this.connect()
 
     // Re-subscribe to all streams!
@@ -104,7 +138,7 @@ export class EoswsClient {
     return this.createListenerWithSend(getTransactionLifecycleMessage({ id }, options))
   }
 
-  private createListenerWithSend(message: OutboundMessage<any>) {
+  private createListenerWithSend(message: OutboundMessage<any>): EoswsStream {
     const reqId = message.req_id!
     const onMessage = (callback: SocketMessageListener) => {
       this.listeners.addListener({ reqId, callback, subscriptionMessage: message })

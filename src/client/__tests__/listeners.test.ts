@@ -1,16 +1,24 @@
 import { EoswsListeners, ListenerObject } from "../listeners"
 import { InboundMessageType } from "../../message/inbound"
+import { OutboundMessageType } from "../.."
 
 describe("listeners", function() {
   const noopCallback = () => {
     return
   }
 
+  const subscriptionMessage = {
+    type: OutboundMessageType.GET_ACTION_TRACES,
+    req_id: "abc",
+    data: { test: "test" }
+  }
+
   describe("addListener", () => {
     it("should add a listener to the list", () => {
       const listenerObject: ListenerObject = {
         reqId: "abc",
-        callback: noopCallback
+        callback: noopCallback,
+        subscriptionMessage
       }
 
       const listeners = new EoswsListeners()
@@ -25,12 +33,14 @@ describe("listeners", function() {
     it("should add a listener to the list", () => {
       const listenerObject1: ListenerObject = {
         reqId: "abc",
-        callback: noopCallback
+        callback: noopCallback,
+        subscriptionMessage
       }
 
       const listenerObject2: ListenerObject = {
         reqId: "abcd",
-        callback: noopCallback
+        callback: noopCallback,
+        subscriptionMessage
       }
 
       const listeners = new EoswsListeners()
@@ -50,12 +60,14 @@ describe("listeners", function() {
       const customCallback = jest.fn()
       const listenerObject1: ListenerObject = {
         reqId: "abc",
-        callback: customCallback
+        callback: customCallback,
+        subscriptionMessage
       }
 
       const listenerObject2: ListenerObject = {
         reqId: "abcd",
-        callback: noopCallback
+        callback: noopCallback,
+        subscriptionMessage
       }
 
       const listeners = new EoswsListeners()

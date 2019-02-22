@@ -1,27 +1,29 @@
-import { EoswsClient } from "../client"
+import { EoswsClient, HttpClient } from "../client"
 import { InboundMessage } from "../../message/inbound"
 import { EoswsSocket } from "../socket"
+import fetch from "jest-fetch-mock"
+import { createMockEoswsSocket } from "./mocks"
 
 describe("client", function() {
   let receivedMessages: Array<InboundMessage<any>>
 
   const mockSocket = createMockEoswsSocket()
   const socket = (mockSocket as any) as EoswsSocket
-
+  const mockFetch = fetch as HttpClient
   beforeEach(() => {
     receivedMessages = []
   })
 
   describe("constructor", () => {
     it("should build the client", () => {
-      const client = new EoswsClient(socket)
+      const client = new EoswsClient({ socket, httpClient: mockFetch, baseUrl: "test.io" })
       expect(client.socket).toBeDefined()
     })
   })
 
   describe("connect", () => {
     it("should add a listener", async () => {
-      const client = new EoswsClient(socket)
+      const client = new EoswsClient({ socket, httpClient: mockFetch, baseUrl: "test.io" })
 
       await client.connect()
       expect(client.socket.connect).toHaveBeenCalled()
@@ -30,7 +32,7 @@ describe("client", function() {
 
   describe("getActionTraces", () => {
     it("should return the same object as the basic send", () => {
-      const client = new EoswsClient(socket)
+      const client = new EoswsClient({ socket, httpClient: mockFetch, baseUrl: "test.io" })
 
       expect(
         client.getActionTraces(
@@ -43,7 +45,7 @@ describe("client", function() {
 
   describe("getTableRows", () => {
     it("should return the same object as the basic send", () => {
-      const client = new EoswsClient(socket)
+      const client = new EoswsClient({ socket, httpClient: mockFetch, baseUrl: "test.io" })
 
       expect(
         client.getTableRows({ scope: "test", code: "code", table: "test" }, { req_id: "abc" })
@@ -53,7 +55,7 @@ describe("client", function() {
 
   describe("getTransaction", () => {
     it("should return the same object as the basic send", () => {
-      const client = new EoswsClient(socket)
+      const client = new EoswsClient({ socket, httpClient: mockFetch, baseUrl: "test.io" })
 
       expect(client.getTransactionLifecycle("id", { listen: true, req_id: "abc" })).toEqual({
         reqId: "abc",
@@ -63,14 +65,3 @@ describe("client", function() {
     })
   })
 })
-
-function createMockEoswsSocket() {
-  return {
-    isConnected: false,
-
-    connect: jest.fn<Promise<void>>(() => new Promise((resolve) => resolve())),
-    disconnect: jest.fn<Promise<void>>(() => new Promise((resolve) => resolve())),
-
-    send: jest.fn<Promise<void>>()
-  }
-}
