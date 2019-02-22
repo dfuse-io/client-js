@@ -1,6 +1,6 @@
 import { ApiTokenInfo, EoswsClient } from "./client"
 import { RefreshScheduler } from "./refresh-scheduler"
-import { ApiTokenStorageInterface } from "./api-token-storage"
+import { ApiTokenStorage, ApiTokenStorageInterface } from "./api-token-storage"
 
 interface EoswsConnectorInterface {
   connect: () => Promise<void>
@@ -9,7 +9,7 @@ interface EoswsConnectorInterface {
 
 interface EoswsConnectorParams {
   apiKey: string
-  tokenStorage: ApiTokenStorageInterface
+  tokenStorage?: ApiTokenStorageInterface
   client: EoswsClient
   delayBuffer?: number
 }
@@ -38,7 +38,7 @@ export class EoswsConnector implements EoswsConnectorInterface {
     this.apiKey = params.apiKey
     this.client = params.client
     this.delayBuffer = params.delayBuffer ? params.delayBuffer : this.DEFAULT_DELAY_BUFFER
-    this.tokenStorage = params.tokenStorage
+    this.tokenStorage = params.tokenStorage ? params.tokenStorage : new ApiTokenStorage()
     this.client.socket.setTokenStorage(this.tokenStorage)
     this.refreshScheduler = new RefreshScheduler(() => this.refreshToken())
   }

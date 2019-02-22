@@ -1,4 +1,4 @@
-import { socketFactory, runMain, waitFor, DFUSE_REST_URL, DFUSE_API_TOKEN } from "./config"
+import { socketFactory, runMain, waitFor, DFUSE_URL, DFUSE_API_KEY } from "./config"
 import {
   createEoswsSocket,
   EoswsClient,
@@ -13,13 +13,12 @@ import {
 import fetch from "node-fetch"
 
 async function main() {
-  const socket = createEoswsSocket(socketFactory)
-  const client = new EoswsClient({ socket, baseUrl: DFUSE_REST_URL!, httpClient: fetch as any })
-  const connector = new EoswsConnector({
-    client,
-    apiKey: DFUSE_API_TOKEN!,
-    tokenStorage: new ApiTokenStorage()
+  const client = new EoswsClient({
+    socket: createEoswsSocket(socketFactory),
+    baseUrl: `https://${DFUSE_URL!}`,
+    httpClient: fetch as any
   })
+  const connector = new EoswsConnector({ client, apiKey: DFUSE_API_KEY! })
   await connector.connect()
 
   const stream = client.getTableRows({ code: "eosio", scope: "eosio", table: "global", json: true })
