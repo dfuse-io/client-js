@@ -29,7 +29,7 @@ async function main() {
   await connector.connect()
 
   client
-    .getActionTraces({ account: "eosio.token", action_name: "transfer" })
+    .getActionTraces({ account: "eosio.token", action_name: "transfer" }, { with_progress: 2 })
     .onMessage((message: InboundMessage<any>) => {
       switch (message.type) {
         case InboundMessageType.ACTION_TRACE:
@@ -52,13 +52,22 @@ async function main() {
           const error = message.data as ErrorData
           console.log(`Received error: ${error.message} (${error.code})`, error.details)
           break
-
+        case InboundMessageType.PROGRESS:
+          console.log("Progress at block_num: ***** %i *****", message.data.block_num)
+          break
         default:
           console.log(`Unhandled message of type [${message.type}].`)
       }
     })
 
-  await waitFor(5000)
+  // Example of disconnection/reconnection handling using the saved block_num.
+  await waitFor(3000)
+  await connector.disconnect()
+  await waitFor(1500)
+
+  console.log("****************************** RECONNECTING ***********************************")
+  await connector.reconnect()
+  await waitFor(2000)
 }
 
 runMain(main)

@@ -64,6 +64,14 @@ export class EoswsConnector implements EoswsConnectorInterface {
     throw new Error("error getting token")
   }
 
+  public async reconnect() {
+    await this.client.reconnect()
+  }
+
+  public async disconnect() {
+    await this.client.disconnect()
+  }
+
   public async getToken(): Promise<ApiTokenInfo | undefined> {
     const tokenInfo = this.tokenStorage.get()
 
