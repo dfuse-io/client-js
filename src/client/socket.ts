@@ -2,6 +2,8 @@ import debugFactory, { IDebugger } from "debug"
 
 import { OutboundMessage } from "../message/outbound"
 import { InboundMessage, InboundMessageType } from "../message/inbound"
+import { ApiTokenInfo } from "./client"
+import { ApiTokenStorageInterface } from "./api-token-storage"
 
 // FIXME: Using the `WebSocket` type resolves to DOM `WebSocket` object.
 //        If consumer of library is not DOM aware via TypeScript, the actual
@@ -9,7 +11,7 @@ import { InboundMessage, InboundMessageType } from "../message/inbound"
 //        and the library compilation will fail even if the type def is in
 //        our own library. Not sure what is the best course of action to
 //        fix this!
-export type WebSocketFactory = () => any
+export type WebSocketFactory = (apiTokenInfo: ApiTokenInfo) => Promise<any>
 
 export function createEoswsSocket(webSocketFactory: WebSocketFactory, options: SocketOptions = {}) {
   return new DefaultEoswsSocket(
@@ -20,7 +22,7 @@ export function createEoswsSocket(webSocketFactory: WebSocketFactory, options: S
 
 export interface EoswsSocket {
   isConnected: boolean
-
+  setTokenStorage(tokenStorage: ApiTokenStorageInterface): void
   connect(listener: SocketMessageListener): Promise<void>
   disconnect(): Promise<void>
 
@@ -53,6 +55,7 @@ class DefaultEoswsSocket implements EoswsSocket {
   public socket?: any // FIXME: See comment on type `WebSocketFactory` for details
 
   private socketFactory: WebSocketFactory
+  private tokenStorage?: ApiTokenStorageInterface
   private options: SocketOptions
   private listener?: SocketMessageListener
 
@@ -71,6 +74,10 @@ class DefaultEoswsSocket implements EoswsSocket {
     this.debug = debugFactory("eosws:socket" + (options.id !== undefined ? `:${options.id}` : ""))
   }
 
+  public setTokenStorage(tokenStorage: ApiTokenStorageInterface) {
+    this.tokenStorage = tokenStorage
+  }
+
   public async connect(listener: SocketMessageListener): Promise<void> {
     this.debug("About to connect to remote endpoint.")
 
@@ -81,10 +88,16 @@ class DefaultEoswsSocket implements EoswsSocket {
     this.listener = listener
     this.connectionPromise = new Promise<void>((resolve, reject) => {
       this.debug("Connection promise started, creating and opening socket.")
-      this.socket = this.createAnOpenSocket(
+      if (this.isConnected) {
+        return
+      }
+      return this.createAnOpenSocket(
         this.onSocketConnectOpenFactory(resolve),
         this.onSocketErrorFactory(reject)
-      )
+      ).then((socket: any) => {
+        this.socket = socket
+        return Promise.resolve(socket)
+      })
     })
 
     this.debug("Connection to remote endpoint initialized, returning promise to caller.")
@@ -121,17 +134,25 @@ class DefaultEoswsSocket implements EoswsSocket {
     return true
   }
 
-  private createAnOpenSocket<T>(
+  private async createAnOpenSocket<T>(
     onSocketOpen: () => void,
     onSocketError: (event: Event) => void
-  ): WebSocket {
-    const socket = this.socketFactory()
-    socket.onopen = onSocketOpen
-    socket.onerror = onSocketError
-    socket.onclose = this.onSocketClose
-    socket.onmessage = this.onSocketMessage
+  ): Promise<WebSocket> {
+    let socket: WebSocket
+    if (!this.tokenStorage) {
+      throw new Error("tokenStorage not set, please use setTokenStorage to set it up")
+    }
+    const apiToken = this.tokenStorage.get()
+    if (apiToken) {
+      socket = await this.socketFactory(apiToken)
+      socket.onopen = onSocketOpen
+      socket.onerror = onSocketError
+      socket.onclose = this.onSocketClose
+      socket.onmessage = this.onSocketMessage
+      return socket
+    }
 
-    return socket
+    throw new Error("token not set")
   }
 
   private onSocketConnectOpenFactory = (resolve: Resolver<void>) => () => {

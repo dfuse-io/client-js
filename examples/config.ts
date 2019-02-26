@@ -1,23 +1,25 @@
 import * as path from "path"
 import WebSocketClient from "ws"
 import dotenv from "dotenv"
+import { ApiTokenInfo } from "@dfuse/eosws-js"
 
 dotenv.config({ path: path.join(__dirname, "..", ".env") })
 
-export let DFUSE_IO_ENDPOINT = process.env.DFUSE_IO_ENDPOINT
-export const DFUSE_IO_API_KEY = process.env.DFUSE_IO_API_KEY
+export let DFUSE_URL = process.env.DFUSE_URL
 
-if (!DFUSE_IO_ENDPOINT) {
-  DFUSE_IO_ENDPOINT = "mainnet.eos.dfuse.io"
+export const DFUSE_API_KEY = process.env.DFUSE_API_KEY
+
+if (!DFUSE_URL) {
+  DFUSE_URL = "mainnet.eos.dfuse.io"
 }
 
-if (!DFUSE_IO_API_KEY) {
-  throw new Error("missing DFUSE_IO_API_KEY in your environment variables")
+if (!DFUSE_API_KEY) {
+  throw new Error("missing DFUSE_API_TOKEN in your environment variables")
 }
 
 const origin = "https://github.com/dfuse-io/eosws-js"
-export const socketFactory = (): WebSocket => {
-  return (new WebSocketClient(`wss://${DFUSE_IO_ENDPOINT}/v1/stream?token=${DFUSE_IO_API_KEY}`, {
+export const socketFactory = async (tokenInfo: ApiTokenInfo): Promise<WebSocket> => {
+  return (new WebSocketClient(`wss://${DFUSE_URL}/v1/stream?token=${tokenInfo.token}`, {
     origin
   }) as any) as WebSocket
 }

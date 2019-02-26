@@ -1,4 +1,4 @@
-import { socketFactory, runMain, waitFor } from "./config"
+import { socketFactory, runMain, waitFor, DFUSE_URL, DFUSE_API_KEY } from "./config"
 import {
   EoswsClient,
   InboundMessage,
@@ -6,8 +6,11 @@ import {
   createEoswsSocket,
   ActionTraceData,
   ListeningData,
-  ErrorData
+  ErrorData,
+  ApiTokenStorage,
+  EoswsConnector
 } from "@dfuse/eosws-js"
+import fetch from "node-fetch"
 
 interface Transfer {
   from: string
@@ -17,11 +20,16 @@ interface Transfer {
 }
 
 async function main() {
-  const client = new EoswsClient(createEoswsSocket(socketFactory))
-  await client.connect()
+  const client = new EoswsClient({
+    socket: createEoswsSocket(socketFactory),
+    baseUrl: `https://${DFUSE_URL!}`,
+    httpClient: fetch as any
+  })
+  const connector = new EoswsConnector({ client, apiKey: DFUSE_API_KEY! })
+  await connector.connect()
 
   client
-    .getActionTraces({ account: "eosio.token", action_name: "transfer" })
+    .getActionTraces({ account: "eosio.token", action_name: "transfer" }, { with_progress: 2 })
     .onMessage((message: InboundMessage<any>) => {
       switch (message.type) {
         case InboundMessageType.ACTION_TRACE:
@@ -44,13 +52,22 @@ async function main() {
           const error = message.data as ErrorData
           console.log(`Received error: ${error.message} (${error.code})`, error.details)
           break
-
+        case InboundMessageType.PROGRESS:
+          console.log("Progress at block_num: ***** %i *****", message.data.block_num)
+          break
         default:
           console.log(`Unhandled message of type [${message.type}].`)
       }
     })
 
-  await waitFor(5000)
+  // Example of disconnection/reconnection handling using the saved block_num.
+  await waitFor(3000)
+  await connector.disconnect()
+  await waitFor(1500)
+
+  console.log("****************************** RECONNECTING ***********************************")
+  await connector.reconnect()
+  await waitFor(2000)
 }
 
 runMain(main)
