@@ -57,7 +57,7 @@ export class EoswsConnector implements EoswsConnectorInterface {
   }
 
   private getRefreshDelay(tokenInfo: ApiTokenInfo) {
-    return (tokenInfo.expires_at - Date.now()) * 0.9
+    return (tokenInfo.expires_at - Date.now() / 1000) * 0.9
   }
 
   public async connect() {
