@@ -1,6 +1,8 @@
 import { ApiTokenInfo, EoswsClient } from "./client"
 import { RefreshScheduler } from "./refresh-scheduler"
 import { ApiTokenStorage, ApiTokenStorageInterface } from "./api-token-storage"
+import { IDebugger } from "debug"
+import debugFactory from "debug"
 
 interface EoswsConnectorInterface {
   connect: () => Promise<void>
@@ -31,13 +33,16 @@ export class EoswsConnector implements EoswsConnectorInterface {
   public firstCall = true
   private apiKey: string
   private delayBuffer: number
+  private debug: IDebugger
+
   // 120 seconds of buffer before connection expires by default
-  private DEFAULT_DELAY_BUFFER = 120
+  private DEFAULT_DELAY_BUFFER_PERCENT = 0.9
 
   constructor(params: EoswsConnectorParams) {
+    this.debug = debugFactory("eosws:connector")
     this.apiKey = params.apiKey
     this.client = params.client
-    this.delayBuffer = params.delayBuffer ? params.delayBuffer : this.DEFAULT_DELAY_BUFFER
+    this.delayBuffer = params.delayBuffer ? params.delayBuffer : this.DEFAULT_DELAY_BUFFER_PERCENT
     this.tokenStorage = params.tokenStorage ? params.tokenStorage : new ApiTokenStorage()
     this.client.socket.setTokenStorage(this.tokenStorage)
     this.refreshScheduler = new RefreshScheduler(() => this.refreshToken())
@@ -48,11 +53,11 @@ export class EoswsConnector implements EoswsConnectorInterface {
       return true
     }
     const now = Date.now() / 1000
-    return tokenInfo.expires_at <= now + this.delayBuffer
+    return tokenInfo.expires_at <= now
   }
 
   private getRefreshDelay(tokenInfo: ApiTokenInfo) {
-    return tokenInfo.expires_at - Date.now() - this.delayBuffer
+    return (tokenInfo.expires_at - Date.now()) * 0.9
   }
 
   public async connect() {
@@ -83,6 +88,7 @@ export class EoswsConnector implements EoswsConnectorInterface {
     }
 
     if (this.firstCall) {
+      this.debug("Scheduling next token refresh - in getToken")
       this.refreshScheduler.scheduleNextRefresh(this.getRefreshDelay(tokenInfo!))
       this.firstCall = false
     }
@@ -95,6 +101,7 @@ export class EoswsConnector implements EoswsConnectorInterface {
 
     if (tokenInfo) {
       this.tokenStorage.set(tokenInfo)
+      this.debug("Scheduling next token refresh - in refreshToken")
       this.refreshScheduler.scheduleNextRefresh(this.getRefreshDelay(tokenInfo))
       return tokenInfo
     }

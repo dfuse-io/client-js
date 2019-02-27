@@ -1,3 +1,6 @@
+import { IDebugger } from "debug"
+import debugFactory from "debug"
+
 /**
  * Represents a RefreshScheduler.
  * @constructor
@@ -6,9 +9,11 @@
 export class RefreshScheduler {
   public scheduledMethod: () => void
   public renewalTimeout?: any
+  private debug: IDebugger
 
   constructor(scheduledMethod: () => void) {
     this.scheduledMethod = scheduledMethod
+    this.debug = debugFactory("eosws:refresh-scheduler")
   }
 
   public scheduleNextRefresh(delay: number) {
@@ -18,6 +23,8 @@ export class RefreshScheduler {
 
     if (delay > 0) {
       this.renewalTimeout = setTimeout(() => {
+        this.debug("calling scheduled method")
+        this.debug("%O", this.scheduledMethod)
         this.scheduledMethod()
         this.clearRefreshTimeout()
       }, delay)
