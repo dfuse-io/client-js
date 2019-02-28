@@ -16,18 +16,18 @@ export class RefreshScheduler {
     this.debug = debugFactory("eosws:refresh-scheduler")
   }
 
-  public scheduleNextRefresh(delay: number) {
+  public scheduleNextRefresh(delayInS: number) {
     if (this.renewalTimeout) {
       this.clearRefreshTimeout()
     }
 
-    if (delay > 0) {
+    if (delayInS > 0) {
       this.renewalTimeout = setTimeout(() => {
         this.debug("calling scheduled method")
         this.debug("%O", this.scheduledMethod)
         this.scheduledMethod()
         this.clearRefreshTimeout()
-      }, delay)
+      }, delayInS * 1000)
     }
   }
 

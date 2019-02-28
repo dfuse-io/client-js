@@ -94,7 +94,7 @@ describe("RefreshScheduler", function() {
       const scheduler = new RefreshScheduler(() => Test.scheduledMethod())
       scheduler.scheduleNextRefresh(100)
       expect(Test.scheduledMethod).not.toHaveBeenCalled()
-      jest.advanceTimersByTime(100)
+      jest.advanceTimersByTime(100 * 1000)
       expect(Test.scheduledMethod).toHaveBeenCalledTimes(1)
     })
   })
