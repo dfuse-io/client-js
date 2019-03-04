@@ -45,7 +45,7 @@ describe("client", function() {
       mockFetch.mockResponses([JSON.stringify({ token: "token", expires_at: 123456 })])
       const client = new EoswsClient({ socket, httpClient: mockFetch as any, baseUrl: "test.io" })
       client.getNewApiToken("abc")
-      expect(mockFetch).toHaveBeenCalledWith("test.io/v1/auth/issue", {
+      expect(mockFetch).toHaveBeenCalledWith("https://auth.dfuse.io/v1/auth/issue", {
         method: "post",
         body: JSON.stringify({ api_key: "abc" })
       })

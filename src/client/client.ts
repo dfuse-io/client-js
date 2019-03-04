@@ -55,6 +55,7 @@ export interface EoswsClientParams {
   socket: EoswsSocket
   baseUrl: string
   httpClient?: HttpClient
+  baseAuthUrl?: string
 }
 
 export type HttpClient = (url: string, options?: any) => Promise<HttpResponse>
@@ -63,12 +64,16 @@ export class EoswsClient {
   public socket: EoswsSocket
   public listeners: EoswsListeners
   public baseUrl: string
+  public baseAuthUrl = "https://auth.dfuse.io"
   private httpClient?: HttpClient = typeof fetch !== "undefined" ? fetch : undefined
 
   constructor(params: EoswsClientParams) {
     this.socket = params.socket
     this.listeners = new EoswsListeners()
     this.baseUrl = params.baseUrl
+    if (params.baseAuthUrl) {
+      this.baseAuthUrl = params.baseAuthUrl
+    }
     if (params.httpClient) {
       this.httpClient = params.httpClient
     }
@@ -80,7 +85,7 @@ export class EoswsClient {
   }
 
   public async getNewApiToken(apiKey: string): Promise<ApiTokenInfo> {
-    const response = await this.httpClient!(`${this.baseUrl}/v1/auth/issue`, {
+    const response = await this.httpClient!(`${this.baseAuthUrl}/v1/auth/issue`, {
       method: "post",
       body: JSON.stringify({ api_key: apiKey })
     })
