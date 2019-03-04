@@ -4,21 +4,6 @@ export interface TransactionData {
   lifecycle: TransactionLifecycle
 }
 
-/**
- * Represents a node in the creation tree.
- * first number represents the creation node index
- * second number represents the parent node index (-1 for root)
- * third number represents the action index
- */
-export type CreationNode = [number, number, number]
-
-export interface TableOp {
-  op: string
-  action_idx: number
-  payer: string
-  path: string
-}
-
 export interface TransactionLifecycle {
   id: string
   transaction: Transaction
@@ -28,9 +13,7 @@ export interface TransactionLifecycle {
   dtrxops: DTrxOp[]
   dbops: DBOp[]
   ramops?: RAMOp[]
-  tableops?: TableOp[]
   pub_keys: string[]
-  creation_tree?: CreationNode[]
   created_by?: ExtDTrxOp
   canceled_by?: ExtDTrxOp
   execution_irreversible: boolean
