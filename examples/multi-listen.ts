@@ -1,4 +1,4 @@
-import { socketFactory, runMain, waitFor } from "./config"
+import { socketFactory, runMain, waitFor, DFUSE_URL, DFUSE_API_KEY } from "./config"
 import {
   EoswsClient,
   InboundMessageType,
@@ -7,8 +7,11 @@ import {
   TableDeltaData,
   ActionTraceData,
   ListeningData,
-  ErrorData
+  ErrorData,
+  ApiTokenStorage,
+  EoswsConnector
 } from "@dfuse/eosws-js"
+import fetch from "node-fetch"
 
 interface Transfer {
   from: string
@@ -18,8 +21,13 @@ interface Transfer {
 }
 
 async function main() {
-  const client = new EoswsClient(createEoswsSocket(socketFactory))
-  await client.connect()
+  const client = new EoswsClient({
+    socket: createEoswsSocket(socketFactory),
+    baseUrl: `https://${DFUSE_URL!}`,
+    httpClient: fetch as any
+  })
+  const connector = new EoswsConnector({ client, apiKey: DFUSE_API_KEY! })
+  await connector.connect()
 
   const tableRowsStream = client.getTableRows({
     code: "eosio",

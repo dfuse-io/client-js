@@ -17,18 +17,26 @@ or using NPM:
 When targeting a browser (you will need a bundler like Webpack since we only ship ES5 modules files for now):
 
 ```js
-const { EoswsClient, createEoswsSocket, InboundMessageType } = require("@dfuse/eosws-js")
+const {
+  EoswsClient,
+  EoswsConnector,
+  createEoswsSocket,
+  InboundMessageType
+} = require("@dfuse/eosws-js")
 
 const endpoint = "mainnet.eos.dfuse.io"
-const token = "<Paste your API token here>"
-const client = new EoswsClient(
-  createEoswsSocket(
-    () =>
-      new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin: "https://example.com" })
-  )
-)
+const apiKey = "<Paste your API key here>"
+const wsRefresher = (tokenInfo) => {
+  return new WebSocket(`wss://${endpoint}/v1/stream?token=${tokenInfo.token}`, {
+    origin: "https://example.com"
+  })
+}
 
-client
+const socket = createEoswsSocket(wsRefresher)
+const client = new EoswsClient({ socket, baseUrl: `https://${endpoint}` })
+const connector = new EoswsConnector({ client, apiKey })
+
+connector
   .connect()
   .then(() => {
     client
