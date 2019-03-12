@@ -1,16 +1,8 @@
-import { socketFactory, runMain, waitFor, DFUSE_URL, DFUSE_API_KEY } from "./config"
-import {
-  EoswsClient,
-  InboundMessage,
-  InboundMessageType,
-  createEoswsSocket,
-  ActionTraceData,
-  ListeningData,
-  ErrorData,
-  ApiTokenStorage,
-  EoswsConnector
-} from "@dfuse/eosws-js"
-import fetch from "node-fetch"
+import { DfuseClient, InboundMessage, InboundMessageType, } from "@dfuse/client"
+
+client.streamActionTraces({ account: "eosio.token", action: "transfer" }, (message: InboundMessage<any>) {
+  console.log("Got an action trace message", message.type, message.data)
+})
 
 interface Transfer {
   from: string
@@ -27,6 +19,16 @@ async function main() {
   })
   const connector = new EoswsConnector({ client, apiKey: DFUSE_API_KEY! })
   await connector.connect()
+
+
+
+  client.streamActionTraces({ account: "eosio.token", action: "transfer" }, (message: InboundMessage<ActionTrace>) {
+    console.log("Got an action trace message", actionTrace.type)
+
+    if (actionTrace.type === InboundMessageType.ACTION_TRACE) {
+      console.log("Action trace", actionTrace.data)
+    }
+  })
 
   client
     .getActionTraces({ account: "eosio.token", action_name: "transfer" }, { with_progress: 2 })

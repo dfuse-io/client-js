@@ -1,3 +1,5 @@
+import { ErrorData } from "./error"
+
 export interface TableDeltaData<T = { [key: string]: any }> {
   block_num: number
   dbop: DbOp<T>
@@ -16,9 +18,10 @@ export interface DbOp<T> {
 }
 
 export interface DbRow<T> {
-  key?: string
-  payer?: string
+  key: string
+  payer: string
+  blockNum?: string
+  error?: ErrorData
   hex?: string
   json?: T
-  error?: string
 }

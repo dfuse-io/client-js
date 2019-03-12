@@ -1,4 +1,5 @@
-import { ActionTrace, Action } from "./action_trace"
+import { ActionTrace, Action } from "./action-trace"
+import { DbRow } from "./table-delta"
 
 export interface TransactionData {
   lifecycle: TransactionLifecycle
@@ -72,23 +73,15 @@ export interface DTrxOp {
   trx?: Transaction
 }
 
-export interface DBOp {
+export interface DBOp<T = unknown> {
   op: string
   action_idx: number
   account: string
   table: string
   scope: string
-  old: DBRow
-  new: DBRow
+  old: DbRow<T>
+  new: DbRow<T>
   key: string
-}
-
-export interface DBRow {
-  key: string
-  payer: string
-  hex?: string
-  json?: any
-  error?: string
 }
 
 export interface RAMOp {

@@ -1,6 +1,8 @@
+import { DfuseError } from "../types/error"
+
 export interface OutboundMessage<T> {
   type: OutboundMessageType
-  req_id?: string
+  req_id: string
   listen?: boolean
   fetch?: boolean
   start_block?: number
@@ -13,6 +15,7 @@ export enum OutboundMessageType {
   GET_ACTION_TRACES = "get_action_traces",
   GET_TABLE_ROWS = "get_table_rows",
   GET_TRANSACTION_LIFECYCLE = "get_transaction_lifecycle",
+  HEAD_INFO = "head_info",
   UNLISTEN = "unlisten"
 }
 
@@ -86,12 +89,19 @@ export function getTransactionLifecycleMessage(
   )
 }
 
+export function getHeadInfoMessage(
+  streamOptions: StreamOptions = {}
+): OutboundMessage<GetActionTracesMessageData> {
+  return createOutboundMessage(OutboundMessageType.HEAD_INFO, {}, { listen: true }, streamOptions)
+}
+
 export interface UnlistenMessageData {
   req_id: string
 }
 
 export function unlistenMessage(data: UnlistenMessageData) {
   return {
+    req_id: data.req_id,
     type: OutboundMessageType.UNLISTEN,
     data
   }
@@ -103,10 +113,15 @@ function createOutboundMessage<T>(
   defaultStreamOptions: StreamOptions,
   streamOptions: StreamOptions
 ): OutboundMessage<T> {
+  const req_id = getStreamOption(defaultStreamOptions.req_id, streamOptions.req_id)
+  if (req_id === undefined) {
+    throw new DfuseError("All outbound message should have a 'req_id' value")
+  }
+
   return {
     type,
     ...streamOptions,
-    req_id: getStreamOption(defaultStreamOptions.req_id, streamOptions.req_id),
+    req_id,
     listen: getStreamOption(defaultStreamOptions.listen, streamOptions.listen),
     fetch: getStreamOption(defaultStreamOptions.fetch, streamOptions.fetch),
     start_block: getStreamOption(defaultStreamOptions.start_block, streamOptions.start_block),

@@ -1,34 +1,53 @@
 import { IDebugger } from "debug"
 import debugFactory from "debug"
 
-/**
- * Represents a RefreshScheduler.
- * @constructor
- * @param {() => void} scheduledMethod - the method that will be called after a delay in seconds
- */
-export class RefreshScheduler {
-  public scheduledMethod: () => void
+export type ScheduleJob = () => void
+
+export interface RefreshScheduler {
+  hasScheduledJob(): boolean
+  schedule(delayInSeconds: number, job: ScheduleJob): void
+}
+
+export function createRefreshScheduler(): RefreshScheduler {
+  return new DefaultRefreshScheduler()
+}
+
+class DefaultRefreshScheduler {
   public renewalTimeout?: any
   private debug: IDebugger
 
-  constructor(scheduledMethod: () => void) {
-    this.scheduledMethod = scheduledMethod
-    this.debug = debugFactory("eosws:refresh-scheduler")
+  constructor() {
+    this.debug = debugFactory("dfuse:refresh-scheduler")
   }
 
-  public scheduleNextRefresh(delayInS: number) {
+  public hasScheduledJob(): boolean {
+    return this.renewalTimeout !== undefined
+  }
+
+  public schedule(delayInSeconds: number, job: ScheduleJob, onJobFailed?: (error: any) => void) {
+    if (delayInSeconds <= 0) {
+      this.debug("Delay in seconds should be greater than 0")
+      return
+    }
+
     if (this.renewalTimeout) {
+      this.debug("Clearing previous sheduled timer")
       this.clearRefreshTimeout()
     }
 
-    if (delayInS > 0) {
-      this.renewalTimeout = setTimeout(() => {
-        this.debug("calling scheduled method")
-        this.debug("%O", this.scheduledMethod)
-        this.scheduledMethod()
-        this.clearRefreshTimeout()
-      }, delayInS * 1000)
-    }
+    this.renewalTimeout = setTimeout(() => {
+      try {
+        this.debug("Executing scheduled job at %s%O", new Date(), job)
+        job()
+      } catch (error) {
+        this.debug("Scheduled job failed (%o)", error)
+        if (onJobFailed) {
+          onJobFailed(error)
+        }
+      }
+
+      this.clearRefreshTimeout()
+    }, delayInSeconds * 1000)
   }
 
   private clearRefreshTimeout() {

@@ -1,170 +1,404 @@
-import { EoswsSocket, SocketMessageListener } from "./socket"
+import debugFactory, { IDebugger } from "debug"
 import {
-  getActionTracesMessage,
   GetActionTracesMessageData,
-  getTableRowsMessage,
-  GetTableRowsMessageData,
-  OutboundMessage,
   StreamOptions,
-  unlistenMessage,
-  getTransactionLifecycleMessage
+  GetTableRowsMessageData,
+  GetTransactionLifecycleMessageData,
+  getActionTracesMessage,
+  OutboundMessage,
+  getTableRowsMessage,
+  getTransactionLifecycleMessage,
+  getHeadInfoMessage
 } from "../message/outbound"
 import { InboundMessage } from "../message/inbound"
-import { EoswsListeners } from "./listeners"
+import { DfuseClient } from "../types/client"
+import { SearchSortType, SearchTransactionsResponse } from "../types/search"
+import { AuthTokenResponse } from "../types/auth-token"
+import {
+  StateAbiResponse,
+  StateKeyAccountsResponse,
+  StateAbiToJsonResponse,
+  StateTableScopesResponse,
+  StateKeyType,
+  StateResponse,
+  MultiStateResponse,
+  StatePermissionLinksResponse
+} from "../types/state"
+import { ApiTokenManager, createApiTokenManager } from "./api-token-manager"
+import { createHttpClient, HttpClientOptions } from "./http-client"
+import {
+  Fetch,
+  V1_AUTH_ISSUE,
+  V0_SEARCH_TRANSACTIONS,
+  HttpQueryParameters,
+  V0_STATE_ABI,
+  V0_STATE_ABI_BIN_TO_JSON,
+  V0_STATE_KEY_ACCOUNTS,
+  V0_STATE_PERMISSION_LINKS,
+  V0_STATE_TABLE_SCOPES,
+  V0_STATE_TABLE,
+  V0_STATE_TABLES_ACCOUNTS,
+  V0_STATE_TABLES_SCOPES,
+  HttpClient
+} from "../types/http-client"
+import { DfuseError } from "../types/error"
+import { createStreamClient, StreamClientOptions } from "./stream-client"
+import { StreamClient, Stream, OnStreamMessage } from "../types/stream-client"
+import { ApiTokenStore, InMemoryApiTokenStore } from "./api-token-store"
+import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 
-interface HttpBody {
-  readonly body: any | null
-  readonly bodyUsed: boolean
-  arrayBuffer(): Promise<any>
-  blob(): Promise<any>
-  formData(): Promise<any>
-  json(): Promise<any>
-  text(): Promise<string>
+export interface DfuseClientOptions {
+  network: "mainnet" | "jungle" | "kylin" | string
+  apiKey: string
+  secure?: boolean
+  authUrl?: string
+
+  // Advanced options
+  httpClient?: HttpClient
+  httpClientOptions?: HttpClientOptions
+
+  streamClient?: StreamClient
+  streamClientOptions?: StreamClientOptions
+
+  apiTokenStore?: ApiTokenStore
+  refreshScheduler?: RefreshScheduler
 }
 
-interface HttpResponse extends HttpBody {
-  readonly headers: any
-  readonly ok: boolean
-  readonly redirected: boolean
-  readonly status: number
-  readonly statusText: string
-  readonly trailer: Promise<any>
-  readonly type: string
-  readonly url: string
-  clone(): HttpResponse | undefined
+export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
+  const endpoint = networkToEndpoint(options.network)
+  const secureEndpoint = options.secure === undefined ? true : options.secure
+
+  const authUrl = options.authUrl || "https://auth.dfuse.io"
+  const httpUrl = secureEndpoint ? `https://${endpoint}` : `http://${endpoint}`
+  const wsUrl = secureEndpoint ? `wss://${endpoint}` : `ws://${endpoint}`
+
+  const httpClient =
+    options.httpClient || createHttpClient(authUrl, httpUrl, options.httpClientOptions)
+  const streamClient = options.streamClient || createStreamClient(wsUrl + "/v1/stream")
+
+  const apiTokenStore = options.apiTokenStore || new InMemoryApiTokenStore()
+  const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
+
+  return new DefaultClient(
+    options.apiKey,
+    httpClient,
+    streamClient,
+    apiTokenStore,
+    refreshScheduler
+  )
+}
+
+export function networkToEndpoint(network: string): string {
+  if (network === "mainnet" || network === "jungle" || network === "kylin") {
+    return `${network}.eos.dfuse.io`
+  }
+
+  // Network is assumed to be an hostname to reach the dfuse service
+  return network
 }
 
 /**
- * Represents a single WebSocket stream operation against the client. This is what
- * you actually as return type of calling one of the listening operator like
- * `getActionTraces`, `getTableRows`, `getTransactionLifecycle` and other
- * stream listening method.
+ * The `DefaultClient` roles is to perform the API key management
+ * functionalities of the client. It retrieves an API token using the
+ * API key and ensures it stays valid throughout the lifecycle of the
+ * client, refreshing the token when necessary.
+ *
+ * It also responsible of keep and up-to-date list of streams and managing
+ * the re-connection to those stream when the websocket disconnects.
  */
-export interface EoswsStream {
-  onMessage: (callback: SocketMessageListener) => void
-  reqId: string
-  unlisten: () => void
-}
+export class DefaultClient implements DfuseClient {
+  protected apiKey: string
+  protected apiTokenManager: ApiTokenManager
+  protected httpClient: HttpClient
+  protected streamClient: StreamClient
 
-export interface ApiTokenInfo {
-  token: string
-  expires_at: number
-}
+  protected debug: IDebugger = debugFactory("dfuse:client")
 
-export interface EoswsClientParams {
-  socket: EoswsSocket
-  baseUrl: string
-  httpClient?: HttpClient
-  baseAuthUrl?: string
-}
+  constructor(
+    apiKey: string,
+    httpClient: HttpClient,
+    streamClient: StreamClient,
+    apiTokenStore: ApiTokenStore,
+    refreshScheduler: RefreshScheduler
+  ) {
+    this.apiKey = apiKey
+    this.httpClient = httpClient
+    this.streamClient = streamClient
 
-export type HttpClient = (url: string, options?: any) => Promise<HttpResponse>
-
-export class EoswsClient {
-  public socket: EoswsSocket
-  public listeners: EoswsListeners
-  public baseUrl: string
-  public baseAuthUrl = "https://auth.dfuse.io"
-  private httpClient?: HttpClient = typeof fetch !== "undefined" ? fetch : undefined
-
-  constructor(params: EoswsClientParams) {
-    this.socket = params.socket
-    this.listeners = new EoswsListeners()
-    this.baseUrl = params.baseUrl
-    if (params.baseAuthUrl) {
-      this.baseAuthUrl = params.baseAuthUrl
-    }
-    if (params.httpClient) {
-      this.httpClient = params.httpClient
-    }
-    if (!this.httpClient) {
-      throw new Error(
-        "The httpClient cannot be undefined, the default value 'fetch' is not defined in this context"
-      )
-    }
+    this.apiTokenManager = createApiTokenManager(
+      () => this.authIssue(this.apiKey),
+      this.onTokenRefresh,
+      0.95,
+      apiTokenStore,
+      refreshScheduler
+    )
   }
 
-  public async getNewApiToken(apiKey: string): Promise<ApiTokenInfo> {
-    const response = await this.httpClient!(`${this.baseAuthUrl}/v1/auth/issue`, {
-      method: "post",
-      body: JSON.stringify({ api_key: apiKey })
-    })
-    return (await response.json()) as ApiTokenInfo
-  }
+  //
+  /// WebSocket API
+  //
 
-  public connect(): Promise<void> {
-    return this.socket.connect((message: InboundMessage<any>) => {
-      this.listeners.handleMessage(message)
-    })
-  }
-
-  public async reconnect(): Promise<void> {
-    if (this.socket && this.socket.isConnected) {
-      await this.disconnect()
-    }
-    await this.connect()
-
-    // Re-subscribe to all streams!
-    this.listeners.resubscribeAll(this)
-  }
-
-  public disconnect(): Promise<void> {
-    return this.socket.disconnect()
-  }
-
-  public getActionTraces(
+  public streamActionTraces(
     data: GetActionTracesMessageData,
+    onMessage: (message: InboundMessage<any>) => void,
     options: StreamOptions = {}
-  ): EoswsStream {
-    options = mergeDefaultsStreamOptions(options, {
-      listen: true
-    })
+  ): Promise<Stream> {
+    const message = getActionTracesMessage(
+      data,
+      mergeDefaultsStreamOptions(options, {
+        listen: true
+      })
+    )
 
-    return this.createListenerWithSend(getActionTracesMessage(data, options))
+    return this.registerStream(message, onMessage)
   }
 
-  public getTableRows(
-    parameters: GetTableRowsMessageData,
+  public async streamTableRows(
+    data: GetTableRowsMessageData,
+    onMessage: (message: InboundMessage<any>) => void,
     options: StreamOptions = {}
-  ): EoswsStream {
-    options = mergeDefaultsStreamOptions(options, {
-      listen: true
+  ): Promise<Stream> {
+    const message = getTableRowsMessage(
+      data,
+      mergeDefaultsStreamOptions(options, {
+        listen: true
+      })
+    )
+
+    return this.registerStream(message, onMessage)
+  }
+
+  public async streamTransaction(
+    data: GetTransactionLifecycleMessageData,
+    onMessage: (message: InboundMessage<any>) => void,
+    options: StreamOptions = {}
+  ): Promise<Stream> {
+    const message = getTransactionLifecycleMessage(
+      data,
+      mergeDefaultsStreamOptions(options, {
+        fetch: true,
+        listen: true
+      })
+    )
+
+    return this.registerStream(message, onMessage)
+  }
+
+  public streamHeadInfo(
+    onMessage: (message: InboundMessage<any>) => void,
+    options: StreamOptions = {}
+  ): Promise<Stream> {
+    const message = getHeadInfoMessage(
+      mergeDefaultsStreamOptions(options, {
+        listen: true
+      })
+    )
+
+    return this.registerStream(message, onMessage)
+  }
+
+  //
+  /// HTTP API
+  //
+
+  public async authIssue(apiKey: string): Promise<AuthTokenResponse> {
+    return this.httpClient.authRequest<AuthTokenResponse>(V1_AUTH_ISSUE, "POST", undefined, {
+      api_key: apiKey
     })
-
-    return this.createListenerWithSend(getTableRowsMessage(parameters, options))
   }
 
-  public getTransactionLifecycle(id: string, options: StreamOptions = {}): EoswsStream {
-    options = mergeDefaultsStreamOptions(options, {
-      fetch: true,
-      listen: true
+  public async searchTransactions(
+    q: string,
+    options: {
+      startBlock?: number
+      sort?: SearchSortType
+      blockCount?: number
+      limit?: number
+      cursor?: string
+      withReversible?: boolean
+    } = {}
+  ): Promise<SearchTransactionsResponse> {
+    return this.apiRequest<SearchTransactionsResponse>(V0_SEARCH_TRANSACTIONS, "GET", {
+      q,
+      start_block: options.startBlock,
+      sort: options.sort,
+      block_count: options.blockCount === undefined ? Number.MAX_SAFE_INTEGER : options.blockCount,
+      limit: options.limit,
+      cursor: options.cursor,
+      with_reversible: options.withReversible
     })
-
-    return this.createListenerWithSend(getTransactionLifecycleMessage({ id }, options))
   }
 
-  private createListenerWithSend(message: OutboundMessage<any>): EoswsStream {
-    const reqId = message.req_id!
-    const onMessage = (callback: SocketMessageListener) => {
-      this.listeners.addListener({ reqId, callback, subscriptionMessage: message })
-      this.socket.send(message)
-    }
+  public async stateAbi(
+    account: string,
+    options: { blockNum?: number; json?: boolean } = {}
+  ): Promise<StateAbiResponse> {
+    return this.apiRequest<StateAbiResponse>(V0_STATE_ABI, "GET", {
+      account,
+      block_num: options.blockNum,
+      json: options.json === undefined ? true : options.json
+    })
+  }
 
-    return {
-      onMessage,
-      reqId,
-      unlisten: () => this.unlisten(reqId)
+  public async stateAbiBinToJson<T = unknown>(
+    account: string,
+    table: string,
+    hexRows: string[],
+    options: { blockNum?: number } = {}
+  ): Promise<StateAbiToJsonResponse<T>> {
+    return this.apiRequest<StateAbiToJsonResponse<T>>(V0_STATE_ABI_BIN_TO_JSON, "POST", undefined, {
+      account,
+      table,
+      hex_rows: hexRows,
+      block_num: options.blockNum
+    })
+  }
+
+  public async stateKeyAccounts(
+    publicKey: string,
+    options: { blockNum?: number } = {}
+  ): Promise<StateKeyAccountsResponse> {
+    return this.apiRequest<StateKeyAccountsResponse>(V0_STATE_KEY_ACCOUNTS, "GET", {
+      public_key: publicKey,
+      block_num: options.blockNum
+    })
+  }
+
+  public async statePermissionLinks(
+    account: string,
+    options: { blockNum?: number } = {}
+  ): Promise<StatePermissionLinksResponse> {
+    return this.apiRequest<StatePermissionLinksResponse>(V0_STATE_PERMISSION_LINKS, "GET", {
+      account,
+      block_num: options.blockNum
+    })
+  }
+
+  public async stateTableScopes(
+    account: string,
+    table: string,
+    options: { blockNum?: number } = {}
+  ): Promise<StateTableScopesResponse> {
+    return this.apiRequest<StateTableScopesResponse>(V0_STATE_TABLE_SCOPES, "GET", {
+      account,
+      table,
+      block_num: options.blockNum
+    })
+  }
+
+  public async stateTable<T = unknown>(
+    account: string,
+    scope: string,
+    table: string,
+    options: {
+      blockNum?: number
+      json?: boolean
+      keyType?: StateKeyType
+      withBlockNum?: boolean
+      withAbi?: boolean
+    } = {}
+  ): Promise<StateResponse<T>> {
+    return this.apiRequest<StateResponse<T>>(V0_STATE_TABLE, "GET", {
+      account,
+      scope,
+      table,
+      block_num: options.blockNum,
+      json: options.json === undefined ? true : options.json,
+      key_type: options.keyType,
+      with_block_num: options.withBlockNum,
+      with_abi: options.withAbi
+    })
+  }
+
+  public async stateTablesForAccounts<T = unknown>(
+    accounts: string[],
+    scope: string,
+    table: string,
+    options: {
+      blockNum?: number
+      json?: boolean
+      keyType?: StateKeyType
+      withBlockNum?: boolean
+      withAbi?: boolean
+    } = {}
+  ): Promise<MultiStateResponse<T>> {
+    return this.apiRequest<MultiStateResponse<T>>(V0_STATE_TABLES_ACCOUNTS, "GET", {
+      accounts: accounts.join("|"),
+      scope,
+      table,
+      block_num: options.blockNum,
+      json: options.json === undefined ? true : options.json,
+      key_type: options.keyType,
+      with_block_num: options.withBlockNum,
+      with_abi: options.withAbi
+    })
+  }
+
+  public async stateTablesForScopes<T = unknown>(
+    account: string,
+    scopes: string[],
+    table: string,
+    options: {
+      blockNum?: number
+      json?: boolean
+      keyType?: StateKeyType
+      withBlockNum?: boolean
+      withAbi?: boolean
+    } = {}
+  ): Promise<MultiStateResponse<T>> {
+    return this.apiRequest<MultiStateResponse<T>>(V0_STATE_TABLES_SCOPES, "GET", {
+      account,
+      scopes: scopes.join("|"),
+      table,
+      block_num: options.blockNum,
+      json: options.json === undefined ? true : options.json,
+      key_type: options.keyType,
+      with_block_num: options.withBlockNum,
+      with_abi: options.withAbi
+    })
+  }
+
+  protected async apiRequest<T>(
+    path: string,
+    method: string,
+    params?: HttpQueryParameters,
+    body?: any
+  ): Promise<T> {
+    try {
+      this.debug("Retrieving latest API token via token manager")
+      const apiTokenInfo = await this.apiTokenManager.getTokenInfo()
+
+      return this.httpClient.apiRequest<T>(apiTokenInfo.token, path, method, params, body)
+    } catch (error) {
+      throw new DfuseError("Unable to obtain the API token", error)
     }
   }
 
-  private unlisten(requestId: string) {
-    this.listeners.removeListener(requestId)
-    this.socket.send(unlistenMessage({ req_id: requestId }))
+  protected async registerStream(
+    message: OutboundMessage<any>,
+    onMessage: OnStreamMessage
+  ): Promise<Stream> {
+    try {
+      this.debug("Retrieving latest API token via token manager")
+      const apiTokenInfo = await this.apiTokenManager.getTokenInfo()
+
+      // Ensure we update the API token to have it at its latest value
+      this.streamClient.setApiToken(apiTokenInfo.token)
+
+      return this.streamClient.registerStream(message, onMessage)
+    } catch (error) {
+      throw new DfuseError("Unable to obtain the API token", error)
+    }
+  }
+
+  private onTokenRefresh = (apiToken: string) => {
+    // Ensure we update the API token to have it at its latest value
+    this.streamClient.setApiToken(apiToken)
   }
 }
 
 function randomReqId() {
-  return `r${Math.random()
+  return `dc-${Math.random()
     .toString(16)
     .substr(2)}`
 }

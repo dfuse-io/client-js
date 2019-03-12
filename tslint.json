@@ -10,6 +10,7 @@
     "no-console": false,
     "only-arrow-functions": false,
     "no-bitwise": false,
+    "max-classes-per-file": false,
     "member-ordering": false
   },
   "rulesDirectory": []

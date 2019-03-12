@@ -2,34 +2,8 @@ import debugFactory, { IDebugger } from "debug"
 
 import { OutboundMessage } from "../message/outbound"
 import { InboundMessage, InboundMessageType } from "../message/inbound"
-import { ApiTokenInfo } from "./client"
-import { ApiTokenStorageInterface } from "./api-token-storage"
-
-// FIXME: Using the `WebSocket` type resolves to DOM `WebSocket` object.
-//        If consumer of library is not DOM aware via TypeScript, the actual
-//        `WebSocket` type in the consuming library will not be resolved
-//        and the library compilation will fail even if the type def is in
-//        our own library. Not sure what is the best course of action to
-//        fix this!
-export type WebSocketFactory = (apiTokenInfo: ApiTokenInfo) => Promise<any>
-
-export function createEoswsSocket(webSocketFactory: WebSocketFactory, options: SocketOptions = {}) {
-  return new DefaultEoswsSocket(
-    webSocketFactory,
-    Object.assign({}, { autoReconnect: true }, options)
-  )
-}
-
-export interface EoswsSocket {
-  isConnected: boolean
-  setTokenStorage(tokenStorage: ApiTokenStorageInterface): void
-  connect(listener: SocketMessageListener): Promise<void>
-  disconnect(): Promise<void>
-
-  send<T>(message: OutboundMessage<T>): Promise<boolean>
-}
-
-export type SocketMessageListener = (message: InboundMessage<any>) => void
+import { DfuseError } from "../types/error"
+import { WebSocket, Socket, SocketMessageListener } from "../types/socket"
 
 export interface SocketOptions {
   id?: string
@@ -37,10 +11,59 @@ export interface SocketOptions {
   reconnectDelayInMs?: number
   keepAlive?: boolean
   keepAliveIntervalInMs?: number
+  webSocket?: WebSocket
+
   onInvalidMessage?: (message: object) => void
   onReconnect?: () => void
   onError?: (message: object) => void
   onClose?: (message: object) => void
+}
+
+export function createSocket(url: string, options: SocketOptions = {}): Socket {
+  return new DefaultSocket(url, {
+    id: "",
+    autoReconnect: true,
+    reconnectDelayInMs: DEFAULT_RECONNECT_DELAY_IN_MS,
+    keepAlive: true,
+    keepAliveIntervalInMs: DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS,
+    webSocket: inferWebSocket(options.webSocket),
+    ...options
+  })
+}
+
+function inferWebSocket(webSocket?: WebSocket): WebSocket {
+  const debug = debugFactory("dfuse:socket")
+
+  if (webSocket !== undefined) {
+    debug("Using user provided `webSocket` option.")
+    return webSocket
+  }
+
+  // If we are in a Browser environment and `WebSocket` is available, use it
+  if (typeof window !== "undefined" && (window as any).WebSocket != null) {
+    debug("Using `WebSocket` global value found on 'window' variable (Browser environment).")
+    return (window as any).WebSocket
+  }
+
+  // If we are in a Node.js like environment and `WebSocket` is available, use it
+  if (typeof global !== "undefined" && (global as any).WebSocket != null) {
+    debug("Using `WebSocket` global value found on 'global' variable (Node.js environment).")
+    return (global as any).WebSocket
+  }
+
+  // Otherwise, throw an exception
+  const messages = [
+    "You did not provide a `webSocket` option and we were not able find a `WebSocket` object in",
+    "the global scope to create use.",
+    "",
+    "You are most likely in a Node.js environment where a global `WebSocket` is not available by default.",
+    "To resolve the issue, either pass a compatible `webSocket` option or globally defined a `global.WebSocket`",
+    "variable pointing to a compatible `WebSocket` client.",
+    "",
+    "We invite you to read our documentation to learn more about this problem."
+  ]
+
+  throw new DfuseError(messages.join("\n"))
 }
 
 const noop = () => {
@@ -53,34 +76,33 @@ type Rejecter = (reason?: any) => void
 const DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS = 30000 // 30s
 const DEFAULT_RECONNECT_DELAY_IN_MS = 5000 // 5s
 
-class DefaultEoswsSocket implements EoswsSocket {
-  public isConnected: boolean = false
-  public socket?: any // FIXME: See comment on type `WebSocketFactory` for details
-
-  private socketFactory: WebSocketFactory
-  private tokenStorage?: ApiTokenStorageInterface
+class DefaultSocket implements Socket {
+  private url: string
+  private apiToken?: string
   private options: SocketOptions
-  private listener?: SocketMessageListener
 
+  public isConnected: boolean = false
+  public socket?: WebSocket
+
+  private debug: IDebugger
+  private listener?: SocketMessageListener
   private connectionPromise?: Promise<void>
   private intervalHandler?: any
 
-  private debug: IDebugger
-
-  public constructor(socketFactory: WebSocketFactory, options: SocketOptions) {
-    this.socketFactory = socketFactory
+  public constructor(url: string, options: SocketOptions) {
+    this.url = url
     this.options = options
 
-    this.debug = debugFactory("eosws:socket" + (options.id !== undefined ? `:${options.id}` : ""))
+    this.debug = debugFactory("dfuse:socket" + (options.id !== "" ? `:${options.id}` : ""))
   }
 
-  public setTokenStorage(tokenStorage: ApiTokenStorageInterface) {
-    this.tokenStorage = tokenStorage
+  public setApiToken(apiToken: string): void {
+    this.debug("Socket API token updated to %s.", apiToken)
+    this.apiToken = apiToken
   }
 
   public async connect(listener: SocketMessageListener): Promise<void> {
     this.debug("About to connect to remote endpoint.")
-
     if (this.connectionPromise !== undefined) {
       return this.connectionPromise
     }
@@ -91,6 +113,7 @@ class DefaultEoswsSocket implements EoswsSocket {
       if (this.isConnected) {
         return
       }
+
       return this.createAnOpenSocket(
         this.onSocketConnectOpenFactory(resolve),
         this.onSocketErrorFactory(reject)
@@ -100,7 +123,7 @@ class DefaultEoswsSocket implements EoswsSocket {
       })
     })
 
-    this.debug("Connection to remote endpoint initialized, returning promise to caller.")
+    this.debug("Connection to remote endpoint in-progress, returning promise to caller.")
     return this.connectionPromise
   }
 
@@ -144,25 +167,35 @@ class DefaultEoswsSocket implements EoswsSocket {
     return true
   }
 
-  private async createAnOpenSocket<T>(
+  private async createAnOpenSocket(
     onSocketOpen: () => void,
     onSocketError: (event: Event) => void
   ): Promise<WebSocket> {
-    let socket: WebSocket
-    if (!this.tokenStorage) {
-      throw new Error("tokenStorage not set, please use setTokenStorage to set it up")
-    }
-    const apiToken = this.tokenStorage.get()
-    if (apiToken) {
-      socket = await this.socketFactory(apiToken)
-      socket.onopen = onSocketOpen
-      socket.onerror = onSocketError
-      socket.onclose = this.onSocketClose
-      socket.onmessage = this.onSocketMessage
-      return socket
+    const url = this.buildUrl()
+
+    this.debug("Starting connection handshake with remote url %s.", url)
+    const socket: WebSocket = new this.options.webSocket(url)
+
+    socket.onopen = onSocketOpen
+    socket.onerror = onSocketError
+    socket.onclose = this.onSocketClose
+    socket.onmessage = this.onSocketMessage
+
+    return socket
+  }
+
+  private buildUrl(): string {
+    if (this.apiToken === undefined) {
+      // FIXME: Shall we throw an exception instead?
+      return this.url
     }
 
-    throw new Error("token not set")
+    // FIXME: Decompose url, add query param api token if available, then re-compose url!
+    if (this.url.includes("?")) {
+      return `${this.url}&token=${this.apiToken}`
+    }
+
+    return `${this.url}?token=${this.apiToken}`
   }
 
   private onSocketConnectOpenFactory = (resolve: Resolver<void>) => () => {
@@ -201,7 +234,7 @@ class DefaultEoswsSocket implements EoswsSocket {
 
     this.cleanSocket()
 
-    this.debug("Signaling rejection of `connect` method in the outer scope.")
+    this.debug("Signaling rejection of connection in the outer scope.")
     reject(event)
 
     this.debug("Sending an `onError` notification to client consumer.")
@@ -284,6 +317,7 @@ class DefaultEoswsSocket implements EoswsSocket {
   private async reconnect(): Promise<boolean> {
     if (this.connectionPromise) {
       try {
+        this.debug("Awaiting actual connection to complete.")
         await this.connectionPromise
         return true
       } catch (error) {
