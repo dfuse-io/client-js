@@ -1,6 +1,6 @@
 # Changelog
 
-## In Progress
+## 0.11.7 (March 21, 2019)
 
 - Added possibility to pass undocumented options.
 
