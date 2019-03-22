@@ -10,6 +10,16 @@ async function main() {
     console.log("Socket received an error", event)
   }
 
+  // When receiving this message, you have been re-connected with the server automatically,
+  // however, we do not (yet) re-register all the streams you had (streams are from calling
+  // main actions on the client like `getActionTraces` or `getTableRows`).
+  //
+  // As such, right now, you are responsible of re-registering the stream yourself. You
+  // should read the https://docs.dfuse.io/#websocket-based-api-never-missing-a-beat section
+  // of the documentation to get a better overview of the concept.
+  //
+  // You can implement the re-connection right here, simply re-connect all your stream handlers
+  // in the callback below, according to the rules specified in the documentation above.
   const onReconnect = () => {
     console.log("Socket just reconnected, re-register your streams at the right block...")
   }
