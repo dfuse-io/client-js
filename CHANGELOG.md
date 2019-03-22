@@ -2,6 +2,9 @@
 
 ## In Progress
 
+- Passing socket event to `onError` and `onClose` event handlers.
+- Added `trace_id` to error type.
+
 ## 0.11.7 (March 21, 2019)
 
 - Added possibility to pass undocumented options.

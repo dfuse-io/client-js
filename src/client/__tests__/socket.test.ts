@@ -83,13 +83,13 @@ describe("socket", () => {
     const onError = jest.fn()
     const socket = createEoswsSocket(factory, { onError })
     setTimeout(() => {
-      rejectConnection()
+      rejectConnection("something")
     }, 0)
 
     expect.hasAssertions()
-    await expect(socket.connect(noopListener)).rejects.toBeUndefined()
+    await expect(socket.connect(noopListener)).rejects.toEqual("something")
     expect(onError).toHaveBeenCalledTimes(1)
-    expect(onError).toHaveBeenCalledWith()
+    expect(onError).toHaveBeenCalledWith("something")
   })
 
   it("notifies onError when error occurred after succesfull connection", async () => {
@@ -97,13 +97,13 @@ describe("socket", () => {
     const socket = createEoswsSocket(factory, { onError })
     setTimeout(() => {
       openConnection()
-      rejectConnection()
+      rejectConnection("something")
     }, 0)
 
     expect.hasAssertions()
     await expect(socket.connect(noopListener)).resolves.toBeUndefined()
     expect(onError).toHaveBeenCalledTimes(1)
-    expect(onError).toHaveBeenCalledWith()
+    expect(onError).toHaveBeenCalledWith("something")
   })
 
   it("reconnects on abnormal close code ", async () => {

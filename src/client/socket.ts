@@ -35,8 +35,8 @@ export interface SocketOptions {
   reconnectDelayInMs?: number
   onInvalidMessage?: (message: object) => void
   onReconnect?: () => void
-  onError?: () => void
-  onClose?: () => void
+  onError?: (message: object) => void
+  onClose?: (message: object) => void
 }
 
 const noop = () => {
@@ -162,7 +162,7 @@ class DefaultEoswsSocket implements EoswsSocket {
     reject(event)
 
     this.debug("Sending an `onError` notification to client consumer.")
-    this.onError()
+    this.onError(event)
   }
 
   private onSocketClose = (event: CloseEvent) => {
@@ -172,7 +172,7 @@ class DefaultEoswsSocket implements EoswsSocket {
     this.connectionPromise = undefined
 
     this.debug("Sending a `onReconnect` notification to client consumer.")
-    this.onClose()
+    this.onClose(event)
 
     if (event.code !== 1000 && event.code !== 1005) {
       this.debug("Socket has close abnormally, trying to re-connect to socket.")
@@ -268,11 +268,11 @@ class DefaultEoswsSocket implements EoswsSocket {
     ;(this.options.onReconnect || noop)()
   }
 
-  private onClose() {
-    ;(this.options.onClose || noop)()
+  private onClose(message: any) {
+    ;(this.options.onClose || noop)(message)
   }
 
-  private onError() {
-    ;(this.options.onError || noop)()
+  private onError(message: any) {
+    ;(this.options.onError || noop)(message)
   }
 }
