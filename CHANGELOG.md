@@ -1,5 +1,7 @@
 # Changelog
 
+## In Progress
+
 ## 0.11.8 (March 22, 2019)
 
 - Passing socket event to `onError` and `onClose` event handlers.
