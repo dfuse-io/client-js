@@ -2,6 +2,10 @@
 
 ## In Progress
 
+- Added automatic keep alive (pong message) at regular interval (on by default).
+- Added an option to enable or disable automatic keep alive.
+- Added an option to specify the amount of time in milliseconds between each keep alive messages.
+
 ## 0.11.8 (March 22, 2019)
 
 - Passing socket event to `onError` and `onClose` event handlers.

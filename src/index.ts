@@ -1,6 +1,7 @@
 export * from "./client/client"
 export * from "./client/socket"
 export * from "./client/listeners"
+export * from "./helpers/time"
 export * from "./message/inbound"
 export * from "./message/outbound"
 export * from "./types/action_trace"
