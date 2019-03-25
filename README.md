@@ -53,6 +53,26 @@ connector
   })
 ```
 
+### Use Cases
+
+You can see various examples in the [examples](./examples) folder. Here the reference list:
+
+- [Get Action Traces](./examples/get-action-traces.ts)
+- [Get Action Traces From Multiple Contracts](./examples/get-action-traces-multi-contracts.ts)
+- [Get Table Rows](./examples/get-table-rows.ts)
+- [Get Table Snapshot Only](./examples/get-table-snapshot-only.ts)
+- [Get Transaction Lifecycle](./examples/get-transaction-lifecycle.ts)
+- [Multi Listen](./examples/multi-listen.ts)
+- [Socket Notifications](./examples/socket-notifications.ts)
+
+### Endpoints
+
+Here are the currently available endpoints:
+
+- **Mainnet** `mainnet.eos.dfuse.io`
+- **Jungle** `jungle.eos.dfuse.io`
+- **Kylin** `kylin.eos.dfuse.io`
+
 ### Node.js
 
 If you target a `Node.js` environment instead, import a proper `WebSocket` client
@@ -77,93 +97,12 @@ const WebSocket = require("ws")
 
 #### Package [websocket](https://www.npmjs.com/package/websocket)
 
-The client of this package does **not** follow [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) specification. As such, it's
-currently not supported by this library.
+The client of this package does **not** follow [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) specification. As such, it's currently not supported by this library.
 
 We might provide an adapter in the future, but nothing is planned yet, pull request welcome!
 
 **Note** It can be used standalone (i.e. without this library), if you really need it, but won't
 be able to leverage all the goodies this library provides for you.
-
-### Endpoints
-
-Here the currently available public endpoints:
-
-- **Mainnet** `mainnet.eos.dfuse.io`
-- **Kylin** `kylin.eos.dfuse.io`
-
-## Development
-
-The best way to develop this library is through modifying and adding examples
-to the project.
-
-To run the examples, it's quite simple, follow these instructions:
-
-1.  Install project dependencies so that you get development tools at the same time:
-
-    ```
-    yarn install
-    ```
-
-1.  Link the project inside itself, that will be necessary to correct run the
-    examples which import `@dfuse/eosws-js`:
-
-    ```
-    yarn link
-    yarn link @dfuse/eosws-js
-    ```
-
-1.  Start the build watcher so distribution files are always up-to-date. Forgetting
-    to do that will prevent examples from picking latest changes you've made to
-    source files!
-
-    ```
-    yarn build:watch
-    ```
-
-1.  Last step is to add `.env` file containing the [dfuse](https://dfuse.io) API key
-    required to run the examples. Create a file `.env` at the root of the project
-    with the following content:
-
-    ```
-    DFUSE_IO_API_KEY=Replace this with API key!
-    ```
-
-1.  Final check, let's run an example to ensure everything is working:
-
-    ```
-    yarn run ts-node examples/get-action-traces.ts
-    ```
-
-### Publishing
-
-First, ensure you have a pristine state of your working directory, and check tests & compilation:
-
-    rm -rf dist
-    yarn build
-    yarn test
-
-Assuming you have been granted access rights to publish this package, the command to perform is simply:
-
-    yarn publish --access public
-
-#### Pre-release
-
-If you want to publish a pre-release version not flagged as the latest so that people still pulls
-the current stable version unless they opt-in explicitly, use the following invocation:
-
-    yarn publish --access public --tag next
-
-### Use Cases
-
-You can see various examples in the [examples](./examples) folder. Here the reference list:
-
-- [Get Action Traces](./examples/get-action-traces.ts)
-- [Get Action Traces From Multiple Contracts](./examples/get-action-traces-multi-contracts.ts)
-- [Get Table Rows](./examples/get-table-rows.ts)
-- [Get Table Snapshot Only](./examples/get-table-snapshot-only.ts)
-- [Get Transaction Lifecycle](./examples/get-transaction-lifecycle.ts)
-- [Multi Listen](./examples/multi-listen.ts)
 
 ## API
 
@@ -199,12 +138,14 @@ A factory method responsible of creating a `EoswsSocket` object that is consumed
 ##### Properties
 
 - `id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** An id to identify the actual socket for debugging purposes. (Optional, `undefined` by default)
+- `keepAlive` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Determine if if a `pong` message should be sent at regular interval to ensure the connection is healthy. (Optional, `true` by default).
+- `keepAliveIntervalInMs` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The amount of time in milliseconds to wait between each keep alive message sending. (Optional, `30000` (30s) by default).
 - `autoReconnect` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Determine if the socket should auto-reconnect to the remote endpoint when connection is closed abnormally. (Optional, `true` by default).
-- `reconnectDelayInMs` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The amount of time in milliseconds to wait before trying a second reconnection attempt.
-- `onInvalidMessage` **(message: object) => void** A function that is invoked back when a message of an unknown `type` is returned to the client.
-- `onReconnect` **(message: object) => void** A function that is invoked back when a successful reconnection happen.
-- `onError` **(message: object) => void** A function that is invoked back when socket receive an `ErrorEvent` according to the WebSocket protocol.
-- `onClose` **(message: object) => void** A function that is invoked back when socket receives a `CloseEvent` according to the WebSocket protocol.
+- `reconnectDelayInMs` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The amount of time in milliseconds to wait before trying a second reconnection attempt. (Optional, `5000` (5s) by default).
+- `onInvalidMessage` **(message: object) => void** A function that is invoked back when a message of an unknown `type` is returned to the client. (Optional, `undefined` by default)
+- `onReconnect` **() => void** A function that is invoked back when a successful reconnection happen. (Optional, `undefined` by default)
+- `onError` **(event: object) => void** A function that is invoked back when socket receive an `ErrorEvent` according to the WebSocket protocol. (Optional, `undefined` by default)
+- `onClose` **(event: object) => void** A function that is invoked back when socket receives a `CloseEvent` according to the WebSocket protocol. (Optional, `undefined` by default)
 
 #### EoswsClient
 
@@ -307,6 +248,68 @@ An object containing the various common properties for the Eosws base messaging 
   You will, at a maximum, receive one notification each 250 milliseconds (when processing large amounts of blocks),
   and when blockNum % frequency == 0. When you receive a progress notification associated with a stream (again, identified by its req_id),
   you are guaranteed to have seen all messages produced by that stream, between the previous progress notification and the one received (inclusively).
+
+## Development
+
+The best way to develop this library is through modifying and adding examples
+to the project.
+
+To run the examples, it's quite simple, follow these instructions:
+
+1.  Install project dependencies so that you get development tools at the same time:
+
+    ```
+    yarn install
+    ```
+
+1.  Link the project inside itself, that will be necessary to correct run the
+    examples which import `@dfuse/eosws-js`:
+
+    ```
+    yarn link
+    yarn link @dfuse/eosws-js
+    ```
+
+1.  Start the build watcher so distribution files are always up-to-date. Forgetting
+    to do that will prevent examples from picking latest changes you've made to
+    source files!
+
+    ```
+    yarn build:watch
+    ```
+
+1.  Last step is to add `.env` file containing the [dfuse](https://dfuse.io) API key
+    required to run the examples. Create a file `.env` at the root of the project
+    with the following content:
+
+    ```
+    DFUSE_IO_API_KEY=Replace this with API key!
+    ```
+
+1.  Final check, let's run an example to ensure everything is working:
+
+    ```
+    yarn run ts-node examples/get-action-traces.ts
+    ```
+
+### Publishing
+
+First, ensure you have a pristine state of your working directory, and check tests & compilation:
+
+    rm -rf dist
+    yarn build
+    yarn test
+
+Assuming you have been granted access rights to publish this package, the command to perform is simply:
+
+    yarn publish --access public
+
+#### Pre-release
+
+If you want to publish a pre-release version not flagged as the latest so that people still pulls
+the current stable version unless they opt-in explicitly, use the following invocation:
+
+    yarn publish --access public --tag next
 
 ## Credits / Acknowledgement
 

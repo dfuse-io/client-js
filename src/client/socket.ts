@@ -35,10 +35,12 @@ export interface SocketOptions {
   id?: string
   autoReconnect?: boolean
   reconnectDelayInMs?: number
+  keepAlive?: boolean
+  keepAliveIntervalInMs?: number
   onInvalidMessage?: (message: object) => void
   onReconnect?: () => void
-  onError?: () => void
-  onClose?: () => void
+  onError?: (message: object) => void
+  onClose?: (message: object) => void
 }
 
 const noop = () => {
@@ -48,7 +50,8 @@ const noop = () => {
 type Resolver<T> = (value?: T | PromiseLike<T>) => void
 type Rejecter = (reason?: any) => void
 
-const DEFAULT_RECONNECT_DELAY_IN_MS = 5000
+const DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS = 30000 // 30s
+const DEFAULT_RECONNECT_DELAY_IN_MS = 5000 // 5s
 
 class DefaultEoswsSocket implements EoswsSocket {
   public isConnected: boolean = false
@@ -60,10 +63,7 @@ class DefaultEoswsSocket implements EoswsSocket {
   private listener?: SocketMessageListener
 
   private connectionPromise?: Promise<void>
-  private connectionPromiseResolver?: Resolver<void>
-  private connectionPromiseRejecter?: Rejecter
-
-  private successfulConnectionCount = 0
+  private intervalHandler?: any
 
   private debug: IDebugger
 
@@ -160,6 +160,10 @@ class DefaultEoswsSocket implements EoswsSocket {
     this.isConnected = true
     this.connectionPromise = undefined
 
+    if (this.keepAliveOption() === true) {
+      this.registerKeepAliveHandler()
+    }
+
     this.debug("Signaling completion of `connect` method in the outer scope.")
     resolve()
   }
@@ -167,6 +171,11 @@ class DefaultEoswsSocket implements EoswsSocket {
   private onSocketReconnectOpenFactory = (resolve: Resolver<boolean>) => () => {
     this.debug("Received `onopen` (via reconnect) notification from socket.")
     this.isConnected = true
+    this.connectionPromise = undefined
+
+    if (this.keepAliveOption() === true) {
+      this.registerKeepAliveHandler()
+    }
 
     this.debug("Signaling completion of `reconnect` method in the outer scope.")
     resolve(true)
@@ -178,22 +187,26 @@ class DefaultEoswsSocket implements EoswsSocket {
   private onSocketErrorFactory = (reject: Rejecter) => (event: Event) => {
     this.debug("Received `onerror` notification from socket.")
     this.isConnected = false
+    this.connectionPromise = undefined
+
+    this.cleanSocket()
 
     this.debug("Signaling rejection of `connect` method in the outer scope.")
     reject(event)
 
     this.debug("Sending an `onError` notification to client consumer.")
-    this.onError()
+    this.onError(event)
   }
 
   private onSocketClose = (event: CloseEvent) => {
     this.debug("Received `onclose` notification from socket.")
     this.isConnected = false
-    this.cleanSocket()
     this.connectionPromise = undefined
 
-    this.debug("Sending a `onReconnect` notification to client consumer.")
-    this.onClose()
+    this.cleanSocket()
+
+    this.debug("Sending a `onClose` notification to client consumer.")
+    this.onClose(event)
 
     if (event.code !== 1000 && event.code !== 1005) {
       this.debug("Socket has close abnormally, trying to re-connect to socket.")
@@ -233,6 +246,31 @@ class DefaultEoswsSocket implements EoswsSocket {
     return validTypes.indexOf(actualType) > -1
   }
 
+  private registerKeepAliveHandler() {
+    const keepAliveInterval =
+      this.options.keepAliveIntervalInMs || DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS
+
+    this.debug("Unregistering keep alive interval")
+    this.intervalHandler = setInterval(() => {
+      if (!this.isConnected || this.socket === undefined) {
+        return
+      }
+
+      this.debug("Sending keep alive pong through socket.")
+      this.socket.send(JSON.stringify({ type: "pong" }))
+    }, keepAliveInterval)
+  }
+
+  private unregisterKeepAliveHandler() {
+    if (this.intervalHandler === undefined) {
+      return
+    }
+
+    this.debug("Unregistering keep alive interval")
+    clearInterval(this.intervalHandler)
+    this.intervalHandler = undefined
+  }
+
   private async reconnect(): Promise<boolean> {
     if (this.connectionPromise) {
       try {
@@ -264,6 +302,10 @@ class DefaultEoswsSocket implements EoswsSocket {
   }
 
   private cleanSocket() {
+    if (this.intervalHandler !== undefined) {
+      this.unregisterKeepAliveHandler()
+    }
+
     if (this.socket === undefined) {
       return
     }
@@ -275,12 +317,6 @@ class DefaultEoswsSocket implements EoswsSocket {
     this.socket = undefined
   }
 
-  private cleanConnectionPromise() {
-    this.connectionPromise = undefined
-    this.connectionPromiseRejecter = undefined
-    this.connectionPromiseResolver = undefined
-  }
-
   private onInvalidMessage(message: object) {
     ;(this.options.onInvalidMessage || noop)(message)
   }
@@ -289,11 +325,15 @@ class DefaultEoswsSocket implements EoswsSocket {
     ;(this.options.onReconnect || noop)()
   }
 
-  private onClose() {
-    ;(this.options.onClose || noop)()
+  private onClose(message: any) {
+    ;(this.options.onClose || noop)(message)
   }
 
-  private onError() {
-    ;(this.options.onError || noop)()
+  private onError(message: any) {
+    ;(this.options.onError || noop)(message)
+  }
+
+  private keepAliveOption(): boolean {
+    return this.options.keepAlive === undefined ? true : this.options.keepAlive
   }
 }

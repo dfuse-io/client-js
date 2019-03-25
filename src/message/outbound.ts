@@ -105,6 +105,7 @@ function createOutboundMessage<T>(
 ): OutboundMessage<T> {
   return {
     type,
+    ...streamOptions,
     req_id: getStreamOption(defaultStreamOptions.req_id, streamOptions.req_id),
     listen: getStreamOption(defaultStreamOptions.listen, streamOptions.listen),
     fetch: getStreamOption(defaultStreamOptions.fetch, streamOptions.fetch),

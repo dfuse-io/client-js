@@ -99,13 +99,13 @@ describe("socket", () => {
     socket.setTokenStorage(storage)
 
     setTimeout(() => {
-      rejectConnection()
+      rejectConnection("something")
     }, 0)
 
     expect.hasAssertions()
-    await expect(socket.connect(noopListener)).rejects.toBeUndefined()
+    await expect(socket.connect(noopListener)).rejects.toEqual("something")
     expect(onError).toHaveBeenCalledTimes(1)
-    expect(onError).toHaveBeenCalledWith()
+    expect(onError).toHaveBeenCalledWith("something")
   })
 
   it("notifies onError when error occurred after succesfull connection", async () => {
@@ -115,13 +115,13 @@ describe("socket", () => {
 
     setTimeout(() => {
       openConnection()
-      rejectConnection()
+      rejectConnection("something")
     }, 0)
 
     expect.hasAssertions()
     await expect(socket.connect(noopListener)).resolves.toBeUndefined()
     expect(onError).toHaveBeenCalledTimes(1)
-    expect(onError).toHaveBeenCalledWith()
+    expect(onError).toHaveBeenCalledWith("something")
   })
 
   it("reconnects on abnormal close code ", async () => {
@@ -260,6 +260,61 @@ describe("socket", () => {
     expect(mockedWebSocket.send).toHaveBeenCalledWith(
       '{"type":"get_action_traces","listen":true,"data":{"account":"test"}}'
     )
+  })
+
+  it("send pong message when keep alive sets to true", async () => {
+    const socket = createEoswsSocket(factory, { keepAlive: true, keepAliveIntervalInMs: 4 })
+    setTimeout(() => {
+      openConnection()
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+
+    await waitFor(5)
+
+    expect(mockedWebSocket.send).toHaveBeenCalledTimes(1)
+    expect(mockedWebSocket.send).toHaveBeenCalledWith('{"type":"pong"}')
+  })
+
+  it("stop sending pong message when keep alive sets to true and disconnected", async () => {
+    const socket = createEoswsSocket(factory, {
+      autoReconnect: false,
+      keepAlive: true,
+      keepAliveIntervalInMs: 4
+    })
+    setTimeout(() => {
+      openConnection()
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+
+    setTimeout(() => {
+      closeConnection({ code: 1001 })
+    }, 5)
+
+    await waitFor(5)
+
+    expect(mockedWebSocket.send).toHaveBeenCalledTimes(1)
+    expect(mockedWebSocket.send).toHaveBeenCalledWith('{"type":"pong"}')
+  })
+
+  it("no pong messages when keep alive sets to false", async () => {
+    const socket = createEoswsSocket(factory, {
+      keepAlive: false,
+      keepAliveIntervalInMs: 1
+    })
+    setTimeout(() => {
+      openConnection()
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+
+    await waitFor(3)
+
+    expect(mockedWebSocket.send).toHaveBeenCalledTimes(0)
   })
 
   it("forwards received message to listener", async () => {

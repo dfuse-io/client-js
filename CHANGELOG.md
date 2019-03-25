@@ -1,16 +1,22 @@
 # Changelog
 
-## In Progress
+## In Progress (Next)
 
-## 0.12.0 (February 21 2019)
+## In Progress (Current)
 
-- pre-release tag
-- Make socketFactory async
-- Prepare reconnection pattern
+- Added an option to specify the amount of time in milliseconds between each keep alive messages.
+
+## 0.11.8 (March 22, 2019)
+
+- Passing socket event to `onError` and `onClose` event handlers.
+- Added `trace_id` to error type.
+
+## 0.11.7 (March 21, 2019)
+
+- Added possibility to pass undocumented options.
 
 ## 0.11.6 (December 02, 2018)
 
-- Fixed progress message not forwarded correctly to message handler.
 - Fixed `with_progress` accepting a `number` and not a `boolean`.
 
 ## 0.11.5 (November 28, 2018)
