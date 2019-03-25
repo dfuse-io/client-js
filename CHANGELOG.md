@@ -1,6 +1,6 @@
 # Changelog
 
-## In Progress
+## 0.11.9 (March 25, 2019)
 
 - Added automatic keep alive (pong message) at regular interval (on by default).
 - Added an option to enable or disable automatic keep alive.
