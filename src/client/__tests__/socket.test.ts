@@ -1,4 +1,4 @@
-import { createEoswsSocket } from "../socket"
+import { createEoswsSocket, EoswsSocket } from "../socket"
 import { InboundMessage, InboundMessageType } from "../../message/inbound"
 import { getActionTracesMessage } from "../../message/outbound"
 
@@ -15,6 +15,10 @@ describe("socket", () => {
     mockedWebSocket = createSocketController()
     factory = () => mockedWebSocket as any
     receivedMessages = []
+  })
+
+  afterEach(() => {
+    cleanupConnection()
   })
 
   it("starts disconnected by default", () => {
@@ -90,6 +94,24 @@ describe("socket", () => {
     await expect(socket.connect(noopListener)).rejects.toEqual("something")
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onError).toHaveBeenCalledWith("something")
+  })
+
+  it("notifies onClose even when error occurs", async () => {
+    const onError = jest.fn()
+    const onClose = jest.fn()
+    const socket = createEoswsSocket(factory, { onError, onClose })
+    setTimeout(() => {
+      rejectConnection("something")
+      closeConnection("something")
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).rejects.toEqual("something")
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(onError).toHaveBeenCalledWith("something")
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onClose).toHaveBeenCalledWith("something")
   })
 
   it("notifies onError when error occurred after succesfull connection", async () => {
@@ -181,6 +203,27 @@ describe("socket", () => {
     expect(socket.isConnected).toBeFalsy()
   })
 
+  it("notifies onClose even after disconnect has been called", async (done) => {
+    const onError = jest.fn()
+    const onClose = (event: any) => {
+      expect(event).toEqual("something")
+      done()
+    }
+
+    const socket = createEoswsSocket(factory, { onError, onClose })
+    setTimeout(() => {
+      openConnection({ code: 1000 })
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+
+    socket.disconnect()
+
+    expect(mockedWebSocket.close).toHaveBeenCalledTimes(1)
+    closeConnection("something")
+  })
+
   it("send message correctly when connected", async () => {
     const socket = createEoswsSocket(factory)
     setTimeout(() => {
@@ -236,8 +279,8 @@ describe("socket", () => {
     }, 0)
 
     expect.hasAssertions()
-    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
 
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
     await waitFor(12)
 
     expect(mockedWebSocket.send).toHaveBeenCalledTimes(1)
@@ -361,6 +404,12 @@ describe("socket", () => {
   const sendRawMessageToConnection = createHandlerExecutor("onmessage")
   const sendMessageToConnection = (message: InboundMessage<any>) => {
     sendRawMessageToConnection({ data: JSON.stringify(message) })
+  }
+
+  const cleanupConnection = () => {
+    if (mockedWebSocket && mockedWebSocket.onclose) {
+      return mockedWebSocket.onclose({ code: 1000, reason: "test clean up", wasClean: true } as any)
+    }
   }
 })
 
