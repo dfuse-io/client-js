@@ -230,7 +230,7 @@ describe("socket", () => {
   })
 
   it("send pong message when keep alive sets to true", async () => {
-    const socket = createEoswsSocket(factory, { keepAlive: true, keepAliveIntervalInMs: 4 })
+    const socket = createEoswsSocket(factory, { keepAlive: true, keepAliveIntervalInMs: 10 })
     setTimeout(() => {
       openConnection()
     }, 0)
@@ -238,7 +238,7 @@ describe("socket", () => {
     expect.hasAssertions()
     await expect(socket.connect(noopListener)).resolves.toBeUndefined()
 
-    await waitFor(5)
+    await waitFor(12)
 
     expect(mockedWebSocket.send).toHaveBeenCalledTimes(1)
     expect(mockedWebSocket.send).toHaveBeenCalledWith('{"type":"pong"}')
