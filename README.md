@@ -25,18 +25,12 @@ const {
 } = require("@dfuse/eosws-js")
 
 const endpoint = "mainnet.eos.dfuse.io"
-const apiKey = "<Paste your API key here>"
-const wsRefresher = (tokenInfo) => {
-  return new WebSocket(`wss://${endpoint}/v1/stream?token=${tokenInfo.token}`, {
-    origin: "https://example.com"
-  })
-}
+const token = "<Paste your API token here>"
+const client = new EoswsClient(
+  createEoswsSocket(() => new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`))
+)
 
-const socket = createEoswsSocket(wsRefresher)
-const client = new EoswsClient({ socket, baseUrl: `https://${endpoint}` })
-const connector = new EoswsConnector({ client, apiKey })
-
-connector
+client
   .connect()
   .then(() => {
     client

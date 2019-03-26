@@ -108,14 +108,24 @@ class DefaultEoswsSocket implements EoswsSocket {
     this.debug("About to disconnect from remote endpoint.")
     this.listener = undefined
 
-    if (this.socket !== undefined && !this.isConnected) {
+    if (this.socket !== undefined && this.isConnected) {
       this.debug("Socket not closed, closing it.")
       this.socket.close()
     }
 
-    this.debug("Performing disconnection clean up.")
-    this.cleanSocket()
+    // We must not clean up the socket at this point yet. Cleaning up the socket means
+    // removing the actual event listeners. If you clean up just yet, the `onclose` event
+    // will not be handled and the consumer of the library does not receive its own
+    // `onClose` event. Instead, let's do the clean up once we receive the socket
+    // `onclose` event.
+
+    this.debug(
+      "Lazily disconnected, remaining clean up shall be performed when receiving `onclose` event."
+    )
     this.isConnected = false
+
+    // FIXME: Shall we wait for the `onClose` to resolve a promise we set up so we effectively
+    //        wait for the onclose event to happen?
   }
 
   public async send<T>(message: OutboundMessage<T>): Promise<boolean> {

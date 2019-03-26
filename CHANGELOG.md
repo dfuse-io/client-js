@@ -4,6 +4,12 @@
 
 ## In Progress (Current)
 
+## 0.11.10 (March 26, 2019)
+
+- Fixed a bug where `onClose` event was not notified on closing of the WebSocket connection.
+
+## 0.11.9 (March 25, 2019)
+
 - Added an option to specify the amount of time in milliseconds between each keep alive messages.
 
 ## 0.11.8 (March 22, 2019)
