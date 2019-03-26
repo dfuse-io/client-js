@@ -3,7 +3,7 @@ import debugFactory, { IDebugger } from "debug"
 import { OutboundMessage } from "../message/outbound"
 import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { DfuseError } from "../types/error"
-import { WebSocket, Socket, SocketMessageListener } from "../types/socket"
+import { WebSocket, Socket, SocketMessageListener, WebSocketFactory } from "../types/socket"
 
 export interface SocketOptions {
   id?: string
@@ -11,7 +11,7 @@ export interface SocketOptions {
   reconnectDelayInMs?: number
   keepAlive?: boolean
   keepAliveIntervalInMs?: number
-  webSocket?: WebSocket
+  webSocketFactory?: WebSocketFactory
 
   onInvalidMessage?: (message: object) => void
   onReconnect?: () => void
@@ -26,29 +26,29 @@ export function createSocket(url: string, options: SocketOptions = {}): Socket {
     reconnectDelayInMs: DEFAULT_RECONNECT_DELAY_IN_MS,
     keepAlive: true,
     keepAliveIntervalInMs: DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS,
-    webSocket: inferWebSocket(options.webSocket),
+    webSocketFactory: inferWebSocketFactory(options.webSocketFactory),
     ...options
   })
 }
 
-function inferWebSocket(webSocket?: WebSocket): WebSocket {
+function inferWebSocketFactory(webSocketFactory?: WebSocketFactory): WebSocketFactory {
   const debug = debugFactory("dfuse:socket")
 
-  if (webSocket !== undefined) {
-    debug("Using user provided `webSocket` option.")
-    return webSocket
+  if (webSocketFactory !== undefined) {
+    debug("Using user provided `webSocketFactory` option.")
+    return webSocketFactory
   }
 
   // If we are in a Browser environment and `WebSocket` is available, use it
   if (typeof window !== "undefined" && (window as any).WebSocket != null) {
     debug("Using `WebSocket` global value found on 'window' variable (Browser environment).")
-    return (window as any).WebSocket
+    return (url: string) => Promise.resolve(new (window as any).WebSocket(url))
   }
 
   // If we are in a Node.js like environment and `WebSocket` is available, use it
   if (typeof global !== "undefined" && (global as any).WebSocket != null) {
     debug("Using `WebSocket` global value found on 'global' variable (Node.js environment).")
-    return (global as any).WebSocket
+    return (url: string) => Promise.resolve((global as any).WebSocket(url))
   }
 
   // Otherwise, throw an exception
@@ -114,13 +114,11 @@ class DefaultSocket implements Socket {
         return
       }
 
-      return this.createAnOpenSocket(
+      this.createAnOpenSocket(
         this.onSocketConnectOpenFactory(resolve),
-        this.onSocketErrorFactory(reject)
-      ).then((socket: any) => {
-        this.socket = socket
-        return Promise.resolve(socket)
-      })
+        this.onSocketErrorFactory(reject),
+        reject
+      )
     })
 
     this.debug("Connection to remote endpoint in-progress, returning promise to caller.")
@@ -169,19 +167,24 @@ class DefaultSocket implements Socket {
 
   private async createAnOpenSocket(
     onSocketOpen: () => void,
-    onSocketError: (event: Event) => void
-  ): Promise<WebSocket> {
+    onSocketError: (event: Event) => void,
+    onSocketFactoryError: (error: any) => void
+  ): Promise<void> {
     const url = this.buildUrl()
 
     this.debug("Starting connection handshake with remote url %s.", url)
-    const socket: WebSocket = new this.options.webSocket(url)
+    try {
+      const socket: WebSocket = await this.options.webSocketFactory!(url)
 
-    socket.onopen = onSocketOpen
-    socket.onerror = onSocketError
-    socket.onclose = this.onSocketClose
-    socket.onmessage = this.onSocketMessage
+      socket.onopen = onSocketOpen
+      socket.onerror = onSocketError
+      socket.onclose = this.onSocketClose
+      socket.onmessage = this.onSocketMessage
 
-    return socket
+      this.socket = socket
+    } catch (error) {
+      onSocketFactoryError(error)
+    }
   }
 
   private buildUrl(): string {
@@ -229,10 +232,11 @@ class DefaultSocket implements Socket {
 
   private onSocketErrorFactory = (reject: Rejecter) => (event: Event) => {
     this.debug("Received `onerror` notification from socket.")
-    this.isConnected = false
-    this.connectionPromise = undefined
 
-    this.cleanSocket()
+    // The official flow is to always send an `onclose` event after an `onerror`
+    // ones, as such, we must not clean the socket at this point. We must always
+    // wait and ensures the `onclose` event will be called and that clean up will
+    // happen in the `onclose` handler.
 
     this.debug("Signaling rejection of connection in the outer scope.")
     reject(event)
@@ -337,9 +341,10 @@ class DefaultSocket implements Socket {
 
     return new Promise<boolean>((resolve, reject) => {
       setTimeout(() => {
-        this.socket = this.createAnOpenSocket(
+        this.createAnOpenSocket(
           this.onSocketReconnectOpenFactory(resolve),
-          this.onSocketErrorFactory(reject)
+          this.onSocketErrorFactory(reject),
+          reject
         )
       }, reconnectDelay)
     })
@@ -358,6 +363,7 @@ class DefaultSocket implements Socket {
     this.socket.onclose = noop
     this.socket.onerror = noop
     this.socket.onmessage = noop
+
     this.socket = undefined
   }
 

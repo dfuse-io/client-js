@@ -15,3 +15,5 @@ export interface Socket {
 export type SocketMessageListener = (message: InboundMessage<any>) => void
 
 export type WebSocket = any
+
+export type WebSocketFactory = (url: string) => Promise<WebSocket>
