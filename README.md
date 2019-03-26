@@ -24,7 +24,7 @@ const token = "<Paste your API token here>"
 const client = new EoswsClient(
   createEoswsSocket(
     () =>
-      new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin: "https://example.com" })
+      new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`)
   )
 )
 
