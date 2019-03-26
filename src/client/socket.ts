@@ -196,10 +196,11 @@ class DefaultEoswsSocket implements EoswsSocket {
 
   private onSocketErrorFactory = (reject: Rejecter) => (event: Event) => {
     this.debug("Received `onerror` notification from socket.")
-    this.isConnected = false
-    this.connectionPromise = undefined
 
-    this.cleanSocket()
+    // The official WebSocket flow is to always send an `onclose` event after an `onerror`
+    // ones, as such, we must not clean the socket at this point. We must always
+    // wait and ensures the `onclose` event will be called and that clean up will
+    // happen in the `onclose` handler.
 
     this.debug("Signaling rejection of `connect` method in the outer scope.")
     reject(event)
