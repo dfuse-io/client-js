@@ -7,7 +7,7 @@
   "files": [
     "dist/*"
   ],
-  "repository": "https://github.com/dfuse-io/client",
+  "repository": "https://github.com/dfuse-io/client-js",
   "author": {
     "name": "dfuse Developers",
     "email": "dev@dfuse.io",
