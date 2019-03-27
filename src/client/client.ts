@@ -11,7 +11,7 @@ import {
   getHeadInfoMessage
 } from "../message/outbound"
 import { InboundMessage } from "../message/inbound"
-import { DfuseClient } from "../types/client"
+import { DfuseClient, RequestIdGenerator } from "../types/client"
 import { SearchSortType, SearchTransactionsResponse } from "../types/search"
 import { AuthTokenResponse } from "../types/auth-token"
 import {
@@ -27,7 +27,6 @@ import {
 import { ApiTokenManager, createApiTokenManager } from "./api-token-manager"
 import { createHttpClient, HttpClientOptions } from "./http-client"
 import {
-  Fetch,
   V1_AUTH_ISSUE,
   V0_SEARCH_TRANSACTIONS,
   HttpQueryParameters,
@@ -41,7 +40,7 @@ import {
   V0_STATE_TABLES_SCOPES,
   HttpClient
 } from "../types/http-client"
-import { DfuseError } from "../types/error"
+import { DfuseClientError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
 import { StreamClient, Stream, OnStreamMessage } from "../types/stream-client"
 import { ApiTokenStore, InMemoryApiTokenStore } from "./api-token-store"
@@ -54,6 +53,8 @@ export interface DfuseClientOptions {
   authUrl?: string
 
   // Advanced options
+  requestIdGenerator?: RequestIdGenerator
+
   httpClient?: HttpClient
   httpClientOptions?: HttpClientOptions
 
@@ -74,17 +75,21 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 
   const httpClient =
     options.httpClient || createHttpClient(authUrl, httpUrl, options.httpClientOptions)
-  const streamClient = options.streamClient || createStreamClient(wsUrl + "/v1/stream")
+  const streamClient =
+    options.streamClient || createStreamClient(wsUrl + "/v1/stream", options.streamClientOptions)
 
   const apiTokenStore = options.apiTokenStore || new InMemoryApiTokenStore()
   const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
+
+  const requestIdGenerator = options.requestIdGenerator || randomReqId
 
   return new DefaultClient(
     options.apiKey,
     httpClient,
     streamClient,
     apiTokenStore,
-    refreshScheduler
+    refreshScheduler,
+    requestIdGenerator
   )
 }
 
@@ -111,6 +116,7 @@ export class DefaultClient implements DfuseClient {
   protected apiTokenManager: ApiTokenManager
   protected httpClient: HttpClient
   protected streamClient: StreamClient
+  protected requestIdGenerator: RequestIdGenerator
 
   protected debug: IDebugger = debugFactory("dfuse:client")
 
@@ -119,11 +125,13 @@ export class DefaultClient implements DfuseClient {
     httpClient: HttpClient,
     streamClient: StreamClient,
     apiTokenStore: ApiTokenStore,
-    refreshScheduler: RefreshScheduler
+    refreshScheduler: RefreshScheduler,
+    requestIdGenerator: RequestIdGenerator
   ) {
     this.apiKey = apiKey
     this.httpClient = httpClient
     this.streamClient = streamClient
+    this.requestIdGenerator = requestIdGenerator
 
     this.apiTokenManager = createApiTokenManager(
       () => this.authIssue(this.apiKey),
@@ -145,7 +153,7 @@ export class DefaultClient implements DfuseClient {
   ): Promise<Stream> {
     const message = getActionTracesMessage(
       data,
-      mergeDefaultsStreamOptions(options, {
+      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
         listen: true
       })
     )
@@ -160,7 +168,7 @@ export class DefaultClient implements DfuseClient {
   ): Promise<Stream> {
     const message = getTableRowsMessage(
       data,
-      mergeDefaultsStreamOptions(options, {
+      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
         listen: true
       })
     )
@@ -175,7 +183,7 @@ export class DefaultClient implements DfuseClient {
   ): Promise<Stream> {
     const message = getTransactionLifecycleMessage(
       data,
-      mergeDefaultsStreamOptions(options, {
+      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
         fetch: true,
         listen: true
       })
@@ -189,7 +197,7 @@ export class DefaultClient implements DfuseClient {
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getHeadInfoMessage(
-      mergeDefaultsStreamOptions(options, {
+      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
         listen: true
       })
     )
@@ -370,7 +378,7 @@ export class DefaultClient implements DfuseClient {
 
       return this.httpClient.apiRequest<T>(apiTokenInfo.token, path, method, params, body)
     } catch (error) {
-      throw new DfuseError("Unable to obtain the API token", error)
+      throw new DfuseClientError("Unable to obtain the API token", error)
     }
   }
 
@@ -387,7 +395,7 @@ export class DefaultClient implements DfuseClient {
 
       return this.streamClient.registerStream(message, onMessage)
     } catch (error) {
-      throw new DfuseError("Unable to obtain the API token", error)
+      throw new DfuseClientError("Unable to obtain the API token", error)
     }
   }
 
@@ -404,8 +412,9 @@ function randomReqId() {
 }
 
 function mergeDefaultsStreamOptions(
+  requestIdGenerator: RequestIdGenerator,
   userDefinedOptions: StreamOptions,
   defaultOptions: StreamOptions
 ): StreamOptions {
-  return Object.assign({ req_id: randomReqId() }, defaultOptions, userDefinedOptions)
+  return Object.assign({ req_id: requestIdGenerator() }, defaultOptions, userDefinedOptions)
 }

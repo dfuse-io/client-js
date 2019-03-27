@@ -19,6 +19,8 @@ import {
   StateTableScopesResponse
 } from "./state"
 
+export type RequestIdGenerator = () => string
+
 export interface DfuseClient {
   //
   /// WebSocket API

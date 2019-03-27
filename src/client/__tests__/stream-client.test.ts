@@ -1,208 +1,254 @@
-import { EoswsListeners, ListenerObject } from "../listeners"
-import { InboundMessageType } from "../../message/inbound"
-import { EoswsClient, EoswsSocket, OutboundMessageType } from "../.."
-import { createMockEoswsSocket } from "./mocks"
-import fetch from "jest-fetch-mock"
+import { InboundMessageType, InboundMessage } from "../../message/inbound"
+import { createStreamClient } from "../stream-client"
+import { StreamClient } from "../../types/stream-client"
+import { MockSocket } from "./mocks"
+import { OutboundMessageType, OutboundMessage } from "../../message/outbound"
+import { DfuseClientError } from "../../types/error"
 
-describe("listeners", function() {
-  const noopCallback = () => {
-    return
-  }
+const message1: OutboundMessage<any> = {
+  type: OutboundMessageType.HEAD_INFO,
+  req_id: "1",
+  data: {}
+}
 
-  const subscriptionMessage = {
-    type: OutboundMessageType.GET_ACTION_TRACES,
-    req_id: "abc",
-    data: { test: "test" }
-  }
+const message2: OutboundMessage<any> = {
+  type: OutboundMessageType.HEAD_INFO,
+  req_id: "2",
+  data: {}
+}
 
-  describe("addListener", () => {
-    it("should add a listener to the list", () => {
-      const listenerObject: ListenerObject = {
-        reqId: "abc",
-        callback: noopCallback,
-        subscriptionMessage
-      }
+describe("StreamClient", () => {
+  let socket: MockSocket
+  let client: StreamClient
 
-      const listeners = new EoswsListeners()
+  beforeEach(() => {
+    socket = new MockSocket()
+    socket.connectMock.mockReturnValue(Promise.resolve())
+    socket.disconnectMock.mockReturnValue(Promise.resolve())
+    socket.sendMock.mockReturnValue(Promise.resolve(true))
 
-      listeners.addListener(listenerObject)
-
-      expect(listeners.registeredListeners).toEqual([listenerObject])
+    client = createStreamClient("any", {
+      socket
     })
   })
 
-  describe("removeListener", () => {
-    it("should add a listener to the list", () => {
-      const listenerObject1: ListenerObject = {
-        reqId: "abc",
-        callback: noopCallback,
-        subscriptionMessage
-      }
+  it("calls socket send with message when registering stream", async () => {
+    await client.registerStream(message1, jest.fn())
 
-      const listenerObject2: ListenerObject = {
-        reqId: "abcd",
-        callback: noopCallback,
-        subscriptionMessage
-      }
+    expect(socket.sendMock).toHaveBeenCalledTimes(1)
+    expect(socket.sendMock).toHaveBeenCalledWith(message1)
+  })
 
-      const listeners = new EoswsListeners()
+  it("does not allow to stream to register with same id", async () => {
+    await client.registerStream(message1, jest.fn())
 
-      listeners.addListener(listenerObject1)
-      listeners.addListener(listenerObject2)
-      expect(listeners.registeredListeners).toEqual([listenerObject1, listenerObject2])
+    try {
+      await client.registerStream(message1, jest.fn())
+      fail("Should failed due to same req_id being used while one still active")
+    } catch (error) {
+      expect(error).toEqual(
+        new DfuseClientError(
+          "A stream with id '1' is already registered, cannot register another one with the same id"
+        )
+      )
+    }
+  })
 
-      listeners.removeListener("abc")
+  it("allow to stream to register with previous id when not active anymore", async () => {
+    const stream = await client.registerStream(message1, jest.fn())
+    await stream.unlisten()
 
-      expect(listeners.registeredListeners).toEqual([listenerObject2])
+    // Just the fact that it did not throw is good enough here
+    await client.registerStream(message1, jest.fn())
+  })
+
+  it("calls socket send with message when unregistering stream", async () => {
+    await client.registerStream(message1, jest.fn())
+    await client.unregisterStream(message1.req_id)
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
+      data: { req_id: "1" },
+      req_id: "1",
+      type: "unlisten"
     })
   })
 
-  describe("handleMessage", () => {
-    it("should process the callback given the right id and type", () => {
-      const customCallback = jest.fn()
-      const listenerObject1: ListenerObject = {
-        reqId: "abc",
-        callback: customCallback,
-        subscriptionMessage
-      }
+  it("calls socket send with message when unregistering stream via unlisten", async () => {
+    const stream = await client.registerStream(message1, jest.fn())
+    await stream.unlisten()
 
-      const listenerObject2: ListenerObject = {
-        reqId: "abcd",
-        callback: noopCallback,
-        subscriptionMessage
-      }
-
-      const listeners = new EoswsListeners()
-      listeners.addListener(listenerObject1)
-      listeners.addListener(listenerObject2)
-
-      listeners.handleMessage({
-        type: InboundMessageType.TABLE_DELTA,
-        req_id: "abc",
-        data: { test: "foo" }
-      })
-
-      expect(customCallback).toHaveBeenCalledWith({
-        type: InboundMessageType.TABLE_DELTA,
-        req_id: "abc",
-        data: { test: "foo" }
-      })
-    })
-
-    it("should process the callback given the right id and type for progress", () => {
-      const customCallback = jest.fn()
-      const listenerObject1: ListenerObject = {
-        reqId: "abc",
-        callback: customCallback,
-        subscriptionMessage
-      }
-
-      const listenerObject2: ListenerObject = {
-        reqId: "abcd",
-        callback: noopCallback,
-        subscriptionMessage
-      }
-
-      const listeners = new EoswsListeners()
-      spyOn(listeners, "saveBlockProgress")
-      listeners.addListener(listenerObject1)
-      listeners.addListener(listenerObject2)
-
-      listeners.handleMessage({
-        type: InboundMessageType.PROGRESS,
-        req_id: "abc",
-        data: { block_num: 12355, block_id: "blockID" }
-      })
-
-      expect(customCallback).toHaveBeenCalledWith({
-        type: InboundMessageType.PROGRESS,
-        req_id: "abc",
-        data: { block_num: 12355, block_id: "blockID" }
-      })
-
-      expect(listeners.saveBlockProgress).toHaveBeenCalledWith("abc", 12355, "blockID")
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
+      data: { req_id: "1" },
+      req_id: "1",
+      type: "unlisten"
     })
   })
 
-  describe("saveBlockProgress", () => {
-    it("should save the last block information in the listener", () => {
-      const listenerObject: ListenerObject = {
-        reqId: "abc",
-        callback: noopCallback,
-        subscriptionMessage
-      }
+  it("does nothing when unregistering stream that does not exist", async () => {
+    await client.unregisterStream("1")
 
-      const listenerObjectWithBlockInfo: ListenerObject = {
-        reqId: "abc",
-        callback: noopCallback,
-        subscriptionMessage,
-        blockNum: 12345,
-        blockId: "blockId"
-      }
-
-      const listeners = new EoswsListeners()
-
-      listeners.addListener(listenerObject)
-
-      expect(listeners.registeredListeners).toEqual([listenerObject])
-
-      listeners.saveBlockProgress("abc", 12345, "blockId")
-      expect(listeners.registeredListeners).toEqual([listenerObjectWithBlockInfo])
-    })
+    expect(socket.sendMock).toHaveBeenCalledTimes(0)
+    expect(socket.disconnectMock).toHaveBeenCalledTimes(0)
   })
 
-  describe("resubscribeAll", () => {
-    it("resubscribe to all listeners and use their block num as start block if any", () => {
-      const customCallback = jest.fn()
-      const listenerObject1: ListenerObject = {
-        reqId: "abc",
-        callback: customCallback,
-        subscriptionMessage: { ...subscriptionMessage, req_id: "abc" }
-      }
+  it("calls socket connect when registering first stream", async () => {
+    await client.registerStream(message1, jest.fn())
 
-      const listenerObject2: ListenerObject = {
-        reqId: "abcd",
-        callback: noopCallback,
-        subscriptionMessage: { ...subscriptionMessage, req_id: "abcd" }
-      }
+    expect(socket.connectMock).toHaveBeenCalledTimes(1)
+  })
 
-      const listenerObject3: ListenerObject = {
-        reqId: "abcde",
-        callback: noopCallback,
-        subscriptionMessage: { ...subscriptionMessage, req_id: "abcde" }
-      }
+  it("does not call socket connect twice when registering with an existing stream active", async () => {
+    await client.registerStream(message1, jest.fn())
+    await client.registerStream(message2, jest.fn())
 
-      const listeners = new EoswsListeners()
-      listeners.addListener(listenerObject1)
-      listeners.addListener(listenerObject2)
-      listeners.addListener(listenerObject3)
-      listeners.saveBlockProgress("abc", 1300, "blockId2")
-      listeners.saveBlockProgress("abcd", 1000, "blockId1")
+    expect(socket.connectMock).toHaveBeenCalledTimes(1)
+  })
 
-      const mockSocket = createMockEoswsSocket()
-      const socket = (mockSocket as any) as EoswsSocket
-      const client = new EoswsClient({ socket, httpClient: fetch as any, baseUrl: "test.io" })
-      spyOn(client.socket, "send")
-      listeners.resubscribeAll(client)
-      expect(client.socket.send).toHaveBeenCalledTimes(3)
-      expect(client.socket.send).toHaveBeenCalledWith({
-        type: OutboundMessageType.GET_ACTION_TRACES,
-        req_id: "abc",
-        data: { test: "test" },
-        start_block: 1300
-      })
-      expect(client.socket.send).toHaveBeenCalledWith({
-        type: OutboundMessageType.GET_ACTION_TRACES,
-        req_id: "abcd",
-        data: { test: "test" },
-        start_block: 1000
-      })
+  it("call socket connect after a full register/unregister cycle", async () => {
+    const stream = await client.registerStream(message1, jest.fn())
+    await stream.unlisten()
 
-      expect(client.socket.send).toHaveBeenCalledWith({
-        type: OutboundMessageType.GET_ACTION_TRACES,
-        req_id: "abcde",
-        data: { test: "test" }
-      })
+    await client.registerStream(message2, jest.fn())
+
+    expect(socket.connectMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("does not call socket connect after a full register/unregister cycle with one still active", async () => {
+    await client.registerStream(message1, jest.fn())
+    const stream2 = await client.registerStream(message2, jest.fn())
+    await stream2.unlisten()
+
+    await client.registerStream(message2, jest.fn())
+
+    expect(socket.connectMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("calls disconnect when no more stream present", async () => {
+    await client.registerStream(message1, jest.fn())
+    await client.unregisterStream(message1.req_id)
+
+    expect(socket.disconnectMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("calls disconnect when no more stream present via unlisten", async () => {
+    const stream = await client.registerStream(message1, jest.fn())
+    await stream.unlisten()
+
+    expect(socket.disconnectMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not call disconnect after a full register/unregister cycle with one still active", async () => {
+    await client.registerStream(message1, jest.fn())
+    const stream2 = await client.registerStream(message2, jest.fn())
+    await stream2.unlisten()
+
+    await client.registerStream(message2, jest.fn())
+
+    expect(socket.disconnectMock).toHaveBeenCalledTimes(0)
+  })
+
+  it("forwards message to right registered stream when there is a single one", async () => {
+    let sendMessage: (message: InboundMessage<any>) => void
+    const receiveMessage = jest.fn<InboundMessage<any>>()
+
+    socket.connectMock.mockImplementation((handler) => {
+      sendMessage = handler
+      return Promise.resolve()
     })
+
+    await client.registerStream(message1, receiveMessage)
+
+    // @ts-ignore
+    const mustSendMessage = sendMessage
+    const message = { type: InboundMessageType.PING, req_id: message1.req_id, data: {} }
+
+    mustSendMessage(message)
+    expect(receiveMessage).toHaveBeenCalledTimes(1)
+    expect(receiveMessage).toHaveBeenCalledWith(message)
+  })
+
+  it("forwards message to right registered stream when there is multiples", async () => {
+    let sendMessage: (message: InboundMessage<any>) => void
+    const receiveMessage1 = jest.fn<InboundMessage<any>>()
+    const receiveMessage2 = jest.fn<InboundMessage<any>>()
+
+    socket.connectMock.mockImplementation((handler) => {
+      sendMessage = handler
+      return Promise.resolve()
+    })
+
+    await client.registerStream(message1, receiveMessage1)
+    await client.registerStream(message2, receiveMessage2)
+
+    // @ts-ignore
+    const mustSendMessage = sendMessage
+    const sentMessage1 = {
+      type: InboundMessageType.PING,
+      req_id: message1.req_id,
+      data: { field: 1 }
+    }
+
+    const sentMessage2 = {
+      type: InboundMessageType.PING,
+      req_id: message2.req_id,
+      data: { field: 2 }
+    }
+
+    mustSendMessage(sentMessage1)
+    mustSendMessage(sentMessage2)
+
+    expect(receiveMessage1).toHaveBeenCalledTimes(1)
+    expect(receiveMessage1).toHaveBeenCalledWith(sentMessage1)
+
+    expect(receiveMessage2).toHaveBeenCalledTimes(1)
+    expect(receiveMessage2).toHaveBeenCalledWith(sentMessage2)
+  })
+
+  it("ignores message when no registered stream", async () => {
+    let sendMessage: (message: InboundMessage<any>) => void
+    const receiveMessage = jest.fn<InboundMessage<any>>()
+
+    socket.connectMock.mockImplementation((handler) => {
+      sendMessage = handler
+      return Promise.resolve()
+    })
+
+    await client.registerStream(message1, receiveMessage)
+
+    // @ts-ignore
+    const mustSendMessage = sendMessage
+    const message = { type: InboundMessageType.PING, req_id: message1.req_id, data: {} }
+
+    mustSendMessage(message)
+    expect(receiveMessage).toHaveBeenCalledTimes(1)
+    expect(receiveMessage).toHaveBeenCalledWith(message)
+  })
+
+  it("ignores message when no registered stream exists for id", async () => {
+    let sendMessage: (message: InboundMessage<any>) => void
+    const receiveMessage = jest.fn<InboundMessage<any>>()
+
+    socket.connectMock.mockImplementation((handler) => {
+      sendMessage = handler
+      return Promise.resolve()
+    })
+
+    await client.registerStream(message1, receiveMessage)
+
+    // @ts-ignore
+    const mustSendMessage = sendMessage
+    const message = { type: InboundMessageType.PING, req_id: "random_id", data: {} }
+
+    mustSendMessage(message)
+    expect(receiveMessage).toHaveBeenCalledTimes(0)
+  })
+
+  it("forwards set api token call to socket", async () => {
+    client.setApiToken("new token")
+
+    expect(socket.setApiTokenMock).toHaveBeenCalledTimes(1)
+    expect(socket.setApiTokenMock).toHaveBeenCalledWith("new token")
   })
 })

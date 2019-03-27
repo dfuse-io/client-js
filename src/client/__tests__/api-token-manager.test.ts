@@ -1,111 +1,175 @@
-import { EoswsConnector } from "../connector"
-import { ApiTokenStorage } from "../api-token-storage"
-import { EoswsClient, HttpClient } from "../client"
-import { EoswsSocket } from "../socket"
-import fetch from "jest-fetch-mock"
-import { createMockEoswsSocket } from "./mocks"
-import { RefreshScheduler } from "../refresh-scheduler"
+import {
+  ApiTokenManager,
+  createApiTokenManager,
+  isExpiredOrNearExpiration
+} from "../api-token-manager"
+import { MockApiTokenStore, MockRefreshScheduler } from "./mocks"
+import { ApiTokenInfo } from "../../types/auth-token"
 
-describe("EoswsConnector", function() {
-  describe("isExpiring", () => {
-    it("should return true when it is expiring", () => {
-      spyOn(Date, "now").and.returnValue(12120000)
-      const connector = getTestConnector()
+// In milliseconds
+const currentDate = 1000000
 
-      expect(connector.isExpiring({ token: "token", expires_at: 12000 })).toBe(true)
-    })
+// Expirations is in seconds!
+const nonExpiredApiTokenInfo = { token: "non-expired-far", expires_at: 2000 }
+const nonExpiredJustBeforeApiTokenInfo = { token: "non-expired-just-before", expires_at: 1001 }
+const expiredTokenInfo = { token: "expired-far", expires_at: 100 }
+const expiredRightOnApiTokenInfo = { token: "expired-right-on", expires_at: 1000 }
+const expiredJustAfterApiTokenInfo = { token: "expired-just-after", expires_at: 999 }
 
-    it("should return true when there is no token", () => {
-      spyOn(Date, "now").and.returnValue(12120000)
-      const connector = getTestConnector()
+const defaultFetchApiTokenInfo = nonExpiredApiTokenInfo
 
-      expect(connector.isExpiring(undefined)).toBe(true)
-    })
+describe("ApiTokenManager", () => {
+  let fetchApiToken: jest.Mock
+  let onTokenRefresh: jest.Mock
+  let apiTokenStore: MockApiTokenStore
+  let refreshScheduler: MockRefreshScheduler
+  let manager: ApiTokenManager
 
-    it("should return false when it is not expiring", () => {
-      spyOn(Date, "now").and.returnValue(12120000)
-      const connector = getTestConnector()
+  beforeEach(() => {
+    spyOn(Date, "now").and.returnValue(currentDate)
 
-      expect(connector.isExpiring({ token: "token", expires_at: 13000 })).toBe(false)
-    })
+    fetchApiToken = jest.fn<Promise<ApiTokenInfo>>(() => Promise.resolve(defaultFetchApiTokenInfo))
+    onTokenRefresh = jest.fn()
+    apiTokenStore = new MockApiTokenStore()
+    refreshScheduler = new MockRefreshScheduler()
+
+    manager = createApiTokenManager(
+      fetchApiToken,
+      onTokenRefresh,
+      0.95,
+      apiTokenStore,
+      refreshScheduler
+    )
   })
 
-  describe("connect", () => {
-    it("should call getToken first if nothing in store", () => {
-      spyOn(Date, "now").and.returnValue(12120000)
-      const connector = getTestConnector()
-      spyOn(connector, "getToken").and.returnValue(
-        Promise.resolve({ expires_at: 13000, token: "token" })
-      )
-      spyOn(connector.client, "connect")
-      return connector.connect().then(() => {
-        expect(connector.getToken).toHaveBeenCalled()
-        expect(connector.client.connect).toHaveBeenCalled()
-      })
-    })
+  it("should call fetchApiToken when no token in storage", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(undefined))
 
-    it("should connect with token from store if it exists", () => {
-      spyOn(Date, "now").and.returnValue(12120000)
-      const connector = getTestConnector()
-      spyOn(connector.tokenStorage, "get").and.returnValue({ expires_at: 13000, token: "token" })
-      spyOn(connector.client, "connect")
-
-      return connector.connect().then(() => {
-        expect(connector.client.connect).toHaveBeenCalled()
-      })
-    })
+    const result = await manager.getTokenInfo()
+    expect(fetchApiToken).toHaveBeenCalledTimes(1)
+    expect(result).toEqual(defaultFetchApiTokenInfo)
   })
 
-  describe("getToken", () => {
-    it("should return stored token if it is not expired", () => {
-      spyOn(Date, "now").and.returnValue(12120000)
-      const connector = getTestConnector()
-      spyOn(connector.tokenStorage, "get").and.returnValue({ expires_at: 13000, token: "token" })
-      return connector.getToken().then((apiTokenInfo) => {
-        expect(apiTokenInfo).toEqual({ expires_at: 13000, token: "token" })
-      })
+  it("should return stored token when present in storage and non-expired", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
+
+    const result = await manager.getTokenInfo()
+    expect(fetchApiToken).toHaveBeenCalledTimes(0)
+    expect(result).toEqual(nonExpiredApiTokenInfo)
+  })
+
+  it("should call fetchApiToken when present in storage and expired", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(expiredTokenInfo))
+
+    const result = await manager.getTokenInfo()
+    expect(fetchApiToken).toHaveBeenCalledTimes(1)
+    expect(result).toEqual(defaultFetchApiTokenInfo)
+  })
+
+  it("schedules a refresh when no token in storage", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(undefined))
+
+    await manager.getTokenInfo()
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
+    expect(refreshScheduler.scheduleMock.mock.calls[0][0]).toEqual(950)
+  })
+
+  it("schedules a refresh when token present in storage but expired", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(expiredTokenInfo))
+
+    await manager.getTokenInfo()
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
+    expect(refreshScheduler.scheduleMock.mock.calls[0][0]).toEqual(950)
+  })
+
+  it("schedules a refresh when token in storage, not expired, and no previous schedule", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
+
+    await manager.getTokenInfo()
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
+    expect(refreshScheduler.scheduleMock.mock.calls[0][0]).toEqual(950)
+  })
+
+  it("does not schedule a refresh when token in storage, not expired and previous schedule exists", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
+    refreshScheduler.hasScheduledJobMock.mockReturnValue(true)
+
+    await manager.getTokenInfo()
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(0)
+  })
+
+  it("schedules a refresh when refresh schedule callback is called, even when schedule exists", async (done) => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(expiredTokenInfo))
+
+    await manager.getTokenInfo()
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
+
+    const refreshCallBack = refreshScheduler.scheduleMock.mock.calls[0][1]
+
+    refreshScheduler.hasScheduledJobMock.mockReturnValue(true)
+
+    onTokenRefresh.mockImplementation(() => {
+      expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(2)
+      done()
     })
 
-    it("should return token from refresher if it is expired", () => {
-      spyOn(Date, "now").and.returnValue(12120000)
-      const connector = getTestConnector()
-      spyOn(connector.tokenStorage, "get").and.returnValue({ expires_at: 12000, token: "token" })
-      spyOn(connector, "refreshToken").and.returnValue(
-        Promise.resolve({ expires_at: 23000, token: "token1" })
-      )
-      return connector.getToken().then((apiTokenInfo) => {
-        expect(apiTokenInfo).toEqual({ expires_at: 23000, token: "token1" })
-      })
+    refreshCallBack()
+  })
+
+  it("notifies onTokenRefresh when token not present in storage", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(undefined))
+
+    await manager.getTokenInfo()
+    expect(onTokenRefresh).toHaveBeenCalledTimes(1)
+    expect(onTokenRefresh).toHaveBeenCalledWith(defaultFetchApiTokenInfo.token)
+  })
+
+  it("notifies onTokenRefresh when token present in storage but expired", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(expiredTokenInfo))
+
+    await manager.getTokenInfo()
+    expect(onTokenRefresh).toHaveBeenCalledTimes(1)
+    expect(onTokenRefresh).toHaveBeenCalledWith(defaultFetchApiTokenInfo.token)
+  })
+
+  it("does not notify onTokenRefresh when token in storage and not expired", async () => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
+
+    await manager.getTokenInfo()
+    expect(onTokenRefresh).toHaveBeenCalledTimes(0)
+  })
+
+  it("notifies onTokenRefresh when refresh schedule callback is called", async (done) => {
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(expiredTokenInfo))
+
+    await manager.getTokenInfo()
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
+
+    const refreshCallBack = refreshScheduler.scheduleMock.mock.calls[0][1]
+
+    onTokenRefresh.mockImplementation((token: ApiTokenInfo) => {
+      expect(token).toEqual(defaultFetchApiTokenInfo.token)
+      done()
     })
+
+    refreshCallBack()
   })
 })
 
-describe("RefreshScheduler", function() {
-  class Test {
-    public static scheduledMethod() {
-      return true
-    }
-  }
+describe("isExpiredOrNearExpiration", () => {
+  const testCases = [
+    { token: nonExpiredApiTokenInfo, isExpired: false },
+    { token: nonExpiredJustBeforeApiTokenInfo, isExpired: false },
+    { token: expiredTokenInfo, isExpired: true },
+    { token: expiredRightOnApiTokenInfo, isExpired: true },
+    { token: expiredJustAfterApiTokenInfo, isExpired: true }
+  ]
 
-  describe("scheduleNextRefresh", () => {
-    it("should call the scheduled method after delay", () => {
-      jest.useFakeTimers()
-      spyOn(Test, "scheduledMethod")
-      const scheduler = new RefreshScheduler(() => Test.scheduledMethod())
-      scheduler.scheduleNextRefresh(100)
-      expect(Test.scheduledMethod).not.toHaveBeenCalled()
-      jest.advanceTimersByTime(100 * 1000)
-      expect(Test.scheduledMethod).toHaveBeenCalledTimes(1)
+  testCases.forEach((testCase) => {
+    it(`should pass test case ${testCase.token.token}`, () => {
+      spyOn(Date, "now").and.returnValue(currentDate)
+
+      expect(isExpiredOrNearExpiration(testCase.token)).toEqual(testCase.isExpired)
     })
   })
 })
-
-export function getTestConnector() {
-  const mockSocket = createMockEoswsSocket()
-
-  const socket = (mockSocket as any) as EoswsSocket
-  const mockFetch = fetch as HttpClient
-  const client = new EoswsClient({ socket, httpClient: mockFetch, baseUrl: "test.io" })
-
-  return new EoswsConnector({ tokenStorage: new ApiTokenStorage(), apiKey: "apiKey", client })
-}

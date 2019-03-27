@@ -1,4 +1,4 @@
-import { DfuseError, DfuseApiError } from "../types/error"
+import { DfuseError, DfuseClientError, DfuseApiError } from "../types/error"
 import { Fetch, HttpResponse, HttpQueryParameters, HttpClient } from "../types/http-client"
 import debugFactory, { IDebugger } from "debug"
 
@@ -56,7 +56,7 @@ function inferFetch(fetch?: Fetch): Fetch {
     "We invite you to read our documentation to learn more about this problem."
   ]
 
-  throw new DfuseError(messages.join("\n"))
+  throw new DfuseClientError(messages.join("\n"))
 }
 
 /**
@@ -154,7 +154,7 @@ class DefaultHttpClient {
         throw error
       }
 
-      throw new DfuseError("Unable to perform HTTP request correctly", error)
+      throw new DfuseClientError("Unable to perform HTTP request correctly", error)
     }
   }
 
@@ -162,7 +162,7 @@ class DefaultHttpClient {
     try {
       return await response.json()
     } catch (error) {
-      throw new DfuseError("The returned body shall have been a valid JSON object", error)
+      throw new DfuseClientError("The returned body shall have been a valid JSON object", error)
     }
   }
 
@@ -172,7 +172,7 @@ class DefaultHttpClient {
     try {
       return new DfuseApiError(JSON.parse(body))
     } catch (error) {
-      return new DfuseError(
+      return new DfuseClientError(
         `The returned body shall have been a valid JSON object, got '${body}'`,
         error
       )

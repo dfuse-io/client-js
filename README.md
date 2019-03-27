@@ -1,50 +1,34 @@
-# `eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))
+# dfuse JavaScript/TypeScript Client Library
 
-WebSocket consumer for the <https://dfuse.io> API on EOS networks.
+A WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io> on EOS networks.
 
 ## Installation
 
 Using Yarn:
 
-    yarn add @dfuse/eosws-js
+    yarn add @dfuse/client
 
 or using NPM:
 
-    npm install --save @dfuse/eosws-js
+    npm install --save @dfuse/client
 
 ## Quick Start
 
-When targeting a browser (you will need a bundler like Webpack since we only ship ES5 modules files for now):
+When targeting a browser (you will need a bundler like WebPack since we only ship ES5 modules files for now):
 
+<!-- prettier-ignore -->
 ```js
-const {
-  EoswsClient,
-  EoswsConnector,
-  createEoswsSocket,
-  InboundMessageType
-} = require("@dfuse/eosws-js")
+const { createDfuseClient, InboundMessageType } = require("@dfuse/client")
 
-const endpoint = "mainnet.eos.dfuse.io"
-const token = "<Paste your API token here>"
-const client = new EoswsClient(
-  createEoswsSocket(() => new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`))
-)
-
-client
-  .connect()
-  .then(() => {
-    client
-      .getActionTraces({ account: "eosio.token", action_name: "transfer" })
-      .onMessage((message) => {
-        if (message.type === InboundMessageType.ACTION_TRACE) {
-          const { from, to, quantity, memo } = message.data.trace.act.data
-          console.log(from, to, quantity, memo)
-        }
-      })
-  })
-  .catch((error) => {
-    console.log("Unable to connect to dfuse endpoint.", error)
-  })
+const client = createDfuseClient({ apiKey: "<Paste your API key here>", network: "mainnet" })
+client.streamActionTraces({ account: "eosio.token", action_name: "transfer" }, (message) => {
+  if (message.type === InboundMessageType.ACTION_TRACE) {
+    const { from, to, quantity, memo } = message.data.trace.act.data
+    console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
+  }
+}).catch((error) => {
+  console.log("An error occurred.", error)
+})
 ```
 
 ### Use Cases
@@ -58,14 +42,6 @@ You can see various examples in the [examples](./examples) folder. Here the refe
 - [Get Transaction Lifecycle](./examples/get-transaction-lifecycle.ts)
 - [Multi Listen](./examples/multi-listen.ts)
 - [Socket Notifications](./examples/socket-notifications.ts)
-
-### Endpoints
-
-Here are the currently available endpoints:
-
-- **Mainnet** `mainnet.eos.dfuse.io`
-- **Jungle** `jungle.eos.dfuse.io`
-- **Kylin** `kylin.eos.dfuse.io`
 
 ### Node.js
 

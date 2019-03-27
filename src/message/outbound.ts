@@ -1,4 +1,4 @@
-import { DfuseError } from "../types/error"
+import { DfuseClientError } from "../types/error"
 
 export interface OutboundMessage<T> {
   type: OutboundMessageType
@@ -15,7 +15,7 @@ export enum OutboundMessageType {
   GET_ACTION_TRACES = "get_action_traces",
   GET_TABLE_ROWS = "get_table_rows",
   GET_TRANSACTION_LIFECYCLE = "get_transaction_lifecycle",
-  HEAD_INFO = "head_info",
+  GET_HEAD_INFO = "get_head_info",
   UNLISTEN = "unlisten"
 }
 
@@ -92,7 +92,12 @@ export function getTransactionLifecycleMessage(
 export function getHeadInfoMessage(
   streamOptions: StreamOptions = {}
 ): OutboundMessage<GetActionTracesMessageData> {
-  return createOutboundMessage(OutboundMessageType.HEAD_INFO, {}, { listen: true }, streamOptions)
+  return createOutboundMessage(
+    OutboundMessageType.GET_HEAD_INFO,
+    {},
+    { listen: true },
+    streamOptions
+  )
 }
 
 export interface UnlistenMessageData {
@@ -115,7 +120,7 @@ function createOutboundMessage<T>(
 ): OutboundMessage<T> {
   const req_id = getStreamOption(defaultStreamOptions.req_id, streamOptions.req_id)
   if (req_id === undefined) {
-    throw new DfuseError("All outbound message should have a 'req_id' value")
+    throw new DfuseClientError("All outbound message should have a 'req_id' value")
   }
 
   return {

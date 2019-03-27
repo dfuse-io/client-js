@@ -69,7 +69,7 @@ class DefaultApiTokenManager implements ApiTokenManager {
     return await this.refreshToken()
   }
 
-  public async refreshToken(): Promise<ApiTokenInfo> {
+  private async refreshToken(): Promise<ApiTokenInfo> {
     const tokenInfo = await this.internalFetchToken()
     this.debug(
       "Retrieved an API token that is going to expires at %s (%s)",
@@ -78,8 +78,6 @@ class DefaultApiTokenManager implements ApiTokenManager {
     )
 
     this.maybeScheduleNextRefresh(tokenInfo, { forceRefresh: true })
-
-    tokenInfo.expires_at = Date.now() / 1000 + 5
 
     try {
       this.debug("Storing API token into token storage")

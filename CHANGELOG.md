@@ -4,6 +4,10 @@
 
 ## In Progress (Current)
 
+## 0.11.11 (March 26, 2019)
+
+- Fixed a bug where `onClose` event was not notified anymore when if error occurred before closing WebSocket.
+
 ## 0.11.10 (March 26, 2019)
 
 - Fixed a bug where `onClose` event was not notified on closing of the WebSocket connection.

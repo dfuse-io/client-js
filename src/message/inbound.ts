@@ -9,6 +9,7 @@ export enum InboundMessageType {
   ACTION_TRACE = "action_trace",
   ERROR = "error",
   LISTENING = "listening",
+  HEAD_INFO = "head_info",
   PING = "ping",
   PROGRESS = "progress",
   UNLISTENED = "unlistened",

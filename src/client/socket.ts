@@ -2,7 +2,7 @@ import debugFactory, { IDebugger } from "debug"
 
 import { OutboundMessage } from "../message/outbound"
 import { InboundMessage, InboundMessageType } from "../message/inbound"
-import { DfuseError } from "../types/error"
+import { DfuseClientError } from "../types/error"
 import { WebSocket, Socket, SocketMessageListener, WebSocketFactory } from "../types/socket"
 
 export interface SocketOptions {
@@ -48,7 +48,7 @@ function inferWebSocketFactory(webSocketFactory?: WebSocketFactory): WebSocketFa
   // If we are in a Node.js like environment and `WebSocket` is available, use it
   if (typeof global !== "undefined" && (global as any).WebSocket != null) {
     debug("Using `WebSocket` global value found on 'global' variable (Node.js environment).")
-    return (url: string) => Promise.resolve((global as any).WebSocket(url))
+    return (url: string) => Promise.resolve(new (global as any).WebSocket(url))
   }
 
   // Otherwise, throw an exception
@@ -63,7 +63,7 @@ function inferWebSocketFactory(webSocketFactory?: WebSocketFactory): WebSocketFa
     "We invite you to read our documentation to learn more about this problem."
   ]
 
-  throw new DfuseError(messages.join("\n"))
+  throw new DfuseClientError(messages.join("\n"))
 }
 
 const noop = () => {
@@ -233,7 +233,7 @@ class DefaultSocket implements Socket {
   private onSocketErrorFactory = (reject: Rejecter) => (event: Event) => {
     this.debug("Received `onerror` notification from socket.")
 
-    // The official flow is to always send an `onclose` event after an `onerror`
+    // The official WebSocket flow is to always send an `onclose` event after an `onerror`
     // ones, as such, we must not clean the socket at this point. We must always
     // wait and ensures the `onclose` event will be called and that clean up will
     // happen in the `onclose` handler.

@@ -1,18 +1,8 @@
 import debugFactory, { IDebugger } from "debug"
-
 import { SocketOptions, createSocket } from "./socket"
-import {
-  getActionTracesMessage,
-  GetActionTracesMessageData,
-  getTableRowsMessage,
-  GetTableRowsMessageData,
-  OutboundMessage,
-  StreamOptions,
-  unlistenMessage,
-  getTransactionLifecycleMessage
-} from "../message/outbound"
+import { OutboundMessage, unlistenMessage } from "../message/outbound"
 import { InboundMessage } from "../message/inbound"
-import { DfuseError } from "../types/error"
+import { DfuseClientError } from "../types/error"
 import { StreamClient, OnStreamMessage, Stream } from "../types/stream-client"
 import { Socket } from "../types/socket"
 
@@ -46,7 +36,7 @@ class DefaultStreamClient {
 
     const id = message.req_id
     if (this.streams[id] !== undefined) {
-      throw new DfuseError(
+      throw new DfuseClientError(
         `A stream with id '${id}' is already registered, cannot register another one with the same id`
       )
     }
@@ -67,7 +57,7 @@ class DefaultStreamClient {
       //        to use a try/catch to be sure the stream worked or not...
       //
       //        Moreover, how do we correclty retrieve the cause.... damn it!
-      throw new DfuseError(`Unable to correctly register stream`)
+      throw new DfuseClientError(`Unable to correctly register stream`)
     }
 
     this.debug("Stream [%s] registered with remote endpoint.", id)
@@ -104,6 +94,7 @@ class DefaultStreamClient {
         "No stream currently registered able to handle message with 'req_id: %s'",
         message.req_id
       )
+      return
     }
 
     this.debug(
@@ -111,11 +102,6 @@ class DefaultStreamClient {
       message.req_id,
       message.type
     )
-
-    // FIXME: Correctly record block progress for stream
-    // if (message.type === InboundMessageType.PROGRESS) {
-    //   this.saveBlockProgress(message.req_id, message.data.block_num, message.data.block_id)
-    // }
 
     stream.onMessage(message)
   }

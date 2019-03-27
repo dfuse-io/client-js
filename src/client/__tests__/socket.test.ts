@@ -1,9 +1,10 @@
-import { createSocket, SocketOptions } from "../socket"
+import { createSocket } from "../socket"
 import { InboundMessage, InboundMessageType } from "../../message/inbound"
 import { getActionTracesMessage } from "../../message/outbound"
 import { WebSocketFactory } from "../../types/socket"
 
 describe("socket", () => {
+  let mockedWebSocket: WebSocketController
   let receivedMessages: Array<InboundMessage<any>>
   const noopListener = () => null
   const accumulatingListener = (message: InboundMessage<any>) => {
@@ -11,15 +12,15 @@ describe("socket", () => {
   }
 
   beforeEach(() => {
+    mockedWebSocket = mockWebSocket()
     receivedMessages = []
   })
 
   afterEach(() => {
-    ;(global as any).testId = ""
+    cleanupConnection(mockedWebSocket)
   })
 
   it("starts disconnected by default", () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -28,7 +29,6 @@ describe("socket", () => {
   })
 
   it("configures handlers on connect", () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -41,7 +41,6 @@ describe("socket", () => {
   })
 
   it("switch to connected on successful connect", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -56,7 +55,6 @@ describe("socket", () => {
   it("calling connect twice without actual connections", async () => {
     let callCount = 0
 
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: async () => {
         callCount++
@@ -76,7 +74,6 @@ describe("socket", () => {
   })
 
   it("handles connection error properly", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: async () => {
         return Promise.resolve(mockedWebSocket)
@@ -92,7 +89,6 @@ describe("socket", () => {
   })
 
   it("notifies onReconnect when reconnection", async () => {
-    const mockedWebSocket = mockWebSocket()
     const onReconnect = jest.fn()
     const socket = createSocket("any", {
       reconnectDelayInMs: 0,
@@ -116,7 +112,6 @@ describe("socket", () => {
   })
 
   it("notifies onError when error occurred on connect", async () => {
-    const mockedWebSocket = mockWebSocket()
     const onError = jest.fn()
     const socket = createSocket("any", {
       onError,
@@ -133,27 +128,7 @@ describe("socket", () => {
     expect(onError).toHaveBeenCalledWith("something")
   })
 
-  it("notifies onError when error occurred after succesfull connection", async () => {
-    const mockedWebSocket = mockWebSocket()
-    const onError = jest.fn()
-    const socket = createSocket("any", {
-      onError,
-      webSocketFactory: createWebSocketFactory(mockedWebSocket)
-    })
-
-    setTimeout(() => {
-      openConnection(mockedWebSocket)
-      rejectConnection(mockedWebSocket, "something")
-    }, 0)
-
-    expect.hasAssertions()
-    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
-    expect(onError).toHaveBeenCalledTimes(1)
-    expect(onError).toHaveBeenCalledWith("something")
-  })
-
-  it("ensure onClose still call even when error occurs", async () => {
-    const mockedWebSocket = mockWebSocket()
+  it("notifies onClose even when error occurs", async () => {
     const onError = jest.fn()
     const onClose = jest.fn()
     const socket = createSocket("any", {
@@ -175,8 +150,25 @@ describe("socket", () => {
     expect(onClose).toHaveBeenCalledWith("something")
   })
 
+  it("notifies onError when error occurred after succesfull connection", async () => {
+    const onError = jest.fn()
+    const socket = createSocket("any", {
+      onError,
+      webSocketFactory: createWebSocketFactory(mockedWebSocket)
+    })
+
+    setTimeout(() => {
+      openConnection(mockedWebSocket)
+      rejectConnection(mockedWebSocket, "something")
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(onError).toHaveBeenCalledWith("something")
+  })
+
   it("reconnects on abnormal close code ", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       reconnectDelayInMs: 0,
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
@@ -197,7 +189,6 @@ describe("socket", () => {
   })
 
   it("reconnects on abnormal close code even with other custom stream options ", async () => {
-    const mockedWebSocket = mockWebSocket()
     const onError = jest.fn()
     const socket = createSocket("any", {
       reconnectDelayInMs: 0,
@@ -220,7 +211,6 @@ describe("socket", () => {
   })
 
   it("doesn't try to reconnect on close code 1000 (normal closure)", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -238,7 +228,6 @@ describe("socket", () => {
   })
 
   it("doesn't try to reconnect on close code 1005 (no status code present)", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -256,7 +245,6 @@ describe("socket", () => {
   })
 
   it("doesn't try to reconnect when autoReconnect is false", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       autoReconnect: false,
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
@@ -274,8 +262,32 @@ describe("socket", () => {
     expect(socket.isConnected).toBeFalsy()
   })
 
+  it("notifies onClose even after disconnect has been called", async (done) => {
+    const onError = jest.fn()
+    const onClose = (event: any) => {
+      expect(event).toEqual("something")
+      done()
+    }
+
+    const socket = createSocket("any", {
+      onError,
+      onClose,
+      webSocketFactory: createWebSocketFactory(mockedWebSocket)
+    })
+    setTimeout(() => {
+      openConnection(mockedWebSocket, { code: 1000 })
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+
+    socket.disconnect()
+
+    expect(mockedWebSocket.close).toHaveBeenCalledTimes(1)
+    closeConnection(mockedWebSocket, "something")
+  })
+
   it("send message correctly when connected", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -296,7 +308,6 @@ describe("socket", () => {
   })
 
   it("send waits for connect before sending", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -314,7 +325,6 @@ describe("socket", () => {
   })
 
   it("send correctly reconnects when not connected", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -334,7 +344,6 @@ describe("socket", () => {
   })
 
   it("send pong message when keep alive sets to true", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       keepAlive: true,
       keepAliveIntervalInMs: 10,
@@ -345,8 +354,8 @@ describe("socket", () => {
     }, 0)
 
     expect.hasAssertions()
-    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
 
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
     await waitFor(12)
 
     expect(mockedWebSocket.send).toHaveBeenCalledTimes(1)
@@ -354,7 +363,6 @@ describe("socket", () => {
   })
 
   it("stop sending pong message when keep alive sets to true and disconnected", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       autoReconnect: false,
       keepAlive: true,
@@ -379,7 +387,6 @@ describe("socket", () => {
   })
 
   it("no pong messages when keep alive sets to false", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       keepAlive: false,
       keepAliveIntervalInMs: 1,
@@ -398,7 +405,6 @@ describe("socket", () => {
   })
 
   it("forwards received message to listener", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -416,7 +422,6 @@ describe("socket", () => {
   })
 
   it("notifies onInvalidMessage when message type is invalid", async () => {
-    const mockedWebSocket = mockWebSocket()
     const onInvalidMessage = jest.fn()
     const socket = createSocket("any", {
       onInvalidMessage,
@@ -438,7 +443,6 @@ describe("socket", () => {
   })
 
   it("does not forward received message to listener when invalid type", async () => {
-    const mockedWebSocket = mockWebSocket()
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockedWebSocket)
     })
@@ -457,7 +461,6 @@ describe("socket", () => {
   })
 
   it("performs a single connect on multiple send calls without being connected yet", async () => {
-    const mockedWebSocket = mockWebSocket()
     const onReconnect = jest.fn()
     const socket = createSocket("any", {
       onReconnect,
@@ -478,8 +481,8 @@ describe("socket", () => {
   })
 
   const createHandlerExecutor = (handlerName: string) => {
-    return (mockedWebSocket: WebSocketController, ...args: any[]) => {
-      const handler = (mockedWebSocket as any)[handlerName]
+    return (localMockedWebSocket: WebSocketController, ...args: any[]) => {
+      const handler = (localMockedWebSocket as any)[handlerName]
       if (handler) {
         return handler(...args)
       }
@@ -494,15 +497,25 @@ describe("socket", () => {
   const errorConnection = createHandlerExecutor("onerror")
   const sendRawMessageToConnection = createHandlerExecutor("onmessage")
   const sendMessageToConnection = (
-    mockedWebSocket: WebSocketController,
+    localMockedWebSocket: WebSocketController,
     message: InboundMessage<any>
   ) => {
-    sendRawMessageToConnection(mockedWebSocket, { data: JSON.stringify(message) })
+    sendRawMessageToConnection(localMockedWebSocket, { data: JSON.stringify(message) })
   }
 
-  const rejectConnection = (mockedWebSocket: WebSocketController, ...args: any) => {
-    errorConnection(mockedWebSocket, ...args)
-    closeConnection(mockedWebSocket, ...args)
+  const rejectConnection = (localMockedWebSocket: WebSocketController, ...args: any) => {
+    errorConnection(localMockedWebSocket, ...args)
+    closeConnection(localMockedWebSocket, ...args)
+  }
+
+  const cleanupConnection = (localMockedWebSocket: WebSocketController) => {
+    if (localMockedWebSocket && localMockedWebSocket.onclose) {
+      return localMockedWebSocket.onclose({
+        code: 1000,
+        reason: "test clean up",
+        wasClean: true
+      } as any)
+    }
   }
 })
 
