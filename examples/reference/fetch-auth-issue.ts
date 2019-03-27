@@ -1,5 +1,5 @@
 import { DFUSE_API_KEY, runMain, prettifyJson, DFUSE_API_NETWORK, waitFor } from "../config"
-import { createDfuseClient } from "@dfuse/eosws-js"
+import { createDfuseClient } from "@dfuse/client"
 
 async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })

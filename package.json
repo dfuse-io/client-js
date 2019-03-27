@@ -1,5 +1,5 @@
 {
-  "name": "@dfuse/eosws-js",
+  "name": "@dfuse/client",
   "version": "0.12.0-beta.4",
   "description": "`eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))",
   "main": "dist/index.js",
@@ -55,7 +55,6 @@
     "@types/ws": "^6.0.1",
     "dotenv": "^6.1.0",
     "husky": "^1.1.2",
-    "isomorphic-fetch": "^2.2.1",
     "isomorphic-ws": "^4.0.1",
     "jest": "^24.1.0",
     "jest-fetch-mock": "^2.1.1",

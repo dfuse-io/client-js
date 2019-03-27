@@ -1,5 +1,5 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/eosws-js"
+import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
 
 async function main() {
   const client = createDfuseClient({

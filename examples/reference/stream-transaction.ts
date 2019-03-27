@@ -5,7 +5,7 @@ import {
   InboundMessageType,
   waitFor,
   TransactionData
-} from "@dfuse/eosws-js"
+} from "@dfuse/client"
 
 async function main() {
   const client = createDfuseClient({

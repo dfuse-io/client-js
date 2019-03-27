@@ -10,7 +10,7 @@
 //   ErrorData,
 //   ApiTokenStorage,
 //   EoswsConnector
-// } from "@dfuse/eosws-js"
+// } from "@dfuse/client"
 // import fetch from "node-fetch"
 
 // interface Transfer {

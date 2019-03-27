@@ -2,15 +2,18 @@
 
 A WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io> on EOS networks.
 
+**Note** This library is the newest hottest version of [@dfuse/eosws-js](https://github.com/dfuse-io/eosws-js)
+library. If you land here because your are using it, refer to the [MIGRATION.md](./MIGRATION.md) file for how
+to upgrade.
+
 ## Installation
 
 Using Yarn:
 
     yarn add @dfuse/client
 
-or using NPM:
-
-    npm install --save @dfuse/client
+    # Use this command if you are using npm
+    #npm install --save @dfuse/client
 
 ## Quick Start
 
@@ -31,193 +34,96 @@ client.streamActionTraces({ account: "eosio.token", action_name: "transfer" }, (
 })
 ```
 
-### Use Cases
-
-You can see various examples in the [examples](./examples) folder. Here the reference list:
-
-- [Get Action Traces](./examples/get-action-traces.ts)
-- [Get Action Traces From Multiple Contracts](./examples/get-action-traces-multi-contracts.ts)
-- [Get Table Rows](./examples/get-table-rows.ts)
-- [Get Table Snapshot Only](./examples/get-table-snapshot-only.ts)
-- [Get Transaction Lifecycle](./examples/get-transaction-lifecycle.ts)
-- [Multi Listen](./examples/multi-listen.ts)
-- [Socket Notifications](./examples/socket-notifications.ts)
-
 ### Node.js
 
-If you target a `Node.js` environment instead, import a proper `WebSocket` client
-implementation.
+If you target a `Node.js` environment instead, you will need bring a `fetch` compatible
+function and a proper `WebSocket` client.
 
-For now, the library only accepts a `WebSocket` that follows the [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-interface. We will provide adapter for the most used packages in the near feature.
+You are free to use any compatible library respecting the respective requirements. To
+make it simple, if `fetch` and/or `WebSocket` are available in the global scope (`global`),
+they are picked automatically by the library. While polluting the global scope, it's the
+easiest way to get started.
 
-For now, the preferred method in `Node.js` is to use the [ws](https://www.npmjs.com/package/ws).
-This package is compatible with the [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket).
+It's what the examples in this project do using respectively
+[node-fetch](https://www.npmjs.com/package/node-fetch) and
+and [ws](https://www.npmjs.com/package/ws) for `fetch` and `WebSocket` respectively.
 
-#### Package [ws](https://www.npmjs.com/package/ws)
+In the bootstrap phase of your application, prior doing any `@dfuse/client` imports/require,
+put the following code:
 
-Ensure the you added [ws](https://www.npmjs.com/package/ws) as a dependency of your project.
-Then, do the following:
+    global.fetch = require("node-fetch");
+    global.WebSocket = require("ws");
 
-```js
-const WebSocket = require("ws")
+You can check the [Node.js Configuration](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
+example for how to avoid polluting the global scope.
 
-// ... rest as the browser example above
-```
+### Examples
 
-#### Package [websocket](https://www.npmjs.com/package/websocket)
+**Note** You can run the examples straight from this repository quite easily. Clone it to
+you computer, run `yarn install && yarn build` in the project directory. Link the local
+build so it's usable by the examples:
 
-The client of this package does **not** follow [WebSocket Web API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) specification. As such, it's currently not supported by this library.
+    yarn link               # Adds a symlink of this project to your global installation
+    yarn link @dfuse/client # Adds `@dfuse/client` in this project's `node_modules` folder (global symlink)
 
-We might provide an adapter in the future, but nothing is planned yet, pull request welcome!
+Ensures you have an environment variable `DFUSE_API_KEY` set to your dfuse API Key value.
+Then simply issue the following command (pick the example file you want to run):
 
-**Note** It can be used standalone (i.e. without this library), if you really need it, but won't
-be able to leverage all the goodies this library provides for you.
+    yarn run ts-node examples/basic/stream-transfers.ts
 
-## API
+#### Basic
 
-### Protocol
+These are the starter examples showing a concrete use case you can solve using `@dfuse/client`
+library. Those toy examples have low to no error handling, check the [Advanced section](#advanced)
+for production grade details on efficiently use `@dfuse/client`
 
-For the low-level communication protocol, heads down to [dfuse WebSocket API Documentation](https://dfuse.io/en/#websockets-based-api).
+- [Track your RAM usage](./examples/basic/track-ram-usage.ts)
+- [Stream Transfers](./examples/basic/stream-transfers.ts)
+- [Stream Table Rows](./examples/basic/stream-table-rows.ts)
 
-### Library
+#### Advanced
 
-Here the API reference for this actual library.
+You will find examples leveraging the full power library with all the correct patterns to
+consume the Blockchain data efficiently, with strict data integrity and how to properly
+deal with error and edge cases (like micro-forks!).
 
-#### `SocketFactory`
+- [Client & Socket Notifications - Looking at all events generated by the library](./examples/advanced/client-and-socket-notifications.ts)
+- [Forever Stream - Always stay connected to dfuse Stream](./examples/advanced/forever-streaming.ts)
+- [Multiple Active Streams - Connects multiple dfuse Streams at the same time](.examples/advanced/multiple-active-streams.ts)
+- [Navigating Forks - Dealing with undo/redo steps](./examples/advanced/navigating-forks.ts)
+- [Never Miss a Beat - Ensuring consistent data integrity](./examples/advanced/never-miss-a-beat.ts)
+- [Node.js Configuration - Avoid polluting the global scope](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
+- [Stream Irreversible Events Only - Avoiding dealing with micro-forks (non-live)](./examples/advanced/stream-only-irreversible-events.ts)
+- [WebSocket Client Customization - Max message payload size override and other possible options](./examples/advanced/websocket-client-customization.ts)
 
-A type representing a function taking no parameters and that must return a `WebSocket` object that will be
-used to connect to the remote endpoint.
+#### Reference
 
-##### Example
+In this folder, you will get full reference examples. Those are used to showcase the actual full data
+you receive with each call. It's also there where you can check the flow of messages that can be handled
+in each dfuse Stream and full configuration options for the library itself and all the API calls.
 
-    const socketFactory: SocketFactory = () =>
-        new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin })))
+- Library
 
-#### `createEoswsSocket`
+  - [all-configuration-options.ts](./examples/reference/all-configuration-options.ts)
 
-A factory method responsible of creating a `EoswsSocket` object that is consumed by the `EoswsClient`.
+- HTTP
 
-##### Parameters
+  - [fetch-auth-issue.ts](./examples/reference/fetch-auth-issue.ts)
+  - [fetch-search-transactions.ts](./examples/reference/fetch-search-transactions.ts)
+  - [fetch-state-abi-bin-to-json.ts](./examples/reference/fetch-state-abi-bin-to-json.ts)
+  - [fetch-state-abi.ts](./examples/reference/fetch-state-abi.ts)
+  - [fetch-state-key-accounts.ts](./examples/reference/fetch-state-key-accounts.ts)
+  - [fetch-state-permission-links.ts](./examples/reference/fetch-state-permission-links.ts)
+  - [fetch-state-table-scopes.ts](./examples/reference/fetch-state-table-scopes.ts)
+  - [fetch-state-table.ts](./examples/reference/fetch-state-table.ts)
+  - [fetch-state-tables-for-accounts.ts](./examples/reference/fetch-state-tables-for-accounts.ts)
+  - [fetch-state-tables-for-scopes.ts](./examples/reference/fetch-state-tables-for-scopes.ts)
 
-- `socketFactory` [SocketFactory](#socketfactory) The factory function that will be used to construct the underlying socket.
-- `options` [SocketOptions](#socketoptions) The options object to pass to the `EoswsSocket` interface.
-
-#### SocketOptions
-
-##### Properties
-
-- `id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** An id to identify the actual socket for debugging purposes. (Optional, `undefined` by default)
-- `keepAlive` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Determine if if a `pong` message should be sent at regular interval to ensure the connection is healthy. (Optional, `true` by default).
-- `keepAliveIntervalInMs` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The amount of time in milliseconds to wait between each keep alive message sending. (Optional, `30000` (30s) by default).
-- `autoReconnect` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Determine if the socket should auto-reconnect to the remote endpoint when connection is closed abnormally. (Optional, `true` by default).
-- `reconnectDelayInMs` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** The amount of time in milliseconds to wait before trying a second reconnection attempt. (Optional, `5000` (5s) by default).
-- `onInvalidMessage` **(message: object) => void** A function that is invoked back when a message of an unknown `type` is returned to the client. (Optional, `undefined` by default)
-- `onReconnect` **() => void** A function that is invoked back when a successful reconnection happen. (Optional, `undefined` by default)
-- `onError` **(event: object) => void** A function that is invoked back when socket receive an `ErrorEvent` according to the WebSocket protocol. (Optional, `undefined` by default)
-- `onClose` **(event: object) => void** A function that is invoked back when socket receives a `CloseEvent` according to the WebSocket protocol. (Optional, `undefined` by default)
-
-#### EoswsClient
-
-A class handling the communication with the remote endpoint dealing with all the details of the `Eosws` protocol.
-
-##### `constructor`
-
-Constructs an `EoswsClient` instance.
-
-###### Parameters
-
-- `EoswsSocket` **EoswsSocket** A `EoswsSocket` instance as returned by [createEoswsClient](#createEoswsClient).
-
-##### `connect`
-
-###### Parameters
-
-None
-
-###### Return
-
-Returns a `Promise<void>` resolving correctly once connected initially on the remote endpoint.
-
-##### `disconnect`
-
-Returns a `Promise<void>` resolving correctly once disconnection has completed with the client.
-
-##### `getActionTraces`
-
-##### Parameters
-
-- `data` **GetActionTracesData** Data Parameters for receiving action traces.
-  - `account` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account targeted by the action.
-  - `receiver` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Specify the receiving account executing its smart contract.
-    If left blank, defaults to the same value as `account`.
-  - `action_name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Name of the action called within the account contract.
-  - `with_ramops` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Stream RAM billing changes and reasons for costs of storage produced by each action.
-  - `with_inline_traces` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Stream the inline actions produced by each action.
-  - `with_deferred` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)?** Stream the modifications to deferred transactions produced by each action.
-- `options` **[StreamOptions](#streamoptions)** Optional common stream options (optional, default `{}`)
-
-##### Return
-
-A [ListenerObject](#listenerobject) on which you can start listening for message related to the stream by calling `listen` on it
-and stop listening by calling `unlisten` on it.
-
-##### `getTableRows`
-
-##### Parameters
-
-- `data` **GetTableRows** Data Parameters
-  - `code` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Contract account which wrote to tables.
-  - `scope` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table scope where table is stored.
-  - `table` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Table name, shown in the contract ABI.
-  - `json` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** With json=true (or 1), table rows will be decoded to JSON, using the ABIs active on the queried block. This endpoint will thus automatically adapt to upgrades to the ABIs on chain. (optional, default `true`)
-- `options` **[StreamOptions](#streamoptions)** Optional common stream options (optional, default `{}`)
-
-##### Return
-
-A [ListenerObject](#listenerobject) on which you can start listening for message related to the stream by calling `listen` on it
-and stop listening by calling `unlisten` on it.
-
-##### `getTransactionLifecycle`
-
-##### Parameters
-
-- `id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The transaction id to get transaction info.
-- `options` **[StreamOptions](#streamoptions)** Optional common stream options (optional, default `{}`)
-
-##### Return
-
-A [ListenerObject](#listenerobject) on which you can start listening for message related to the stream by calling `listen` on it
-and stop listening by calling `unlisten` on it.
-
-#### ListenerObject
-
-The object returned when calling one of the main stream handler so that you can then `listen`
-and `unlisten` on the stream.
-
-##### Properties
-
-- `listen` **(listener: (message: InboundMessage) => void)** A function that when called, send the starting message to the server and route back all specific stream message for this request back to the `listener` parameter of the project.
-- `reqId` **string** The request id used to map back messages from socket to this specific stream.
-- `unlisten` **()** A function that when called, stop listening from the stream. The `unlisten` message is sent to the remote endpoint to stop it.
-
-#### StreamOptions
-
-An object containing the various common properties for the Eosws base messaging system.
-
-##### Properties
-
-- `req_id` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** An ID that you want sent back to you for any responses related to this request.
-- `start_block` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Block at which you want to start processing.
-  It can be an absolute block number, or a negative value, meaning how many blocks from the current head block on the chain.
-  Ex: -2500 means 2500 blocks in the past, relative to the head block.
-- `listen` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to listen for new
-  events upcoming for this type of stream.
-- `fetch` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to fetch an initial snapshot of the requested entity.
-- `with_progress` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Frequency of the progress of blocks processing (within the scope of a req_id).
-  You will, at a maximum, receive one notification each 250 milliseconds (when processing large amounts of blocks),
-  and when blockNum % frequency == 0. When you receive a progress notification associated with a stream (again, identified by its req_id),
-  you are guaranteed to have seen all messages produced by that stream, between the previous progress notification and the one received (inclusively).
+- Stream
+  - [stream-action-traces.ts](./examples/reference/stream-action-traces.ts)
+  - [stream-head-info.ts](./examples/reference/stream-head-info.ts)
+  - [stream-table-rows.ts](./examples/reference/stream-table-rows.ts)
+  - [stream-transaction.ts](./examples/reference/stream-transaction.ts)
 
 ## Development
 

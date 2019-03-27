@@ -4,7 +4,7 @@
 //   TransactionLifecycle,
 //   SearchTransactionRow,
 //   RAMOp
-// } from "@dfuse/eosws-js"
+// } from "@dfuse/client"
 
 // async function main() {
 //   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })

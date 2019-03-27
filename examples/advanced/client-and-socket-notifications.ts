@@ -1,5 +1,5 @@
 // import { socketFactory, runMain, waitFor } from "./config"
-// import { EoswsClient, InboundMessage, createEoswsSocket } from "@dfuse/eosws-js"
+// import { EoswsClient, InboundMessage, createEoswsSocket } from "@dfuse/client"
 
 // async function main() {
 //   const onClose = (event: object) => {

@@ -7,7 +7,7 @@
 //   ActionTraceData,
 //   ErrorData,
 //   TransactionData
-// } from "@dfuse/eosws-js"
+// } from "@dfuse/client"
 
 // const CONTRACTS = ["eosmechanics", "eosknightsio", "eosiotokener"]
 

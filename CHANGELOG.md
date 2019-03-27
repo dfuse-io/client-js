@@ -2,6 +2,12 @@
 
 ## In Progress (Next)
 
+- Renamed the library to `@dfuse/client`.
+
+- Major overhaul of the full API of the library to become a full dfuse Client library,
+  read the `MIGRATION.md` guide for more details on how to go from `@dfuse/eosws-js` to
+  the full blown `@dfuse/client`.
+
 ## In Progress (Current)
 
 ## 0.11.11 (March 26, 2019)
