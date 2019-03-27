@@ -1,13 +1,13 @@
 {
   "name": "@dfuse/client",
-  "version": "0.12.0-beta.4",
-  "description": "`eosws` JavaScript/TypeScript bindings (from the [dfuse API](https://dfuse.io/))",
+  "version": "0.2.0-rc.1",
+  "description": "dfuse JavaScript/TypeScript Client Library (for [dfuse API](https://docs.dfuse.io/))",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "files": [
     "dist/*"
   ],
-  "repository": "https://github.com/dfuse-io/eosws-js",
+  "repository": "https://github.com/dfuse-io/client",
   "author": {
     "name": "dfuse Developers",
     "email": "dev@dfuse.io",
@@ -28,7 +28,7 @@
     "lint": "tslint **/*.ts",
     "lint:specific": "tslint",
     "test": "jest",
-    "examples": "yarn run ts-node examples/get-table-rows.ts && yarn run ts-node examples/multi-listen.ts && yarn run ts-node examples/get-action-traces.ts && yarn run ts-node examples/get-table-snapshot-only.ts && yarn run ts-node examples/get-action-traces-multi-contracts.ts && yarn run ts-node examples/get-transaction-lifecycle.ts"
+    "run:example": "yarn run ts-node"
   },
   "husky": {
     "hooks": {
