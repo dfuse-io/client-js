@@ -172,7 +172,7 @@ To run the examples, it's quite simple, follow these instructions:
 
 First, ensure you have a pristine state of your working directory, and check tests & compilation:
 
-    rm -rf dist
+    yarn clean
     yarn build
     yarn test
 

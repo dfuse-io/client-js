@@ -24,6 +24,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "clean": "rimraf dist",
     "prepare": "tsc",
     "lint": "tslint **/*.ts",
     "lint:specific": "tslint",
@@ -62,6 +63,7 @@
     "node-fetch": "^2.3.0",
     "prettier": "^1.14.3",
     "pretty-quick": "^1.8.0",
+    "rimraf": "^2.6.3",
     "ts-jest": "^24.0.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
