@@ -3,6 +3,7 @@
 .envrc
 
 # Build
+build/
 dist/
 
 # Coverage

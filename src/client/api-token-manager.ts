@@ -9,22 +9,41 @@ export interface ApiTokenManager {
   getTokenInfo: () => Promise<ApiTokenInfo>
 }
 
+/**
+ * Create the standard [[ApiTokenManager]] interface that will manage all the lifecycle
+ * of a token.
+ *
+ * @param fetchTokenInfo The async function that should be used to retrieve a fresh token.
+ * @param onTokenRefresh The function to call when a token has been refreshed.
+ * @param delayBuffer The percentage of time to use to schedule the next token refresh
+ *                    (i.e. with a value of `0.9` and a token valid for 1000ms from now,
+ *                    the next refresh would be scheduled to happen at `now + (0.9 * 1000)`)
+ * @param apiTokenStore The API token store interface to retrieve token from and to save it back to.
+ * @param refreshScheduler The scheduler interface that should be used to schedule upcoming refresh token
+ *                         and check if a scheduled one already exist.
+ *
+ * @kind Factories
+ */
 export function createApiTokenManager(
   fetchTokenInfo: () => Promise<ApiTokenInfo>,
   onTokenRefresh: (apiToken: string) => void,
   delayBuffer: number,
-  tokenStore: ApiTokenStore,
+  apiTokenStore: ApiTokenStore,
   refreshScheduler: RefreshScheduler
 ): ApiTokenManager {
   return new DefaultApiTokenManager(
     fetchTokenInfo,
     onTokenRefresh,
     delayBuffer,
-    tokenStore,
+    apiTokenStore,
     refreshScheduler
   )
 }
 
+/**
+ * Check wheter the received [[ApiTokenInfo]] parameter is expired or near its
+ * expiration.
+ */
 export function isExpiredOrNearExpiration(tokenInfo: ApiTokenInfo): boolean {
   const now = Date.now() / 1000
   return tokenInfo.expires_at <= now

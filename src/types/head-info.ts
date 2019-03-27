@@ -1,4 +1,4 @@
-export interface HeadInfoData {
+export type HeadInfoData = {
   last_irreversible_block_num: number
   last_irreversible_block_id: string
   head_block_num: number

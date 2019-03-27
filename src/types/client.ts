@@ -21,6 +21,9 @@ import {
 
 export type RequestIdGenerator = () => string
 
+/**
+ * @group Interfaces
+ */
 export interface DfuseClient {
   //
   /// WebSocket API

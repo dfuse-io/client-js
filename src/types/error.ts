@@ -1,4 +1,4 @@
-export interface ErrorData {
+export type ErrorData = {
   code: string
   trace_id?: string
   message: string

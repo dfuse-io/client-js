@@ -1,0 +1,13 @@
+diff --git a/node_modules/typedoc-plugin-toc-group/plugin.js b/node_modules/typedoc-plugin-toc-group/plugin.js
+index 264c301..904e26a 100644
+--- a/node_modules/typedoc-plugin-toc-group/plugin.js
++++ b/node_modules/typedoc-plugin-toc-group/plugin.js
+@@ -47,7 +47,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
+         isHomePage(page) {
+             if (page && page.url && page.project) {
+                 try {
+-                    if (page.url.indexOf(page.project[exports.PLUGIN_NAME].homePath) > -1) {
++                    if (page.url.indexOf("index.html") > -1 || page.url.indexOf("globals.html") > -1) {
+                         return true;
+                     }
+                 }

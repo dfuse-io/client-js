@@ -46,7 +46,7 @@ import { StreamClient, Stream, OnStreamMessage } from "../types/stream-client"
 import { ApiTokenStore, InMemoryApiTokenStore } from "./api-token-store"
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 
-export interface DfuseClientOptions {
+export type DfuseClientOptions = {
   network: "mainnet" | "jungle" | "kylin" | string
   apiKey: string
   secure?: boolean
@@ -65,6 +65,17 @@ export interface DfuseClientOptions {
   refreshScheduler?: RefreshScheduler
 }
 
+/**
+ * The main entry point of the library, use it to create the standard [[DfuseClient]]
+ * instance.
+ *
+ * Only the `apiKey` and `network` parameters are mandatory, all others have sane
+ * default values based on your execution environment (be it a Browser or Node.js).
+ *
+ * @param options The options that can be passed to customize [[DfuseClient]] instance, refer to the [[DfuseClientOptions]] for further details.
+ *
+ * @kind Factories
+ */
 export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const endpoint = networkToEndpoint(options.network)
   const secureEndpoint = options.secure === undefined ? true : options.secure

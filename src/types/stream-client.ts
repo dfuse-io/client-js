@@ -2,6 +2,9 @@ import { InboundMessage } from "../message/inbound"
 import { OutboundMessage } from "../message/outbound"
 import { Socket } from "./socket"
 
+/**
+ * @group Interfaces
+ */
 export interface StreamClient {
   socket: Socket
 
@@ -11,7 +14,7 @@ export interface StreamClient {
   setApiToken(apiToken: string): void
 }
 
-export interface Stream {
+export type Stream = {
   id: string
   unlisten(): Promise<void>
 }

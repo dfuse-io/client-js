@@ -1,6 +1,6 @@
 import { DfuseClientError } from "../types/error"
 
-export interface OutboundMessage<T> {
+export type OutboundMessage<T> = {
   type: OutboundMessageType
   req_id: string
   listen?: boolean
@@ -19,7 +19,7 @@ export enum OutboundMessageType {
   UNLISTEN = "unlisten"
 }
 
-export interface StreamOptions {
+export type StreamOptions = {
   listen?: boolean
   req_id?: string
   start_block?: number
@@ -27,7 +27,7 @@ export interface StreamOptions {
   with_progress?: number
 }
 
-export interface GetActionTracesMessageData {
+export type GetActionTracesMessageData = {
   account?: string // @deprecated, will be removed in next major bump
   accounts?: string
   receiver?: string // @deprecated, will be removed in next major bump
@@ -52,7 +52,7 @@ export function getActionTracesMessage(
   )
 }
 
-export interface GetTableRowsMessageData {
+export type GetTableRowsMessageData = {
   code: string
   scope: string
   table: string
@@ -73,7 +73,7 @@ export function getTableRowsMessage(
   )
 }
 
-export interface GetTransactionLifecycleMessageData {
+export type GetTransactionLifecycleMessageData = {
   id: string
 }
 
@@ -100,7 +100,7 @@ export function getHeadInfoMessage(
   )
 }
 
-export interface UnlistenMessageData {
+export type UnlistenMessageData = {
   req_id: string
 }
 

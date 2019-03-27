@@ -1,11 +1,11 @@
-export interface ActionTraceData<T> {
+export type ActionTraceData<T> = {
   trx_id: string
   idx: number
   depth: number
   trace: ActionTrace<T>
 }
 
-export interface ActionTrace<T> {
+export type ActionTrace<T> = {
   receipt: ActionReceipt
   act: Action<T>
   elapsed: number
@@ -16,7 +16,7 @@ export interface ActionTrace<T> {
   inline_traces: Array<ActionTrace<any>>
 }
 
-export interface Action<T> {
+export type Action<T> = {
   account: string
   name: string
   authorization: Authorization[]
@@ -24,12 +24,12 @@ export interface Action<T> {
   hex_data: string
 }
 
-export interface Authorization {
+export type Authorization = {
   actor: string
   permission: string
 }
 
-export interface ActionReceipt {
+export type ActionReceipt = {
   receiver: string
   act_digest: string
   global_sequence: number

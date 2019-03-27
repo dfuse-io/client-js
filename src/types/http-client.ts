@@ -19,32 +19,46 @@ export const V0_SEARCH_TRANSACTIONS = "/v0/search/transactions"
  *
  * Passing the `window.fetch` (in the Browser) or `global.fetch` (polyfilled in Node.js)
  * should always be accepted as a valid usage.
+ *
+ * @ignore
  */
 export type Fetch = (url: string, options?: HttpRequest) => Promise<HttpResponse>
 
-export interface HttpQueryParameters {
+export type HttpQueryParameters = {
   [key: string]: any
 }
 
-export interface HttpRequest {
+/**
+ * @ignore
+ */
+export type HttpRequest = {
   body?: any
   headers?: string[][] | Record<string, string>
   method?: string
 }
 
+/**
+ * @ignore
+ */
 export interface HttpBody {
   json(): Promise<any>
   text(): Promise<string>
 }
 
-export interface HttpResponse extends HttpBody {
+/**
+ * @ignore
+ */
+export type HttpResponse = {
   readonly headers: any
   readonly ok: boolean
   readonly status: number
   readonly statusText: string
   readonly url: string
-}
+} & HttpBody
 
+/**
+ * @group Interfaces
+ */
 export interface HttpClient {
   authRequest<T>(path: string, method: string, params?: HttpQueryParameters, body?: any): Promise<T>
 

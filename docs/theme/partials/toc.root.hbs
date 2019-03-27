@@ -1,0 +1,22 @@
+{{#if isInPath}}
+</ul>
+<ul class="current">
+    {{/if}}
+    <li class="{{#if isInPath}}current{{/if}} {{cssClasses}}">
+        {{#if groupTitle}}
+        <h3>{{{wbr groupTitle}}}</h3>
+        {{else}}
+        <a href="{{relativeURL url}}" class="tsd-kind-icon">{{{wbr title}}}</a>
+        {{/if}}
+        {{#if children}}
+        <ul>
+            {{#each children}}
+            {{> toc}}
+            {{/each}}
+        </ul>
+        {{/if}}
+    </li>
+    {{#if isInPath}}
+</ul>
+<ul class="after-current">
+    {{/if}}

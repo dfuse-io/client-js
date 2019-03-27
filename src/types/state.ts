@@ -2,7 +2,7 @@ import { DbRow } from "./table-delta"
 
 export type StateKeyType = "name" | "hex" | "hex_be" | "uint64"
 
-export interface StateAbiResponse {
+export type StateAbiResponse = {
   block_num: number
   account: string
   abi: Abi
@@ -15,7 +15,7 @@ export interface StateAbiResponse {
  *
  * See https://github.com/EOSIO/eosjs/blob/develop/src/eosjs-rpc-interfaces.ts#L4
  */
-export interface Abi {
+export type Abi = {
   version: string
   types: Array<{ new_type_name: string; type: string }>
   structs: Array<{ name: string; base: string; fields: Array<{ name: string; type: string }> }>
@@ -33,19 +33,19 @@ export interface Abi {
   variants?: Array<{ name: string; types: string[] }>
 }
 
-export interface StateAbiToJsonResponse<T = unknown> {
+export type StateAbiToJsonResponse<T = unknown> = {
   block_num: number
   account: string
   table: string
   rows: T[]
 }
 
-export interface StateKeyAccountsResponse {
+export type StateKeyAccountsResponse = {
   block_num: number
   accounts: string[]
 }
 
-export interface StatePermissionLinksResponse {
+export type StatePermissionLinksResponse = {
   up_to_block_id?: string
   up_to_block_num?: number
   last_irreversible_block_id: string
@@ -53,18 +53,18 @@ export interface StatePermissionLinksResponse {
   linked_permissions: LinkedPermission[]
 }
 
-export interface LinkedPermission {
+export type LinkedPermission = {
   contract: string
   action: string
   permission_name: string
 }
 
-export interface StateTableScopesResponse {
+export type StateTableScopesResponse = {
   block_num: number
   accounts: string[]
 }
 
-export interface StateResponse<T = unknown> {
+export type StateResponse<T = unknown> = {
   up_to_block_id?: string
   up_to_block_num?: number
   last_irreversible_block_id: string
@@ -73,7 +73,7 @@ export interface StateResponse<T = unknown> {
   rows: Array<DbRow<T>>
 }
 
-export interface MultiStateResponse<T = unknown> {
+export type MultiStateResponse<T = unknown> = {
   up_to_block_id?: string
   up_to_block_num?: number
   last_irreversible_block_id: string
@@ -82,7 +82,7 @@ export interface MultiStateResponse<T = unknown> {
   rows: Array<TableRows<T>>
 }
 
-export interface TableRows<R = unknown> {
+export type TableRows<R = unknown> = {
   account: string
   scope: string
   rows: Array<DbRow<R>>

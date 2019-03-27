@@ -1,4 +1,4 @@
-export interface InboundMessage<T> {
+export type InboundMessage<T> = {
   type: InboundMessageType
   req_id?: string
   data: T

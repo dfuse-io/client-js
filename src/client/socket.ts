@@ -5,7 +5,7 @@ import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { DfuseClientError } from "../types/error"
 import { WebSocket, Socket, SocketMessageListener, WebSocketFactory } from "../types/socket"
 
-export interface SocketOptions {
+export type SocketOptions = {
   id?: string
   autoReconnect?: boolean
   reconnectDelayInMs?: number

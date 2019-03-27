@@ -1,3 +1,3 @@
-export interface ListeningData {
+export type ListeningData = {
   next_block: number
 }

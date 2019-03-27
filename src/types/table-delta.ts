@@ -1,12 +1,12 @@
 import { ErrorData } from "./error"
 
-export interface TableDeltaData<T = { [key: string]: any }> {
+export type TableDeltaData<T = { [key: string]: any }> = {
   block_num: number
   dbop: DbOp<T>
   step: string
 }
 
-export interface DbOp<T> {
+export type DbOp<T> = {
   op?: string
   action_idx: number
   account?: string
@@ -17,7 +17,7 @@ export interface DbOp<T> {
   new?: DbRow<T>
 }
 
-export interface DbRow<T> {
+export type DbRow<T> = {
   key: string
   payer: string
   blockNum?: string

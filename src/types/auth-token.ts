@@ -1,6 +1,6 @@
 export type AuthTokenResponse = ApiTokenInfo
 
-export interface ApiTokenInfo {
+export type ApiTokenInfo = {
   token: string
   expires_at: number
 }

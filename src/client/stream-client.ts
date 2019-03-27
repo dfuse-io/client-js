@@ -6,7 +6,7 @@ import { DfuseClientError } from "../types/error"
 import { StreamClient, OnStreamMessage, Stream } from "../types/stream-client"
 import { Socket } from "../types/socket"
 
-export interface StreamClientOptions {
+export type StreamClientOptions = {
   socket?: Socket
   socketOptions?: SocketOptions
 }

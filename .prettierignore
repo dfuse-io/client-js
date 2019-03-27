@@ -1,8 +1,13 @@
 ## Coverage
 /coverage
 
+## Docs Theme Partials
+/docs/theme/partials/*.hbs
+
 ## Generated Files
 index.js
+/build
+/dist
 /types
 *.d.ts
 

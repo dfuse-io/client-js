@@ -6,13 +6,13 @@ import { OutboundMessageType, OutboundMessage } from "../../message/outbound"
 import { DfuseClientError } from "../../types/error"
 
 const message1: OutboundMessage<any> = {
-  type: OutboundMessageType.HEAD_INFO,
+  type: OutboundMessageType.GET_HEAD_INFO,
   req_id: "1",
   data: {}
 }
 
 const message2: OutboundMessage<any> = {
-  type: OutboundMessageType.HEAD_INFO,
+  type: OutboundMessageType.GET_HEAD_INFO,
   req_id: "2",
   data: {}
 }

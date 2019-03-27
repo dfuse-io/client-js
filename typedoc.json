@@ -1,0 +1,9 @@
+{
+  "mode": "file",
+  "out": "build",
+  "exclude": "**/*+.test.ts",
+  "excludeNotExported": true,
+  "excludePrivate": true,
+  "listInvalidSymbolLinks": true,
+  "theme": "./docs/theme"
+}

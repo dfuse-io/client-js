@@ -2,7 +2,7 @@ import { DfuseError, DfuseClientError, DfuseApiError } from "../types/error"
 import { Fetch, HttpResponse, HttpQueryParameters, HttpClient } from "../types/http-client"
 import debugFactory, { IDebugger } from "debug"
 
-export interface HttpClientOptions {
+export type HttpClientOptions = {
   fetch?: Fetch
 }
 

@@ -1,6 +1,9 @@
 import { InboundMessage } from "../message/inbound"
 import { OutboundMessage } from "../message/outbound"
 
+/**
+ * @group Interfaces
+ */
 export interface Socket {
   isConnected: boolean
 
@@ -14,6 +17,9 @@ export interface Socket {
 
 export type SocketMessageListener = (message: InboundMessage<any>) => void
 
+/**
+ * @ignore
+ */
 export type WebSocket = any
 
 export type WebSocketFactory = (url: string) => Promise<WebSocket>

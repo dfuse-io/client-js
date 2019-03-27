@@ -1,7 +1,7 @@
 import { ActionTrace, Action } from "./action-trace"
 import { DbRow } from "./table-delta"
 
-export interface TransactionData {
+export type TransactionData = {
   lifecycle: TransactionLifecycle
 }
 
@@ -13,14 +13,14 @@ export interface TransactionData {
  */
 export type CreationNode = [number, number, number]
 
-export interface TableOp {
+export type TableOp = {
   op: string
   action_idx: number
   payer: string
   path: string
 }
 
-export interface TransactionLifecycle {
+export type TransactionLifecycle = {
   id: string
   transaction: Transaction
   transaction_status: string
@@ -39,7 +39,7 @@ export interface TransactionLifecycle {
   cancelation_irreversible: boolean
 }
 
-export interface Transaction {
+export type Transaction = {
   expiration: string
   ref_block_num: number
   ref_block_prefix: number
@@ -53,14 +53,14 @@ export interface Transaction {
   context_free_data?: Array<Action<any>>
 }
 
-export interface ExtDTrxOp extends DTrxOp {
+export type ExtDTrxOp = {
   src_trx_id: string
   block_num: number
   block_id: string
   block_time: string
-}
+} & DTrxOp
 
-export interface DTrxOp {
+export type DTrxOp = {
   op: string
   action_idx: number
   sender: string
@@ -73,7 +73,7 @@ export interface DTrxOp {
   trx?: Transaction
 }
 
-export interface DBOp<T = unknown> {
+export type DBOp<T = unknown> = {
   op: string
   action_idx: number
   account: string
@@ -84,7 +84,7 @@ export interface DBOp<T = unknown> {
   key: string
 }
 
-export interface RAMOp {
+export type RAMOp = {
   op: string
   action_idx: number
   payer: string
@@ -92,13 +92,13 @@ export interface RAMOp {
   usage: number
 }
 
-export interface TransactionReceipt {
+export type TransactionReceipt = {
   status: string
   cpu_usage_us: number
   net_usage_words: number
 }
 
-export interface TransactionTrace {
+export type TransactionTrace = {
   id: string
   block_num: number
   block_time: string
@@ -112,7 +112,7 @@ export interface TransactionTrace {
   except: any
 }
 
-export interface BlockHeader {
+export type BlockHeader = {
   timestamp: string
   producer: string
   confirmed: number
