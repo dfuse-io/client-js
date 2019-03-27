@@ -69,7 +69,7 @@ build so it's usable by the examples:
 Ensures you have an environment variable `DFUSE_API_KEY` set to your dfuse API Key value.
 Then simply issue the following command (pick the example file you want to run):
 
-    yarn run ts-node examples/basic/stream-transfers.ts
+    yarn run:example examples/basic/stream-transfers.ts
 
 #### Basic
 
@@ -77,9 +77,10 @@ These are the starter examples showing a concrete use case you can solve using `
 library. Those toy examples have low to no error handling, check the [Advanced section](#advanced)
 for production grade details on efficiently use `@dfuse/client`
 
-- [Track your RAM usage](./examples/basic/track-ram-usage.ts)
+- [Check Balance (delta between fixed block and now)](./examples/basic/check-balance.ts)
+- [Search Your Latest Transactions](./examples/basic/search-your-latest-transactions.ts)
 - [Stream Transfers](./examples/basic/stream-transfers.ts)
-- [Stream Table Rows](./examples/basic/stream-table-rows.ts)
+- [Stream Global State](./examples/basic/stream-global-state.ts)
 
 #### Advanced
 
@@ -94,6 +95,7 @@ deal with error and edge cases (like micro-forks!).
 - [Never Miss a Beat - Ensuring consistent data integrity](./examples/advanced/never-miss-a-beat.ts)
 - [Node.js Configuration - Avoid polluting the global scope](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
 - [Stream Irreversible Events Only - Avoiding dealing with micro-forks (non-live)](./examples/advanced/stream-only-irreversible-events.ts)
+- [Track RAM Usage - Or how to use the search cursor to fetch next results](./examples/advanced/track-ram-usage.ts)
 - [WebSocket Client Customization - Max message payload size override and other possible options](./examples/advanced/websocket-client-customization.ts)
 
 #### Reference

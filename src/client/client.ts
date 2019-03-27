@@ -178,7 +178,7 @@ export class DefaultClient implements DfuseClient {
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getTableRowsMessage(
-      data,
+      { json: true, ...data },
       mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
         listen: true
       })

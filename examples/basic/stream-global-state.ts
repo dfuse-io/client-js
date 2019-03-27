@@ -17,13 +17,13 @@ async function main() {
     { code: "eosio", scope: "eosio", table: "global" },
     (message: InboundMessage<any>) => {
       if (message.type !== InboundMessageType.TABLE_DELTA) {
-        return
-      }
+        const { dbop, block_num } = message.data as TableDeltaData
+        const { total_ram_stake, total_unpaid_blocks } = dbop.new!.json!
 
-      const { dbop, block_num, step } = message.data as TableDeltaData
-      console.log(
-        `Table eosio/eosio#global delta operation ${dbop.op}, step: ${step} (Block #${block_num})`
-      )
+        console.log(
+          `Global state change @ #${block_num} [Total RAM Stake ${total_ram_stake}, Total Unpaid Block Count ${total_unpaid_blocks}]`
+        )
+      }
     }
   )
 
