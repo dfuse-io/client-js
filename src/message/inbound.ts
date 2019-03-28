@@ -1,4 +1,4 @@
-export type InboundMessage<T> = {
+export type InboundMessage<T = unknown> = {
   type: InboundMessageType
   req_id?: string
   data: T

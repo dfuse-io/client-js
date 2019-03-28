@@ -42,7 +42,7 @@
 //   console.log("Streaming  ")
 //   client
 //     .getActionTraces({ account: "eosio.token", action_name: "create" }, { with_progress: 50 })
-//     .onMessage((message: InboundMessage<any>) => {
+//     .onMessage((message: InboundMessage) => {
 //       console.log(`Received a message of type [${message.type}].`)
 //     })
 

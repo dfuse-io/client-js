@@ -8,7 +8,7 @@ import { Socket } from "./socket"
 export interface StreamClient {
   socket: Socket
 
-  registerStream(message: OutboundMessage<any>, onMessage: OnStreamMessage): Promise<Stream>
+  registerStream(message: OutboundMessage, onMessage: OnStreamMessage): Promise<Stream>
   unregisterStream(id: string): Promise<void>
 
   setApiToken(apiToken: string): void
@@ -19,4 +19,4 @@ export type Stream = {
   unlisten(): Promise<void>
 }
 
-export type OnStreamMessage = (message: InboundMessage<any>) => void
+export type OnStreamMessage = (message: InboundMessage) => void

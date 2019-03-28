@@ -2,7 +2,7 @@ import debugFactory, { IDebugger } from "debug"
 
 import { OutboundMessage } from "../message/outbound"
 import { InboundMessage, InboundMessageType } from "../message/inbound"
-import { DfuseClientError } from "../types/error"
+import { DfuseClientError, DfuseSocketError } from "../types/error"
 import { WebSocket, Socket, SocketMessageListener, WebSocketFactory } from "../types/socket"
 
 export type SocketOptions = {
@@ -149,7 +149,7 @@ class DefaultSocket implements Socket {
     //        wait for the onclose event to happen?
   }
 
-  public async send<T>(message: OutboundMessage<T>): Promise<boolean> {
+  public async send<T>(message: OutboundMessage<T>): Promise<void> {
     if (!this.isConnected) {
       this.debug("Not connected, re-connecting prior sending message.")
       await this.reconnect()
@@ -157,12 +157,11 @@ class DefaultSocket implements Socket {
 
     if (!this.isConnected) {
       this.debug("Socket not connected, unable to send message correctly.")
-      return false
+      throw new DfuseSocketError("Socket not connected, unable to send message correctly.")
     }
 
     this.debug("Sending message %O through socket.", message)
     this.socket!.send(JSON.stringify(message))
-    return true
   }
 
   private async createAnOpenSocket(
@@ -280,8 +279,13 @@ class DefaultSocket implements Socket {
       return
     }
 
+    if (type === "ping") {
+      this.debug("Discarding 'ping' message from reaching the underlying message listener.")
+      return
+    }
+
     if (this.listener) {
-      this.listener(payload as InboundMessage<any>)
+      this.listener(payload as InboundMessage)
     }
   }
 

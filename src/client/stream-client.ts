@@ -26,7 +26,7 @@ class DefaultStreamClient {
   }
 
   public async registerStream(
-    message: OutboundMessage<any>,
+    message: OutboundMessage,
     onMessage: OnStreamMessage
   ): Promise<Stream> {
     if (Object.keys(this.streams).length <= 0) {
@@ -50,20 +50,13 @@ class DefaultStreamClient {
       subscriptionMessage: message
     }
 
-    const succeed = await this.socket.send(message)
-    if (!succeed) {
-      delete this.streams[id]
-      // FIXME: Do we really want to throw an error here, this would force all callers
-      //        to use a try/catch to be sure the stream worked or not...
-      //
-      //        Moreover, how do we correclty retrieve the cause.... damn it!
-      throw new DfuseClientError(`Unable to correctly register stream`)
-    }
+    // The implementation of the method will perform the stream clean up in case of an error
+    await this.sendRegisterMessage(id, message)
 
     this.debug("Stream [%s] registered with remote endpoint.", id)
     return {
       id,
-      unlisten: () => this.unregisterStream(id)
+      unlisten: async () => this.unregisterStream(id)
     }
   }
 
@@ -85,9 +78,17 @@ class DefaultStreamClient {
     }
   }
 
-  private handleMessage = (message: InboundMessage<any>) => {
-    this.debug("Routing socket message to appropriate stream")
+  private sendRegisterMessage = async (streamId: string, message: OutboundMessage) => {
+    try {
+      await this.socket.send(message)
+    } catch (error) {
+      delete this.streams[streamId]
+      throw new DfuseClientError(`Unable to correctly register stream '${streamId}'`, error)
+    }
+  }
 
+  private handleMessage = (message: InboundMessage) => {
+    this.debug("Routing socket message of type '%s' to appropriate stream", message.type)
     const stream = this.streams[message.req_id || ""]
     if (stream === undefined) {
       this.debug(
@@ -113,7 +114,7 @@ class DefaultStreamClient {
 
 interface StreamTracker {
   onMessage: OnStreamMessage
-  subscriptionMessage: OutboundMessage<any>
+  subscriptionMessage: OutboundMessage
 
   blockNum?: number
   blockId?: string

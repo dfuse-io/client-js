@@ -93,10 +93,9 @@ deal with error and edge cases (like micro-forks!).
 - [Multiple Active Streams - Connects multiple dfuse Streams at the same time](.examples/advanced/multiple-active-streams.ts)
 - [Navigating Forks - Dealing with undo/redo steps](./examples/advanced/navigating-forks.ts)
 - [Never Miss a Beat - Ensuring consistent data integrity](./examples/advanced/never-miss-a-beat.ts)
-- [Node.js Configuration - Avoid polluting the global scope](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
+- [Node.js HTTP & WebSocket Configuration - Avoid polluting the global scope and customizing WebSocket client](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
 - [Stream Irreversible Events Only - Avoiding dealing with micro-forks (non-live)](./examples/advanced/stream-only-irreversible-events.ts)
 - [Track RAM Usage - Or how to use the search cursor to fetch next results](./examples/advanced/track-ram-usage.ts)
-- [WebSocket Client Customization - Max message payload size override and other possible options](./examples/advanced/websocket-client-customization.ts)
 
 #### Reference
 

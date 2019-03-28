@@ -13,7 +13,7 @@ async function main() {
     network: DFUSE_API_NETWORK
   })
 
-  const stream = await client.streamHeadInfo((message: InboundMessage<any>) => {
+  const stream = await client.streamHeadInfo((message: InboundMessage) => {
     if (message.type !== InboundMessageType.HEAD_INFO) {
       return
     }

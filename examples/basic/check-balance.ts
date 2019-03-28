@@ -1,7 +1,7 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
 import { createDfuseClient, SearchTransactionRow, StateResponse, DfuseClient } from "@dfuse/client"
 
-const account = "joshkauffman"
+const account = "eoscanadacom"
 const blockNum = 42_500_250
 
 async function main() {

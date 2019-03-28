@@ -15,7 +15,7 @@ async function main() {
 
   const stream = await client.streamTableRows(
     { code: "eosio", scope: "eosio", table: "global" },
-    (message: InboundMessage<any>) => {
+    (message: InboundMessage) => {
       if (message.type !== InboundMessageType.TABLE_DELTA) {
         return
       }

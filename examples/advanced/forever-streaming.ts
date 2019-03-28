@@ -1,53 +1,81 @@
-// import { socketFactory, runMain, waitFor } from "./config"
-// import { EoswsClient, InboundMessage, createEoswsSocket } from "@dfuse/client"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
+import {
+  createDfuseClient,
+  InboundMessage,
+  InboundMessageType,
+  waitFor,
+  Stream
+} from "@dfuse/client"
 
-// async function main() {
-//   const onClose = (event: object) => {
-//     console.log("Socket was closed", event)
-//   }
+/**
+ * In this example, we will showcase of how to always correctly stream
+ * receives events even after a reconnection to the socket.
+ *
+ * This pattern can be used when you only need to have a never ending
+ * streaming of events, whithout caring about catching up with missed
+ * events by the time the socket was closed.
+ *
+ * We will show and example how to easily re-subscribe your previous
+ * stream when the socket re-connects.
+ *
+ * **Important** If it's really important to never miss a single event,
+ *               don't use this re-connection pattern. Instead look at the
+ *               `never-miss-a-beat.ts` example that showcases how to
+ *               implement bullet proof data integrity pattern and ensure
+ *               you never miss of skip an important event by mistake.
+ */
+async function main() {
+  const client = createDfuseClient({
+    apiKey: DFUSE_API_KEY,
+    network: DFUSE_API_NETWORK,
+    streamClientOptions: {
+      socketOptions: {
+        onReconnect() {
+          /**
+           * This listener is called by the socket right after a connection
+           * has be re-open with the server. This is not called on the initial
+           * connection.
+           *
+           * It's in this method that you should re-connect all your stream
+           * manually. In this sample, simply re-register the stream and
+           * re-assign your stream variable to point to the updated
+           * stream.
+           */
+          console.log("Socket has been reconnected with remote server.")
 
-//   const onError = (event: object) => {
-//     console.log("Socket received an error", event)
-//   }
+          console.log("Registering and updating stream.")
+          client.streamActionTraces(data, onMessage).then((transferStream) => {
+            // Don't forget to assign the stream variable it's new handle, the old
+            // stream is not valid anymore and should be discarded.
+            stream = transferStream
+          })
+        }
+      }
+    }
+  })
 
-//   // When receiving this message, you have been re-connected with the server automatically,
-//   // however, we do not (yet) re-register all the streams you had (streams are from calling
-//   // main actions on the client like `getActionTraces` or `getTableRows`).
-//   //
-//   // As such, right now, you are responsible of re-registering the stream yourself. You
-//   // should read the https://docs.dfuse.io/#websocket-based-api-never-missing-a-beat section
-//   // of the documentation to get a better overview of the concept.
-//   //
-//   // You can implement the re-connection right here, simply re-connect all your stream handlers
-//   // in the callback below, according to the rules specified in the documentation above.
-//   const onReconnect = () => {
-//     console.log("Socket just reconnected, re-register your streams at the right block...")
-//   }
+  const data = {
+    account: "eosio.token",
+    action_name: "transfer"
+  }
 
-//   const onInvalidMessage = (message: object) => {
-//     console.log("Socket received an invalid message", message)
-//   }
+  let stream: Stream = await client.streamActionTraces(data, onMessage)
 
-//   const client = new EoswsClient(
-//     createEoswsSocket(socketFactory, {
-//       onInvalidMessage,
-//       onClose,
-//       onError,
-//       onReconnect
-//     })
-//   )
+  console.log("Socket is now connected.")
 
-//   await client.connect()
+  await waitFor(35000)
+  await stream.unlisten()
+}
 
-//   console.log("Streaming  ")
-//   client
-//     .getActionTraces({ account: "eosio.token", action_name: "create" }, { with_progress: 50 })
-//     .onMessage((message: InboundMessage<any>) => {
-//       console.log(`Received a message of type [${message.type}].`)
-//     })
+function onMessage(message: InboundMessage) {
+  if (message.type === "listening") {
+    console.log("Stream is now listening.")
+    return
+  }
 
-//   // Hopefully you will be able to simulate a disconnection by this happen runs out
-//   await waitFor(60000)
-// }
+  if (message.type === "action_trace") {
+    console.log("Streaming transfer.")
+  }
+}
 
-// runMain(main)
+runMain(main)

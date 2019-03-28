@@ -159,7 +159,7 @@ export class DefaultClient implements DfuseClient {
 
   public streamActionTraces(
     data: GetActionTracesMessageData,
-    onMessage: (message: InboundMessage<any>) => void,
+    onMessage: (message: InboundMessage) => void,
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getActionTracesMessage(
@@ -174,7 +174,7 @@ export class DefaultClient implements DfuseClient {
 
   public async streamTableRows(
     data: GetTableRowsMessageData,
-    onMessage: (message: InboundMessage<any>) => void,
+    onMessage: (message: InboundMessage) => void,
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getTableRowsMessage(
@@ -189,7 +189,7 @@ export class DefaultClient implements DfuseClient {
 
   public async streamTransaction(
     data: GetTransactionLifecycleMessageData,
-    onMessage: (message: InboundMessage<any>) => void,
+    onMessage: (message: InboundMessage) => void,
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getTransactionLifecycleMessage(
@@ -204,7 +204,7 @@ export class DefaultClient implements DfuseClient {
   }
 
   public streamHeadInfo(
-    onMessage: (message: InboundMessage<any>) => void,
+    onMessage: (message: InboundMessage) => void,
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getHeadInfoMessage(
@@ -394,7 +394,7 @@ export class DefaultClient implements DfuseClient {
   }
 
   protected async registerStream(
-    message: OutboundMessage<any>,
+    message: OutboundMessage,
     onMessage: OnStreamMessage
   ): Promise<Stream> {
     try {

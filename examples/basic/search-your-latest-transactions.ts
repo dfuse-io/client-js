@@ -1,14 +1,15 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
 import { createDfuseClient, SearchTransactionRow } from "@dfuse/client"
 
-const account = "joshkauffman"
+const account = "eoscanadacom"
 
 async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
     const response = await client.searchTransactions(`auth:${account}`, {
-      limit: 10
+      limit: 10,
+      sort: "desc"
     })
 
     console.log()

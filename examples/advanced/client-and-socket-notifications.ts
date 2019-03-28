@@ -1,53 +1,80 @@
-// import { socketFactory, runMain, waitFor } from "./config"
-// import { EoswsClient, InboundMessage, createEoswsSocket } from "@dfuse/client"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
+import {
+  createDfuseClient,
+  InboundMessage,
+  InboundMessageType,
+  waitFor,
+  SocketOptions,
+  Stream
+} from "@dfuse/client"
 
-// async function main() {
-//   const onClose = (event: object) => {
-//     console.log("Socket was closed", event)
-//   }
+/**
+ * In this example, we will show case how to be get notifications when certain
+ * events happen in the client and underlying socket.
+ *
+ * You will probably don't see that much here, unless you are able to
+ * generation a closing of the connection and then letting it come
+ * back. Restarting the network interface while the script is running
+ * might work.
+ *
+ * In this example, you will registering listener for the following events:
+ * - Socket `onError`: when an error occurs with the connection, you will still receive an `onClose` right aftet this one.
+ * - Socket `onClose`: when the connection of the `Socket` was closed.
+ * - Socket `onReconnect`: when the socket has automatically reconnected.
+ * - Socket `onInvalidMessage`: when the socket receives a message of type it's not aware of (i.e. it's no in the enum `InbountMessageType`).
+ */
+async function main() {
+  const socketOptions: SocketOptions = {
+    onError(event: any) {
+      console.log("Socket emitted an error event.", {
+        message: event.message,
+        error: event.error
+      })
+    },
 
-//   const onError = (event: object) => {
-//     console.log("Socket received an error", event)
-//   }
+    onClose(event: any) {
+      console.log("Socket has closed its onnection.", { reason: event.reason, code: event.code })
+    },
 
-//   // When receiving this message, you have been re-connected with the server automatically,
-//   // however, we do not (yet) re-register all the streams you had (streams are from calling
-//   // main actions on the client like `getActionTraces` or `getTableRows`).
-//   //
-//   // As such, right now, you are responsible of re-registering the stream yourself. You
-//   // should read the https://docs.dfuse.io/#websocket-based-api-never-missing-a-beat section
-//   // of the documentation to get a better overview of the concept.
-//   //
-//   // You can implement the re-connection right here, simply re-connect all your stream handlers
-//   // in the callback below, according to the rules specified in the documentation above.
-//   const onReconnect = () => {
-//     console.log("Socket just reconnected, re-register your streams at the right block...")
-//   }
+    onReconnect() {
+      console.log("Socket has been reconnected with remote server.")
 
-//   const onInvalidMessage = (message: object) => {
-//     console.log("Socket received an invalid message", message)
-//   }
+      console.log("Registering and updating stream.")
+      client.streamActionTraces(data, onMessage).then((transferStream) => {
+        stream = transferStream
+      })
+    },
 
-//   const client = new EoswsClient(
-//     createEoswsSocket(socketFactory, {
-//       onInvalidMessage,
-//       onClose,
-//       onError,
-//       onReconnect
-//     })
-//   )
+    onInvalidMessage(message: any) {
+      console.log("Socket has received a message of type it does not handle.", message.type)
+    }
+  }
 
-//   await client.connect()
+  let stream: Stream
+  const client = createDfuseClient({
+    apiKey: DFUSE_API_KEY,
+    network: DFUSE_API_NETWORK,
+    streamClientOptions: {
+      socketOptions
+    }
+  })
 
-//   console.log("Streaming  ")
-//   client
-//     .getActionTraces({ account: "eosio.token", action_name: "create" }, { with_progress: 50 })
-//     .onMessage((message: InboundMessage<any>) => {
-//       console.log(`Received a message of type [${message.type}].`)
-//     })
+  const data = {
+    account: "eosio.token",
+    action_name: "transfer"
+  }
 
-//   // Hopefully you will be able to simulate a disconnection by this happen runs out
-//   await waitFor(60000)
-// }
+  stream = await client.streamActionTraces(data, onMessage)
+  console.log("Socket is now connected.")
 
-// runMain(main)
+  await waitFor(35000)
+  await stream.unlisten()
+}
+
+function onMessage(message: InboundMessage) {
+  if (message.type === InboundMessageType.LISTENING) {
+    console.log("Stream is now listening.")
+  }
+}
+
+runMain(main)

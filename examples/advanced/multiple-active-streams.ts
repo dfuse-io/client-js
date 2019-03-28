@@ -41,7 +41,7 @@
 //     action_name: "transfer"
 //   })
 
-//   tableRowsStream.onMessage((message: InboundMessage<any>) => {
+//   tableRowsStream.onMessage((message: InboundMessage) => {
 //     switch (message.type) {
 //       case InboundMessageType.TABLE_DELTA:
 //         const tableDelta = message.data as TableDeltaData
@@ -71,7 +71,7 @@
 //     }
 //   })
 
-//   actionTracesStream.onMessage((message: InboundMessage<any>) => {
+//   actionTracesStream.onMessage((message: InboundMessage) => {
 //     switch (message.type) {
 //       case InboundMessageType.ACTION_TRACE:
 //         const transfer = (message.data as ActionTraceData<Transfer>).trace.act.data

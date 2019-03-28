@@ -15,7 +15,7 @@ async function main() {
 
   const stream = await client.streamTableRows(
     { code: "eosio", scope: "eosio", table: "global" },
-    (message: InboundMessage<any>) => {
+    (message: InboundMessage) => {
       if (message.type !== InboundMessageType.TABLE_DELTA) {
         const { dbop, block_num } = message.data as TableDeltaData
         const { total_ram_stake, total_unpaid_blocks } = dbop.new!.json!

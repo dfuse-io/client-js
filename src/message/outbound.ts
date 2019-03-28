@@ -1,6 +1,6 @@
 import { DfuseClientError } from "../types/error"
 
-export type OutboundMessage<T> = {
+export type OutboundMessage<T = unknown> = {
   type: OutboundMessageType
   req_id: string
   listen?: boolean

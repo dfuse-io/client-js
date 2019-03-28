@@ -17,12 +17,6 @@ export class DfuseError extends Error {
   }
 }
 
-export class DfuseClientError extends DfuseError {
-  constructor(message: string, cause?: Error) {
-    super(message, cause)
-  }
-}
-
 export class DfuseApiError extends DfuseError implements ErrorData {
   public code: string
   public trace_id?: string
@@ -36,5 +30,17 @@ export class DfuseApiError extends DfuseError implements ErrorData {
     this.trace_id = data.trace_id
     this.message = data.message
     this.details = data.details
+  }
+}
+
+export class DfuseClientError extends DfuseError {
+  constructor(message: string, cause?: Error) {
+    super(message, cause)
+  }
+}
+
+export class DfuseSocketError extends DfuseError {
+  constructor(message: string, cause?: Error) {
+    super(message, cause)
   }
 }

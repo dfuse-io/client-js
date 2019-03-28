@@ -5,13 +5,13 @@ import { MockSocket } from "./mocks"
 import { OutboundMessageType, OutboundMessage } from "../../message/outbound"
 import { DfuseClientError } from "../../types/error"
 
-const message1: OutboundMessage<any> = {
+const message1: OutboundMessage = {
   type: OutboundMessageType.GET_HEAD_INFO,
   req_id: "1",
   data: {}
 }
 
-const message2: OutboundMessage<any> = {
+const message2: OutboundMessage = {
   type: OutboundMessageType.GET_HEAD_INFO,
   req_id: "2",
   data: {}
@@ -150,8 +150,8 @@ describe("StreamClient", () => {
   })
 
   it("forwards message to right registered stream when there is a single one", async () => {
-    let sendMessage: (message: InboundMessage<any>) => void
-    const receiveMessage = jest.fn<InboundMessage<any>>()
+    let sendMessage: (message: InboundMessage) => void
+    const receiveMessage = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler
@@ -170,9 +170,9 @@ describe("StreamClient", () => {
   })
 
   it("forwards message to right registered stream when there is multiples", async () => {
-    let sendMessage: (message: InboundMessage<any>) => void
-    const receiveMessage1 = jest.fn<InboundMessage<any>>()
-    const receiveMessage2 = jest.fn<InboundMessage<any>>()
+    let sendMessage: (message: InboundMessage) => void
+    const receiveMessage1 = jest.fn<InboundMessage>()
+    const receiveMessage2 = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler
@@ -207,8 +207,8 @@ describe("StreamClient", () => {
   })
 
   it("ignores message when no registered stream", async () => {
-    let sendMessage: (message: InboundMessage<any>) => void
-    const receiveMessage = jest.fn<InboundMessage<any>>()
+    let sendMessage: (message: InboundMessage) => void
+    const receiveMessage = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler
@@ -227,8 +227,8 @@ describe("StreamClient", () => {
   })
 
   it("ignores message when no registered stream exists for id", async () => {
-    let sendMessage: (message: InboundMessage<any>) => void
-    const receiveMessage = jest.fn<InboundMessage<any>>()
+    let sendMessage: (message: InboundMessage) => void
+    const receiveMessage = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler

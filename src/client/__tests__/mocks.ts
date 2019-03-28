@@ -37,10 +37,7 @@ export class MockStreamClient implements StreamClient {
 
   public socket: MockSocket = new MockSocket()
 
-  public registerStream(
-    message: OutboundMessage<any>,
-    onMessage: OnStreamMessage
-  ): Promise<Stream> {
+  public registerStream(message: OutboundMessage, onMessage: OnStreamMessage): Promise<Stream> {
     return this.registerStreamMock(message, onMessage)
   }
 

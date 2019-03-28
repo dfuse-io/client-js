@@ -5,9 +5,9 @@ import { WebSocketFactory } from "../../types/socket"
 
 describe("socket", () => {
   let mockedWebSocket: WebSocketController
-  let receivedMessages: Array<InboundMessage<any>>
+  let receivedMessages: InboundMessage[]
   const noopListener = () => null
-  const accumulatingListener = (message: InboundMessage<any>) => {
+  const accumulatingListener = (message: InboundMessage) => {
     receivedMessages.push(message)
   }
 
@@ -498,7 +498,7 @@ describe("socket", () => {
   const sendRawMessageToConnection = createHandlerExecutor("onmessage")
   const sendMessageToConnection = (
     localMockedWebSocket: WebSocketController,
-    message: InboundMessage<any>
+    message: InboundMessage
   ) => {
     sendRawMessageToConnection(localMockedWebSocket, { data: JSON.stringify(message) })
   }
@@ -525,10 +525,10 @@ interface WebSocketController {
   close: jest.Mock<() => void>
   send: jest.Mock<(data: any) => void>
 
-  onclose?: (event: CloseEvent) => void
-  onerror?: (event: Event) => void
+  onclose?: (event: any) => void
+  onerror?: (event: any) => void
   onopen?: () => void
-  onmessage?: (event: MessageEvent) => void
+  onmessage?: (event: any) => void
 }
 
 class MockWebSocket implements WebSocketController {

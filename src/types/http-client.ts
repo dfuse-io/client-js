@@ -14,6 +14,8 @@ export const V0_STATE_TABLE_SCOPES = "/v0/state/table_scopes"
 
 export const V0_SEARCH_TRANSACTIONS = "/v0/search/transactions"
 
+export type HttpQueryParameters = Record<string, any>
+
 /**
  * This interface is the bare minimum as required by our internal usage.
  *
@@ -22,18 +24,11 @@ export const V0_SEARCH_TRANSACTIONS = "/v0/search/transactions"
  *
  * @ignore
  */
-export type Fetch = (url: string, options?: HttpRequest) => Promise<HttpResponse>
+export type Fetch = (url: string, options?: RequestInit) => Promise<HttpResponse>
 
-export type HttpQueryParameters = {
-  [key: string]: any
-}
-
-/**
- * @ignore
- */
-export type HttpRequest = {
+export type RequestInit = {
   body?: any
-  headers?: string[][] | Record<string, string>
+  headers?: any
   method?: string
 }
 

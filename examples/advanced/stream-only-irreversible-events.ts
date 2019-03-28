@@ -18,7 +18,7 @@
 // let terminate = false
 // let transactionListening = false
 
-// const onMessage = (message: InboundMessage<any>) => {
+// const onMessage = (message: InboundMessage) => {
 //   switch (message.type) {
 //     case InboundMessageType.ERROR:
 //       const error = message.data as ErrorData
@@ -35,7 +35,7 @@
 //   }
 // }
 
-// const onActionMessage = (message: InboundMessage<any>) => {
+// const onActionMessage = (message: InboundMessage) => {
 //   const data = message.data as ActionTraceData<any>
 //   const action = data.trace.act
 
@@ -52,7 +52,7 @@
 //   }
 // }
 
-// const onTransactionMessage = (message: InboundMessage<any>) => {
+// const onTransactionMessage = (message: InboundMessage) => {
 //   const data = message.data as TransactionData
 //   const lifecycle = data.lifecycle
 
