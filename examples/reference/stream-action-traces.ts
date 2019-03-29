@@ -9,7 +9,7 @@ async function main() {
 
   const stream = await client.streamActionTraces(
     { account: "eosio.token", action_name: "transfer" },
-    (message: InboundMessage) => {
+    (message: InboundMessage<any>) => {
       if (message.type !== InboundMessageType.ACTION_TRACE) {
         return
       }

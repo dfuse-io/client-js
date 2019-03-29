@@ -1,4 +1,4 @@
-import { HttpClient, Fetch, HttpRequest, HttpResponse } from "../../types/http-client"
+import { HttpClient, Fetch, HttpResponse, RequestInit } from "../../types/http-client"
 import { createHttpClient } from "../http-client"
 import { DfuseApiError, DfuseClientError } from "../../types/error"
 
@@ -200,11 +200,11 @@ describe("HttpClient", () => {
     }
   })
 
-  function calledFetchUrl(call?: number): HttpRequest {
+  function calledFetchUrl(call?: number): RequestInit {
     return fetch.mock.calls[call || 0][0]
   }
 
-  function calledFetchHttpRequest(call?: number): HttpRequest {
+  function calledFetchHttpRequest(call?: number): RequestInit {
     return fetch.mock.calls[call || 0][1]
   }
 })

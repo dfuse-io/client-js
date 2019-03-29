@@ -17,3 +17,14 @@ export enum InboundMessageType {
   TABLE_SNAPSHOT = "table_snapshot",
   TRANSACTION_LIFECYCLE = "transaction_lifecycle"
 }
+
+// export type InboundMessageType = "action_trace"
+//                                | "error"
+//                                | "listening"
+//                                | "head_info"
+//                                | "ping"
+//                                | "progress"
+//                                | "unlistened"
+//                                | "table_delta"
+//                                | "table_snapshot"
+//                                | "transaction_lifecycle"

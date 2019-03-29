@@ -6,7 +6,7 @@ import {
 } from "../message/outbound"
 import { AuthTokenResponse } from "./auth-token"
 import { SearchTransactionsResponse, SearchSortType } from "./search"
-import { Stream, OnStreamMessage } from "./stream-client"
+import { OnStreamMessage } from "./stream-client"
 
 import {
   StateAbiResponse,
@@ -18,6 +18,7 @@ import {
   StateKeyType,
   StateTableScopesResponse
 } from "./state"
+import { Stream } from "./stream"
 
 export type RequestIdGenerator = () => string
 

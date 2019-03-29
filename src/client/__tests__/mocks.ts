@@ -1,10 +1,11 @@
 import { ApiTokenInfo } from "../../types/auth-token"
 import { ApiTokenStore } from "../api-token-store"
 import { RefreshScheduler, ScheduleJob } from "../refresh-scheduler"
-import { Socket, SocketMessageListener } from "../../types/socket"
+import { Socket, SocketMessageListener, WebSocket } from "../../types/socket"
 import { OutboundMessage } from "../../message/outbound"
-import { StreamClient, OnStreamMessage, Stream } from "../../types/stream-client"
+import { StreamClient, OnStreamMessage } from "../../types/stream-client"
 import { HttpClient, HttpQueryParameters } from "../../types/http-client"
+import { Stream } from "../../types/stream"
 
 export class MockHttpClient implements HttpClient {
   public authRequestMock = jest.fn<Promise<any>>(() => Promise.resolve())
@@ -33,7 +34,6 @@ export class MockHttpClient implements HttpClient {
 export class MockStreamClient implements StreamClient {
   public registerStreamMock = jest.fn<Promise<Stream>>(() => Promise.resolve())
   public unregisterStreamMock = jest.fn<Promise<void>>(() => Promise.resolve())
-  public setApiTokenMock = jest.fn<void>()
 
   public socket: MockSocket = new MockSocket()
 
@@ -44,14 +44,10 @@ export class MockStreamClient implements StreamClient {
   public unregisterStream(id: string): Promise<void> {
     return this.unregisterStreamMock(id)
   }
-
-  public setApiToken(apiToken: string): void {
-    this.setApiTokenMock(apiToken)
-  }
 }
 
 export class MockSocket implements Socket {
-  public isConnectedMock = jest.fn<boolean>()
+  public isConnectedMock = jest.fn<boolean>(() => true)
   public connectMock = jest.fn<Promise<void>>()
   public disconnectMock = jest.fn<Promise<void>>()
   public sendMock = jest.fn<Promise<boolean>>()
@@ -63,20 +59,57 @@ export class MockSocket implements Socket {
     return this.isConnectedMock()
   }
 
-  public connect(listener: SocketMessageListener): Promise<void> {
-    return this.connectMock(listener)
+  public connect(
+    listener: SocketMessageListener,
+    options: { onReconnect?: () => void } = {}
+  ): Promise<void> {
+    return this.connectMock(listener, options)
   }
 
   public disconnect(): Promise<void> {
     return this.disconnectMock()
   }
 
-  public send<T>(message: OutboundMessage<T>): Promise<boolean> {
+  public send<T>(message: OutboundMessage<T>): Promise<void> {
     return this.sendMock(message)
   }
 
   public setApiToken(apiToken: string): void {
     return this.setApiTokenMock(apiToken)
+  }
+}
+
+export class MockWebSocket implements WebSocket {
+  public readonly CLOSED = 0
+  public readonly CLOSING = 0
+  public readonly CONNECTING = 0
+  public readonly OPEN = 0
+
+  public readonly readyState: number
+  public readonly protocol: string
+  public readonly url: string
+
+  public onclose?: (event: any) => any
+  public onerror?: (event: any) => any
+  public onmessage?: (event: any) => any
+  public onopen?: (event: any) => any
+
+  public closeMock = jest.fn<void>()
+  public sendMock = jest.fn<string | ArrayBufferLike | Blob | ArrayBufferView>()
+
+  constructor(url: string) {
+    // Our mock does not move around those states, there only to please TypeScript
+    this.readyState = this.CLOSED
+    this.protocol = ""
+    this.url = url
+  }
+
+  public close() {
+    this.closeMock()
+  }
+
+  public send(data: string | ArrayBufferLike | Blob | ArrayBufferView) {
+    this.sendMock(data)
   }
 }
 

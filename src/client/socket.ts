@@ -86,6 +86,7 @@ class DefaultSocket implements Socket {
 
   private debug: IDebugger
   private listener?: SocketMessageListener
+  private onReconnectListener?: () => void
   private connectionPromise?: Promise<void>
   private intervalHandler?: any
 
@@ -101,13 +102,18 @@ class DefaultSocket implements Socket {
     this.apiToken = apiToken
   }
 
-  public async connect(listener: SocketMessageListener): Promise<void> {
+  public async connect(
+    listener: SocketMessageListener,
+    options: { onReconnect?: () => void } = {}
+  ): Promise<void> {
     this.debug("About to connect to remote endpoint.")
     if (this.connectionPromise !== undefined) {
       return this.connectionPromise
     }
 
     this.listener = listener
+    this.onReconnectListener = options.onReconnect
+
     this.connectionPromise = new Promise<void>((resolve, reject) => {
       this.debug("Connection promise started, creating and opening socket.")
       if (this.isConnected) {
@@ -127,6 +133,7 @@ class DefaultSocket implements Socket {
 
   public async disconnect(): Promise<void> {
     this.debug("About to disconnect from remote endpoint.")
+    this.onReconnectListener = undefined
     this.listener = undefined
 
     if (this.socket !== undefined && this.isConnected) {
@@ -375,7 +382,16 @@ class DefaultSocket implements Socket {
     ;(this.options.onInvalidMessage || noop)(message)
   }
 
+  /**
+   * We notify both the `onReconnect` option passed when constructing
+   * the socket and the one (if present) that was passed when connecting
+   * the socket.
+   *
+   * Those are two different listeners and must be both sent when possible.
+   */
   private onReconnect() {
+    // Let's call the `connect` `onReconnectListener` first.
+    ;(this.onReconnectListener || noop)()
     ;(this.options.onReconnect || noop)()
   }
 

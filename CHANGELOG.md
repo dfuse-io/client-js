@@ -2,11 +2,18 @@
 
 ## In Progress (Next)
 
+### 0.2.0
+
 - Renamed the library to `@dfuse/client`.
 
 - Major overhaul of the full API of the library to become a full dfuse Client library,
   read the `MIGRATION.md` guide for more details on how to go from `@dfuse/eosws-js` to
   the full blown `@dfuse/client`.
+
+### From 0.2.0-rc.2 to 0.2.0-rc.3
+
+- The `unlisten` function of a `Stream` (has returned by `registerStream`), has
+  been renamed to `close`. Simply rename the method to upgrade.
 
 ## In Progress (Current)
 

@@ -56,7 +56,7 @@ describe("StreamClient", () => {
 
   it("allow to stream to register with previous id when not active anymore", async () => {
     const stream = await client.registerStream(message1, jest.fn())
-    await stream.unlisten()
+    await stream.close()
 
     // Just the fact that it did not throw is good enough here
     await client.registerStream(message1, jest.fn())
@@ -74,9 +74,9 @@ describe("StreamClient", () => {
     })
   })
 
-  it("calls socket send with message when unregistering stream via unlisten", async () => {
+  it("calls socket send with message when unregistering stream via close", async () => {
     const stream = await client.registerStream(message1, jest.fn())
-    await stream.unlisten()
+    await stream.close()
 
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
@@ -108,7 +108,7 @@ describe("StreamClient", () => {
 
   it("call socket connect after a full register/unregister cycle", async () => {
     const stream = await client.registerStream(message1, jest.fn())
-    await stream.unlisten()
+    await stream.close()
 
     await client.registerStream(message2, jest.fn())
 
@@ -118,7 +118,7 @@ describe("StreamClient", () => {
   it("does not call socket connect after a full register/unregister cycle with one still active", async () => {
     await client.registerStream(message1, jest.fn())
     const stream2 = await client.registerStream(message2, jest.fn())
-    await stream2.unlisten()
+    await stream2.close()
 
     await client.registerStream(message2, jest.fn())
 
@@ -132,9 +132,9 @@ describe("StreamClient", () => {
     expect(socket.disconnectMock).toHaveBeenCalledTimes(1)
   })
 
-  it("calls disconnect when no more stream present via unlisten", async () => {
+  it("calls disconnect when no more stream present via close", async () => {
     const stream = await client.registerStream(message1, jest.fn())
-    await stream.unlisten()
+    await stream.close()
 
     expect(socket.disconnectMock).toHaveBeenCalledTimes(1)
   })
@@ -142,7 +142,7 @@ describe("StreamClient", () => {
   it("does not call disconnect after a full register/unregister cycle with one still active", async () => {
     await client.registerStream(message1, jest.fn())
     const stream2 = await client.registerStream(message2, jest.fn())
-    await stream2.unlisten()
+    await stream2.close()
 
     await client.registerStream(message2, jest.fn())
 
@@ -151,36 +151,36 @@ describe("StreamClient", () => {
 
   it("forwards message to right registered stream when there is a single one", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const receiveMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler
       return Promise.resolve()
     })
 
-    await client.registerStream(message1, receiveMessage)
+    await client.registerStream(message1, streamOnMessage)
 
     // @ts-ignore
     const mustSendMessage = sendMessage
     const message = { type: InboundMessageType.PING, req_id: message1.req_id, data: {} }
 
     mustSendMessage(message)
-    expect(receiveMessage).toHaveBeenCalledTimes(1)
-    expect(receiveMessage).toHaveBeenCalledWith(message)
+    expect(streamOnMessage).toHaveBeenCalledTimes(1)
+    expect(streamOnMessage).toHaveBeenCalledWith(message)
   })
 
   it("forwards message to right registered stream when there is multiples", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const receiveMessage1 = jest.fn<InboundMessage>()
-    const receiveMessage2 = jest.fn<InboundMessage>()
+    const streamOnMessage1 = jest.fn<InboundMessage>()
+    const streamOnMessage2 = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler
       return Promise.resolve()
     })
 
-    await client.registerStream(message1, receiveMessage1)
-    await client.registerStream(message2, receiveMessage2)
+    await client.registerStream(message1, streamOnMessage1)
+    await client.registerStream(message2, streamOnMessage2)
 
     // @ts-ignore
     const mustSendMessage = sendMessage
@@ -199,56 +199,170 @@ describe("StreamClient", () => {
     mustSendMessage(sentMessage1)
     mustSendMessage(sentMessage2)
 
-    expect(receiveMessage1).toHaveBeenCalledTimes(1)
-    expect(receiveMessage1).toHaveBeenCalledWith(sentMessage1)
+    expect(streamOnMessage1).toHaveBeenCalledTimes(1)
+    expect(streamOnMessage1).toHaveBeenCalledWith(sentMessage1)
 
-    expect(receiveMessage2).toHaveBeenCalledTimes(1)
-    expect(receiveMessage2).toHaveBeenCalledWith(sentMessage2)
+    expect(streamOnMessage2).toHaveBeenCalledTimes(1)
+    expect(streamOnMessage2).toHaveBeenCalledWith(sentMessage2)
   })
 
   it("ignores message when no registered stream", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const receiveMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler
       return Promise.resolve()
     })
 
-    await client.registerStream(message1, receiveMessage)
+    await client.registerStream(message1, streamOnMessage)
 
     // @ts-ignore
     const mustSendMessage = sendMessage
     const message = { type: InboundMessageType.PING, req_id: message1.req_id, data: {} }
 
     mustSendMessage(message)
-    expect(receiveMessage).toHaveBeenCalledTimes(1)
-    expect(receiveMessage).toHaveBeenCalledWith(message)
+    expect(streamOnMessage).toHaveBeenCalledTimes(1)
+    expect(streamOnMessage).toHaveBeenCalledWith(message)
   })
 
   it("ignores message when no registered stream exists for id", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const receiveMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = jest.fn<InboundMessage>()
 
     socket.connectMock.mockImplementation((handler) => {
       sendMessage = handler
       return Promise.resolve()
     })
 
-    await client.registerStream(message1, receiveMessage)
+    await client.registerStream(message1, streamOnMessage)
 
     // @ts-ignore
     const mustSendMessage = sendMessage
     const message = { type: InboundMessageType.PING, req_id: "random_id", data: {} }
 
     mustSendMessage(message)
-    expect(receiveMessage).toHaveBeenCalledTimes(0)
+    expect(streamOnMessage).toHaveBeenCalledTimes(0)
   })
 
-  it("forwards set api token call to socket", async () => {
-    client.setApiToken("new token")
+  it("stream closing does not send unlisten message when socket not connected", async () => {
+    const stream = await client.registerStream(message1, jest.fn())
 
-    expect(socket.setApiTokenMock).toHaveBeenCalledTimes(1)
-    expect(socket.setApiTokenMock).toHaveBeenCalledWith("new token")
+    socket.isConnectedMock.mockReturnValue(false)
+    stream.close()
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(1)
+    expect(socket.sendMock).toHaveBeenCalledWith(message1)
+  })
+
+  it("automatically restarts stream by default on reconnection", async () => {
+    let notifyOnReconnect: (message: InboundMessage) => void
+    const streamOnMessage = jest.fn<InboundMessage>()
+
+    socket.connectMock.mockImplementation((_, options) => {
+      notifyOnReconnect = options.onReconnect
+      return Promise.resolve()
+    })
+
+    await client.registerStream(message1, streamOnMessage)
+
+    // @ts-ignore Will have been set by the time we reach this execution point
+    notifyOnReconnect()
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, message1)
+  })
+
+  it("manual restart possible when auto restart is off", async () => {
+    client = createStreamClient("any", {
+      socket,
+      autoRestartStreamsOnReconnect: false
+    })
+
+    let notifyOnReconnect: (message: InboundMessage) => void
+    const streamOnMessage = jest.fn<InboundMessage>()
+
+    socket.connectMock.mockImplementation((_, options) => {
+      notifyOnReconnect = options.onReconnect
+      return Promise.resolve()
+    })
+
+    const stream = await client.registerStream(message1, streamOnMessage)
+
+    // @ts-ignore Will have been set by the time we reach this execution point
+    notifyOnReconnect()
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(1)
+
+    await stream.restart()
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, message1)
+  })
+
+  it("change start_block when restart marker is used to restart", async () => {
+    const streamOnMessage = jest.fn<InboundMessage>()
+
+    const stream = await client.registerStream(message1, streamOnMessage)
+
+    // Assume there was a reconnect at this point
+    stream.restart({ atBlockNum: 10 })
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
+      data: {},
+      req_id: "1",
+      type: "get_head_info",
+      start_block: 10
+    })
+  })
+
+  it("restart marker takes precedence over mark when set for start_block upon restart", async () => {
+    const streamOnMessage = jest.fn<InboundMessage>()
+    const stream = await client.registerStream(message1, streamOnMessage)
+
+    stream.mark({ atBlockNum: 100 })
+
+    // Assume there was a reconnect at this point
+    stream.restart({ atBlockNum: 50 })
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
+      data: {},
+      req_id: "1",
+      type: "get_head_info",
+      start_block: 50
+    })
+  })
+
+  it("change start_block when mark was used on stream prior restart", async () => {
+    const streamOnMessage = jest.fn<InboundMessage>()
+
+    const stream = await client.registerStream(message1, streamOnMessage)
+
+    stream.mark({ atBlockNum: 100 })
+
+    // Assume there was a reconnect at this point
+    stream.restart()
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
+      data: {},
+      req_id: "1",
+      type: "get_head_info",
+      start_block: 100
+    })
+  })
+
+  it("throws when trying to restart a stream that was closed", async () => {
+    const stream = await client.registerStream(message1, jest.fn())
+    await stream.close()
+
+    // Assume there was a reconnect at this point
+
+    await expect(stream.restart()).rejects.toThrowError(
+      new DfuseClientError(
+        "Trying to restart a stream '1' that is not registered anymore or was never registered"
+      )
+    )
   })
 })

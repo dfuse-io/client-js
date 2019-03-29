@@ -3,26 +3,37 @@ import { SocketOptions, createSocket } from "./socket"
 import { OutboundMessage, unlistenMessage } from "../message/outbound"
 import { InboundMessage } from "../message/inbound"
 import { DfuseClientError } from "../types/error"
-import { StreamClient, OnStreamMessage, Stream } from "../types/stream-client"
+import { StreamClient, OnStreamMessage } from "../types/stream-client"
 import { Socket } from "../types/socket"
+import { Stream, StreamMarker } from "../types/stream"
+import { triggerAsyncId } from "async_hooks"
 
 export type StreamClientOptions = {
   socket?: Socket
   socketOptions?: SocketOptions
+  autoRestartStreamsOnReconnect?: boolean
 }
 
 export function createStreamClient(wsUrl: string, options: StreamClientOptions = {}): StreamClient {
-  return new DefaultStreamClient(options.socket || createSocket(wsUrl, options.socketOptions))
+  return new DefaultStreamClient(
+    options.socket || createSocket(wsUrl, options.socketOptions),
+    options.autoRestartStreamsOnReconnect === undefined
+      ? true
+      : options.autoRestartStreamsOnReconnect
+  )
 }
 
 class DefaultStreamClient {
   public socket: Socket
 
-  private streams: { [id: string]: StreamTracker } = {}
+  // Public only for tighly coupled Stream to be able to query current state of Streams
+  public streams: { [id: string]: DefaultStream } = {}
+  private autoRestartStreamsOnReconnect: boolean
   private debug: IDebugger = debugFactory("dfuse:stream")
 
-  constructor(socket: Socket) {
+  constructor(socket: Socket, autoRestartStreamsOnReconnect: boolean) {
     this.socket = socket
+    this.autoRestartStreamsOnReconnect = autoRestartStreamsOnReconnect
   }
 
   public async registerStream(
@@ -31,7 +42,10 @@ class DefaultStreamClient {
   ): Promise<Stream> {
     if (Object.keys(this.streams).length <= 0) {
       this.debug("No prior stream present, connecting socket first.")
-      await this.socket.connect(this.handleMessage)
+      await this.socket.connect(
+        this.handleMessage,
+        { onReconnect: this.handleReconnection }
+      )
     }
 
     const id = message.req_id
@@ -42,22 +56,21 @@ class DefaultStreamClient {
     }
 
     this.debug("Registering stream [%s] with message %o.", id, message)
+    const stream = new DefaultStream(id, message, onMessage, this)
 
     // Let's first register stream to ensure that if messages arrives before we got back
     // execution flow after `send` call, the listener is already present to handle message
-    this.streams[id] = {
-      onMessage,
-      subscriptionMessage: message
-    }
+    this.streams[id] = stream
 
-    // The implementation of the method will perform the stream clean up in case of an error
-    await this.sendRegisterMessage(id, message)
+    try {
+      await stream.start()
+    } catch (error) {
+      delete this.streams[id]
+      throw new DfuseClientError(`Unable to correctly register stream '${id}'`, error)
+    }
 
     this.debug("Stream [%s] registered with remote endpoint.", id)
-    return {
-      id,
-      unlisten: async () => this.unregisterStream(id)
-    }
+    return stream
   }
 
   public async unregisterStream(id: string): Promise<void> {
@@ -75,15 +88,6 @@ class DefaultStreamClient {
     if (Object.keys(this.streams).length <= 0) {
       this.debug("No more stream present, disconnecting socket.")
       await this.socket.disconnect()
-    }
-  }
-
-  private sendRegisterMessage = async (streamId: string, message: OutboundMessage) => {
-    try {
-      await this.socket.send(message)
-    } catch (error) {
-      delete this.streams[streamId]
-      throw new DfuseClientError(`Unable to correctly register stream '${streamId}'`, error)
     }
   }
 
@@ -107,15 +111,71 @@ class DefaultStreamClient {
     stream.onMessage(message)
   }
 
-  public setApiToken(apiToken: string): void {
-    this.socket.setApiToken(apiToken)
+  private handleReconnection = () => {
+    if (this.autoRestartStreamsOnReconnect === false) {
+      return
+    }
+
+    Object.keys(this.streams).forEach((streamId) => {
+      this.streams[streamId].restart()
+    })
   }
 }
 
-interface StreamTracker {
-  onMessage: OnStreamMessage
-  subscriptionMessage: OutboundMessage
+class DefaultStream implements Stream {
+  public id: string
+  public activeMarker?: StreamMarker
 
-  blockNum?: number
-  blockId?: string
+  private registrationMessage: OutboundMessage
+  private onMessageHandler: OnStreamMessage
+  private client: DefaultStreamClient
+
+  constructor(
+    id: string,
+    registrationMessage: OutboundMessage,
+    onMessage: OnStreamMessage,
+    client: DefaultStreamClient
+  ) {
+    this.id = id
+    this.registrationMessage = registrationMessage
+    this.onMessageHandler = onMessage
+    this.client = client
+  }
+
+  public get onMessage(): OnStreamMessage {
+    return this.onMessageHandler
+  }
+
+  public async start(): Promise<void> {
+    return this.client.socket.send(this.registrationMessage)
+  }
+
+  public async restart(marker?: StreamMarker): Promise<void> {
+    if (this.client.streams[this.id] === undefined) {
+      throw new DfuseClientError(
+        `Trying to restart a stream '${
+          this.id
+        }' that is not registered anymore or was never registered`
+      )
+    }
+
+    const restartMessage = { ...this.registrationMessage }
+    if (marker) {
+      restartMessage.start_block = marker.atBlockNum
+    } else if (this.activeMarker) {
+      restartMessage.start_block = this.activeMarker.atBlockNum
+    }
+
+    return this.client.socket.send(restartMessage)
+  }
+
+  public mark(options: { atBlockNum: number }) {
+    this.activeMarker = options
+  }
+
+  public async close(): Promise<void> {
+    if (this.client.socket.isConnected) {
+      return this.client.unregisterStream(this.id)
+    }
+  }
 }

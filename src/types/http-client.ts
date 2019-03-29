@@ -14,10 +14,30 @@ export const V0_STATE_TABLE_SCOPES = "/v0/state/table_scopes"
 
 export const V0_SEARCH_TRANSACTIONS = "/v0/search/transactions"
 
+/**
+ * @group Interfaces
+ */
+export interface HttpClient {
+  authRequest<T>(path: string, method: string, params?: HttpQueryParameters, body?: any): Promise<T>
+
+  apiRequest<T>(
+    apiToken: string,
+    path: string,
+    method: string,
+    params?: HttpQueryParameters,
+    body?: any
+  ): Promise<T>
+}
+
 export type HttpQueryParameters = Record<string, any>
 
 /**
  * This interface is the bare minimum as required by our internal usage.
+ *
+ * This is copied to ensure minimal compatiblity with `fetch` is required
+ * and thus, it's required to provide a full clone of `fetch` handling.
+ * To avoid that problem of over-complexifying , we define a small interface of what we really use
+ * inside the library. It's the only part's that are needed.
  *
  * Passing the `window.fetch` (in the Browser) or `global.fetch` (polyfilled in Node.js)
  * should always be accepted as a valid usage.
@@ -50,18 +70,3 @@ export type HttpResponse = {
   readonly statusText: string
   readonly url: string
 } & HttpBody
-
-/**
- * @group Interfaces
- */
-export interface HttpClient {
-  authRequest<T>(path: string, method: string, params?: HttpQueryParameters, body?: any): Promise<T>
-
-  apiRequest<T>(
-    apiToken: string,
-    path: string,
-    method: string,
-    params?: HttpQueryParameters,
-    body?: any
-  ): Promise<T>
-}

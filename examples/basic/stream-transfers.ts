@@ -1,5 +1,6 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
 import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
+import { ActionTraceData } from "../../src/types/action-trace"
 
 async function main() {
   const client = createDfuseClient({
@@ -14,13 +15,13 @@ async function main() {
         return
       }
 
-      const { from, to, quantity, memo } = message.data.trace.act.data
+      const { from, to, quantity, memo } = (message.data as ActionTraceData<any>).trace.act.data
       console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
     }
   )
 
   await waitFor(5000)
-  await stream.unlisten()
+  await stream.close()
 }
 
 runMain(main)

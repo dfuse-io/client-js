@@ -52,7 +52,7 @@ describe("DfuseClient", () => {
     expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
 
     const refresher = refreshScheduler.scheduleMock.mock.calls[0][1]
-    streamClient.setApiTokenMock.mockImplementation((token: string) => {
+    streamClient.socket.setApiTokenMock.mockImplementation((token: string) => {
       expect(token).toEqual("refreshed-token")
       done()
     })
@@ -73,8 +73,8 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
@@ -125,14 +125,14 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
         {
           type: OutboundMessageType.GET_TABLE_ROWS,
-          data: { code: "test", table: "eosio", scope: "eosio" },
+          data: { code: "test", table: "eosio", scope: "eosio", json: true },
           listen: true,
           req_id: defaultRequestId
         },
@@ -142,19 +142,23 @@ describe("DfuseClient", () => {
 
     it("correctly register table rows stream with overridden options", async () => {
       const onMessage = jest.fn()
-      await client.streamTableRows({ code: "test", table: "eosio", scope: "eosio" }, onMessage, {
-        req_id: "dc-fixed",
-        fetch: true,
-        listen: false,
-        start_block: 10,
-        with_progress: 1
-      })
+      await client.streamTableRows(
+        { code: "test", table: "eosio", scope: "eosio", json: false },
+        onMessage,
+        {
+          req_id: "dc-fixed",
+          fetch: true,
+          listen: false,
+          start_block: 10,
+          with_progress: 1
+        }
+      )
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
         {
           type: OutboundMessageType.GET_TABLE_ROWS,
-          data: { code: "test", table: "eosio", scope: "eosio" },
+          data: { code: "test", table: "eosio", scope: "eosio", json: false },
           fetch: true,
           listen: false,
           req_id: "dc-fixed",
@@ -174,8 +178,8 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
@@ -224,8 +228,8 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(

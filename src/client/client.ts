@@ -13,7 +13,7 @@ import {
 import { InboundMessage } from "../message/inbound"
 import { DfuseClient, RequestIdGenerator } from "../types/client"
 import { SearchSortType, SearchTransactionsResponse } from "../types/search"
-import { AuthTokenResponse } from "../types/auth-token"
+import { AuthTokenResponse, ApiTokenInfo } from "../types/auth-token"
 import {
   StateAbiResponse,
   StateKeyAccountsResponse,
@@ -42,9 +42,10 @@ import {
 } from "../types/http-client"
 import { DfuseClientError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
-import { StreamClient, Stream, OnStreamMessage } from "../types/stream-client"
+import { StreamClient, OnStreamMessage } from "../types/stream-client"
 import { ApiTokenStore, InMemoryApiTokenStore } from "./api-token-store"
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
+import { Stream } from "../types/stream"
 
 export type DfuseClientOptions = {
   network: "mainnet" | "jungle" | "kylin" | string
@@ -383,36 +384,37 @@ export class DefaultClient implements DfuseClient {
     params?: HttpQueryParameters,
     body?: any
   ): Promise<T> {
-    try {
-      this.debug("Retrieving latest API token via token manager")
-      const apiTokenInfo = await this.apiTokenManager.getTokenInfo()
-
+    return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
       return this.httpClient.apiRequest<T>(apiTokenInfo.token, path, method, params, body)
-    } catch (error) {
-      throw new DfuseClientError("Unable to obtain the API token", error)
-    }
+    })
   }
 
   protected async registerStream(
     message: OutboundMessage,
     onMessage: OnStreamMessage
   ): Promise<Stream> {
-    try {
-      this.debug("Retrieving latest API token via token manager")
-      const apiTokenInfo = await this.apiTokenManager.getTokenInfo()
-
-      // Ensure we update the API token to have it at its latest value
-      this.streamClient.setApiToken(apiTokenInfo.token)
+    return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
+      this.streamClient.socket.setApiToken(apiTokenInfo.token)
 
       return this.streamClient.registerStream(message, onMessage)
+    })
+  }
+
+  private async withApiToken<R>(worker: (apiTokenInfo: ApiTokenInfo) => Promise<R>): Promise<R> {
+    let apiTokenInfo: ApiTokenInfo
+    try {
+      this.debug("Retrieving latest API token via token manager")
+      apiTokenInfo = await this.apiTokenManager.getTokenInfo()
     } catch (error) {
       throw new DfuseClientError("Unable to obtain the API token", error)
     }
+
+    return await worker(apiTokenInfo)
   }
 
   private onTokenRefresh = (apiToken: string) => {
     // Ensure we update the API token to have it at its latest value
-    this.streamClient.setApiToken(apiToken)
+    this.streamClient.socket.setApiToken(apiToken)
   }
 }
 
