@@ -2,6 +2,14 @@
 
 ## In Progress (Next)
 
+- Added `dynamicMessageDispatcher` helper to easily create an `OnStreamMessage`
+  that dispatches to correct handler based on the message's type.
+
+- Streams now auto-restart at last marked block if present or at provided
+  value upon socket re-connection.
+
+- Add full support for marking the stream at the right location.
+
 ### 0.2.0
 
 - Renamed the library to `@dfuse/client`.

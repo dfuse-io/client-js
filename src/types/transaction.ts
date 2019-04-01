@@ -1,7 +1,7 @@
 import { ActionTrace, Action } from "./action-trace"
 import { DbRow } from "./table-delta"
 
-export type TransactionData = {
+export type TransactionLifecycleData = {
   lifecycle: TransactionLifecycle
 }
 

@@ -6,6 +6,7 @@ export * from "./client/refresh-scheduler"
 export * from "./client/socket"
 export * from "./client/stream-client"
 
+export * from "./helpers/message"
 export * from "./helpers/time"
 
 export * from "./message/inbound"
@@ -25,4 +26,5 @@ export * from "./types/state"
 export * from "./types/stream"
 export * from "./types/stream-client"
 export * from "./types/table-delta"
+export * from "./types/table-snapshot"
 export * from "./types/transaction"

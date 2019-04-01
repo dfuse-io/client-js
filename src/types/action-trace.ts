@@ -1,8 +1,18 @@
-export type ActionTraceData<T> = {
+import { DbOp } from "./table-delta"
+import { RAMOp, DTrxOp, TableOp } from "./transaction"
+
+export type ActionTraceData<T = Record<string, any>, D = Record<string, any>> = {
+  block_num: number
+  block_id: string
+  block_time: string
   trx_id: string
   idx: number
   depth: number
   trace: ActionTrace<T>
+  dbOps?: Array<DbOp<D>>
+  ramOps?: RAMOp[]
+  dtrxOps?: DTrxOp[]
+  tableOps?: TableOp[]
 }
 
 export type ActionTrace<T> = {

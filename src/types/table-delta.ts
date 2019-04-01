@@ -1,6 +1,6 @@
 import { ErrorData } from "./error"
 
-export type TableDeltaData<T = { [key: string]: any }> = {
+export type TableDeltaData<T = Record<string, any>> = {
   block_num: number
   dbop: DbOp<T>
   step: string

@@ -4,7 +4,7 @@ import {
   InboundMessage,
   InboundMessageType,
   waitFor,
-  TransactionData
+  TransactionLifecycleData
 } from "@dfuse/client"
 
 async function main() {
@@ -20,7 +20,7 @@ async function main() {
         return
       }
 
-      const lifecycle = (message.data as TransactionData).lifecycle
+      const lifecycle = (message.data as TransactionLifecycleData).lifecycle
       const { creation_irreversible, execution_irreversible, cancelation_irreversible } = lifecycle
 
       console.log(

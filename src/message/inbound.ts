@@ -1,4 +1,13 @@
-export type InboundMessage<T = unknown> = {
+import { ProgressData } from "../types/progress"
+import { ActionTraceData } from "../types/action-trace"
+import { ErrorData } from "../types/error"
+import { ListeningData } from "../types/listen"
+import { HeadInfoData } from "../types/head-info"
+import { TableDeltaData } from "../types/table-delta"
+import { TableSnapshotData } from "../types/table-snapshot"
+import { TransactionLifecycleData } from "../types/transaction"
+
+export type InboundMessage<T = any> = {
   type: InboundMessageType
   req_id?: string
   data: T
@@ -17,6 +26,21 @@ export enum InboundMessageType {
   TABLE_SNAPSHOT = "table_snapshot",
   TRANSACTION_LIFECYCLE = "transaction_lifecycle"
 }
+
+export interface ActionTraceInboundMessage<T = Record<string, any>>
+  extends InboundMessage<ActionTraceData<T>> {}
+export interface ErrorInboundMessage extends InboundMessage<ErrorData> {}
+export interface ListeningInboundMessage extends InboundMessage<ListeningData> {}
+export interface HeadInfoInboundMessage extends InboundMessage<HeadInfoData> {}
+export interface PingInboundMessage extends InboundMessage<{}> {}
+export interface ProgressInboundMessage extends InboundMessage<ProgressData> {}
+export interface UnlistenedInboundMessage extends InboundMessage<{}> {}
+export interface TableDeltaInboundMessage<T = Record<string, any>>
+  extends InboundMessage<TableDeltaData<T>> {}
+export interface TableSnapshotInboundMessage<T = Record<string, any>>
+  extends InboundMessage<TableSnapshotData<T>> {}
+export interface TransactionLifecycleInboundMessage
+  extends InboundMessage<TransactionLifecycleData> {}
 
 // export type InboundMessageType = "action_trace"
 //                                | "error"
