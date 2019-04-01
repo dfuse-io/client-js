@@ -7,7 +7,9 @@ import {
   dynamicMessageDispatcher,
   ProgressInboundMessage,
   ActionTraceInboundMessage,
-  Action
+  Action,
+  TableDeltaInboundMessage,
+  TableSnapshotInboundMessage
 } from "@dfuse/client"
 
 /**
@@ -16,38 +18,32 @@ import {
  * up-to-date data against the current longuest active chain on
  * the network.
  *
- * Upon new data, we will commit a
+ * Micro-forks can happen when multitudes of scenarios and need
+ * to be handled correctly to ensure up-to-date information is
+ * available.
  *
- * We will show and example how to easily mark the stream progress
- * and how the marker is then used when the socket re-connects to
- * restart the stream at the exact location you need.
+ * To know more about micro-forks, check out
+ * https://www.eoscanada.com/en/microforks-everything-you-need-to-know-about-microforks-on-an-eos-blockchain
+ * for global base knowledge about them.
  *
- * In the example. we will implement an action persistence storer
- * showing our to restart at the exact correct place a commit had
- * occurred.
+ * The dfuse Stream API is able to send you undo/redo steps when
+ * some blocks are not part of the longuest chain anymore (`undo`) or
+ * in the opposite, re-become part of the longuest chain (`redo`).
  *
+ * In the examples, we keep a list of the 5 last updates to the
+ * `eosio/global/eosio` table. Upon `new` step, the update is pushed
+ * on the stack (last item being popped first if stack at max capacity
+ * of 5 elements). On an `undo` step, we pop the top element from the
+ * top of the stack. On a `redo` step, we push it back on top applying
+ * the same rule as with a `new` step.
  *
- * @see https://docs.dfuse.io/#websocket-based-api-never-missing-a-beat
+ * @see https://docs.dfuse.io/#websocket-based-api-navigating-forks
+ * @see https://www.eoscanada.com/en/microforks-everything-you-need-to-know-about-microforks-on-an-eos-blockchain
  */
 async function main() {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK,
-    streamClientOptions: {
-      socketOptions: {
-        onError(error) {
-          console.log("An error occurred", error)
-        },
-        onReconnect() {
-          console.log()
-          console.log("<============= Stream as re-connected to socket correctly =============>")
-          console.log()
-
-          // Upon a re-connection, we need to clear previously accumulated actions
-          engine.flushPending()
-        }
-      }
-    }
+    network: DFUSE_API_NETWORK
   })
 
   const engine = new Engine(client)
@@ -57,19 +53,17 @@ async function main() {
   await engine.stop()
 }
 
-type KarmaGlobalRow = {
-  power_pool: string
-  total_power: string
-  last_filled_time: number
+// Only the actual fields we need, the full row is bigger than that
+type EosioGlobalRow = {
+  total_ram_stake: number
+  total_unpaid_blocks: number
 }
 
 class Engine {
   private client: DfuseClient
   private stream?: Stream
 
-  private globalTable?: string
-
-  private lastCommittedBlockNum: number = 0
+  private updates: EosioGlobalRow[] = []
 
   constructor(client: DfuseClient) {
     this.client = client
@@ -78,117 +72,82 @@ class Engine {
   public async start() {
     const dispatcher = dynamicMessageDispatcher({
       listening: this.onListening,
-      table_delta: this.onAction,
+      table_delta: this.onTableDelta,
+      table_snapshot: this.onTableSnapshot,
       progress: this.onProgress
     })
 
     console.log("Engine starting")
-    this.stream = await this.client.streamActionTraces(
+    this.stream = await this.client.streamTableRows(
       {
-        accounts: "therealkarma",
-        action_names: "transfer"
+        code: "eosio",
+        table: "global",
+        scope: "eosio"
       },
       dispatcher,
       {
-        // You can use the `with_progress` to be sure to commit
-        // actions at least each 10 blocks. This is useful if your stream
-        // is low traffic so you don't need to wait until next
-        // action to commit all changes.
-        with_progress: 10
+        listen: true,
+        fetch: true,
+        // We use progress to display current state of table at regular interval
+        with_progress: 50
       }
     )
-
-    console.log("Stream connected, ready to receive messages")
   }
 
   public async stop() {
     await this.ensureStream().close()
 
-    console.log("Committed actions")
-    this.committedActions.forEach((action) => {
-      const { from, to, quantity } = action.data
-      console.log(`- Commit transfer [${from} -> ${to} ${quantity}]`)
-    })
-  }
-
-  /**
-   * When the stream re-connects, we must flush all our current pending transactions
-   * as the stream re-starts at our last marked block, inclusive.
-   *
-   * Since we mark after commit, anything currently in pending was not committed,
-   * hence let's flush all pending actions, dfuse Stream will stream them back.
-   */
-  public async flushPending() {
-    console.log("Flushing pending action(s) due to refresh")
-    this.pendingActions = []
+    console.log("Current last 5 updates")
+    printUpdates(this.updates)
   }
 
   private onListening = () => {
     console.log("Stream is now listening for action(s)")
   }
 
-  private onProgress = (message: ProgressInboundMessage) => {
-    const { block_id, block_num } = message.data
-
-    /**
-     * Once a progress message is seen, it means we've seen all messages for
-     * block prior it, so le'ts commit until this point.
-     */
-    console.log()
-    console.log("Committing changes due to seeing a message from a progress message")
-    this.commit(block_id, block_num)
+  private onProgress = () => {
+    printUpdates(this.updates)
   }
 
-  private onAction = (message: ActionTraceInboundMessage<KarmaTransfer>) => {
-    /**
-     * Once a message from a block ahead of last committed block is seen,
-     * commit all changes up to this point.
-     */
-    const { block_id, block_num } = message.data
-    if (block_num > this.lastCommittedBlockNum) {
-      console.log()
-      console.log(
-        "Comitting changes due to seeing a message from a block ahead of our last committed block"
-      )
-      this.commit(block_id, block_num)
-    }
+  private onTableSnapshot = (message: TableSnapshotInboundMessage<EosioGlobalRow>) => {
+    console.log("Initializing first update to initial state of table")
 
-    const action = message.data.trace.act
-    const { from, to, quantity } = action.data
+    // We expect a single row to exist on this table
+    this.updates = [message.data.rows[0].json!]
 
-    console.log(
-      `Pending transfer [${from} -> ${to} ${quantity}] @ ${printBlock(block_id, block_num)}`
-    )
-    this.pendingActions.push(message.data.trace.act)
+    printUpdates(this.updates, "")
   }
 
-  private commit(blockId: string, blockNum: number) {
-    console.log(`Committing all actions up to block ${printBlock(blockId, blockNum)}`)
+  private onTableDelta = (message: TableDeltaInboundMessage<EosioGlobalRow>) => {
+    switch (message.data.step) {
+      case "new":
+        this.pushUpdate(message.data.dbop.new!.json!)
+        break
 
-    if (this.pendingActions.length > 0) {
-      // Here, in your production code, action would be saved in a database, as well as error handling
-      this.pendingActions.forEach((action) => this.committedActions.push(action))
+      case "undo":
+        console.log("Ohhhh dealing with undo...")
+        this.popUpdate()
+        break
+
+      case "redo":
+        console.log("Ohhhh dealing with redo...")
+        this.pushUpdate(message.data.dbop.new!.json!)
+        break
     }
+  }
 
-    console.log(`Bumping last committed block and clearing pending actions`)
-    this.pendingActions = []
-    this.lastCommittedBlockNum = blockNum
+  private popUpdate() {
+    if (this.updates.length >= 1) {
+      this.updates = [...this.updates.slice(0, 4)]
+    }
+  }
 
-    /**
-     * This is one of the most important call of the example. By marking the stream
-     * at the right block, upon restart, the stream will automatically starts back
-     * at this block ensuring to never miss a single action.
-     */
-    console.log(`Marking stream up to block ${printBlock(blockId, blockNum)}`)
-    this.ensureStream().mark({ atBlockNum: blockNum })
-
-    /**
-     * In a real-word production code, you would also need to persist the
-     * `this.lastCommittedBlockNum` value to ensure that upon a process
-     * restart, you start back from this exact value.
-     */
-
-    console.log("")
+  private pushUpdate(update: EosioGlobalRow) {
+    if (this.updates.length >= 5) {
+      this.updates = [...this.updates.slice(1), update]
+    } else {
+      this.updates = [...this.updates, update]
+    }
   }
 
   private ensureStream(): Stream {
@@ -200,8 +159,22 @@ class Engine {
   }
 }
 
-function printBlock(blockId: string, blockNum: number): string {
-  return `${blockId.slice(0, 8)}...${blockId.slice(-8)} (${blockNum})`
+function printUpdates(updates: EosioGlobalRow[], header?: string) {
+  if (header !== "") {
+    console.log("5 last updates (or less)")
+  }
+
+  if (!updates || updates.length <= 0) {
+    console.log("Nothing yet...")
+    return
+  }
+
+  updates.forEach((update) => console.log(`- ${printDelta(update)}`))
+  console.log()
+}
+
+function printDelta(row: EosioGlobalRow): string {
+  return `${row.total_ram_stake} / ${row.total_unpaid_blocks}`
 }
 
 runMain(main)

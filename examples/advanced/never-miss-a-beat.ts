@@ -36,9 +36,6 @@ async function main() {
     network: DFUSE_API_NETWORK,
     streamClientOptions: {
       socketOptions: {
-        onError(error) {
-          console.log("An error occurred", error)
-        },
         onReconnect() {
           console.log()
           console.log("<============= Stream as re-connected to socket correctly =============>")
