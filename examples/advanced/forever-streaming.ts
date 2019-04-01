@@ -39,8 +39,8 @@ async function main() {
 
   const stream: Stream = await client.streamActionTraces(
     {
-      account: "eosio.token",
-      action_name: "create"
+      accounts: "eosio.token",
+      action_names: "create"
     },
     onMessage
   )

@@ -80,15 +80,15 @@ async function main() {
 
   const stream = await client.streamActionTraces(
     {
-      account: "eosio.token",
-      action_name: "issue"
+      accounts: "eosio.token",
+      action_names: "issue"
     },
     onMessage
   )
   console.log("Socket is now connected.")
 
   await waitFor(35000)
-  await stream.unlisten()
+  await stream.close()
 }
 
 function onMessage(message: InboundMessage) {

@@ -3,8 +3,8 @@ import {
   createDfuseClient,
   InboundMessage,
   InboundMessageType,
-  waitFor,
-  HeadInfoData
+  HeadInfoData,
+  waitFor
 } from "@dfuse/client"
 
 async function main() {
@@ -36,7 +36,7 @@ async function main() {
   })
 
   await waitFor(15000)
-  await stream.unlisten()
+  await stream.close()
 }
 
 runMain(main)

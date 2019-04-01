@@ -1,7 +1,6 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
 import {
   createDfuseClient,
-  InboundMessage,
   waitFor,
   Stream,
   DfuseClient,
@@ -89,8 +88,8 @@ class Engine {
     console.log("Engine starting")
     this.stream = await this.client.streamActionTraces(
       {
-        account: "therealkarma",
-        action_name: "transfer"
+        accounts: "therealkarma",
+        action_names: "transfer"
       },
       dispatcher,
       {

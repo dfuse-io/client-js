@@ -1,84 +1,43 @@
-// import { socketFactory, runMain, waitFor } from "./config"
-// import {
-//   EoswsClient,
-//   InboundMessage,
-//   InboundMessageType,
-//   createEoswsSocket,
-//   ActionTraceData,
-//   ErrorData,
-//   TransactionData
-// } from "@dfuse/client"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
+import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
+import { ActionTraceData } from "../../src/types/action-trace"
 
-// const CONTRACTS = ["eosmechanics", "eosknightsio", "eosiotokener"]
+/**
+ * In this example, you will use the `irreversible_only` option on some
+ * stream to receives only a notification when data is now deemed
+ * irreversible by the chain.
+ *
+ * **Note** Only `streamActionTraces` will correctly support the common
+ * `irreversible_only` flag for now. If you try on anything else, you
+ * will still receives reversible notifications, be aware!
+ */
+async function main() {
+  const client = createDfuseClient({
+    apiKey: DFUSE_API_KEY,
+    network: DFUSE_API_NETWORK
+  })
 
-// const client = new EoswsClient(createEoswsSocket(socketFactory))
+  const stream = await client.streamActionTraces(
+    { accounts: "eosio.token", action_names: "transfer" },
+    (message: InboundMessage) => {
+      if (message.type !== InboundMessageType.ACTION_TRACE) {
+        return
+      }
 
-// let actionStream: any
-// let transactionStream: any
-// let terminate = false
-// let transactionListening = false
+      const { from, to, quantity, memo } = (message.data as ActionTraceData<any>).trace.act.data
+      console.log(`Irreversible transfer [${from} -> ${to}, ${quantity}] (${memo})`)
+    },
+    {
+      /**
+       * We request to only obtain irreversible notifications by specifying this
+       * common flag and setting to true.
+       */
+      irreversible_only: true
+    }
+  )
 
-// const onMessage = (message: InboundMessage) => {
-//   switch (message.type) {
-//     case InboundMessageType.ERROR:
-//       const error = message.data as ErrorData
-//       console.log(`Received error: ${error.message} (${error.code})`, error.details)
-//       break
+  await waitFor(5000)
+  await stream.close()
+}
 
-//     case InboundMessageType.ACTION_TRACE:
-//       onActionMessage(message)
-//       break
-
-//     case InboundMessageType.TRANSACTION_LIFECYCLE:
-//       onTransactionMessage(message)
-//       break
-//   }
-// }
-
-// const onActionMessage = (message: InboundMessage) => {
-//   const data = message.data as ActionTraceData<any>
-//   const action = data.trace.act
-
-//   if (!transactionListening) {
-//     transactionListening = true
-
-//     console.log(`Action "${action.name}" received for account "${action.account}".`)
-//     console.log(`About to listening for transaction "${data.trx_id}" to become irreversible`)
-
-//     actionStream.unlisten()
-
-//     transactionStream = client.getTransactionLifecycle(data.trx_id, { req_id: "transaction" })
-//     transactionStream.onMessage(onMessage)
-//   }
-// }
-
-// const onTransactionMessage = (message: InboundMessage) => {
-//   const data = message.data as TransactionData
-//   const lifecycle = data.lifecycle
-
-//   if (lifecycle.execution_irreversible === true && terminate !== true) {
-//     console.log("Transaction passed irreveribility.")
-//     terminate = true
-//     transactionStream.unlisten()
-//   } else {
-//     console.log("Transaction progressing through irreveribility ...")
-//   }
-// }
-
-// async function main() {
-//   await client.connect()
-
-//   actionStream = client.getActionTraces({
-//     accounts: CONTRACTS.join("|"),
-//     action_names: "transfer|issue"
-//   })
-
-//   console.log("Waiting for filtered action to appear...")
-//   actionStream.onMessage(onMessage)
-
-//   while (!terminate) {
-//     await waitFor(2500)
-//   }
-// }
-
-// runMain(main)
+runMain(main)

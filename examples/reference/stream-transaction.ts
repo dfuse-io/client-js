@@ -36,7 +36,7 @@ async function main() {
   )
 
   await waitFor(5000)
-  await stream.unlisten()
+  await stream.close()
 }
 
 runMain(main)

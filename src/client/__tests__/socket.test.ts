@@ -4,6 +4,7 @@ import { getActionTracesMessage } from "../../message/outbound"
 import { WebSocketFactory } from "../../types/socket"
 import { CLOSED } from "ws"
 import { MockSocket, MockWebSocket } from "./mocks"
+import { doesNotReject } from "assert"
 
 describe("socket", () => {
   let mockWebSocket: MockWebSocket
@@ -274,6 +275,32 @@ describe("socket", () => {
     expect(socket.isConnected).toBeFalsy()
   })
 
+  it("calling disconnect is idempotent when current disconnect in progress", async (done) => {
+    const onClose = (event: any) => {
+      expect(event).toEqual("something")
+      done()
+    }
+
+    const socket = createSocket("any", {
+      onClose,
+      webSocketFactory: createWebSocketFactory(mockWebSocket)
+    })
+
+    setTimeout(() => {
+      openConnection(mockWebSocket, { code: 1000 })
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+
+    socket.disconnect()
+    socket.disconnect()
+
+    expect(mockWebSocket.closeMock).toHaveBeenCalledTimes(1)
+
+    closeConnection(mockWebSocket, "something")
+  })
+
   it("notifies onClose even after disconnect has been called", async (done) => {
     const onError = jest.fn()
     const onClose = (event: any) => {
@@ -314,7 +341,7 @@ describe("socket", () => {
     setTimeout(() => {
       openConnection(mockWebSocket)
     }, 0)
-    await socket.send(getActionTracesMessage({ account: "test" }, { req_id: "test" }))
+    await socket.send(getActionTracesMessage({ accounts: "test" }, { req_id: "test" }))
 
     expect(mockWebSocket.sendMock).toHaveBeenCalledTimes(1)
   })
@@ -332,7 +359,7 @@ describe("socket", () => {
       openConnection(mockWebSocket)
     }, 0)
 
-    await socket.send(getActionTracesMessage({ account: "test" }, { req_id: "test" }))
+    await socket.send(getActionTracesMessage({ accounts: "test" }, { req_id: "test" }))
     expect(mockWebSocket.sendMock).toHaveBeenCalledTimes(1)
   })
 
@@ -347,11 +374,13 @@ describe("socket", () => {
 
     expect.hasAssertions()
     await expect(socket.connect(noopListener)).resolves.toBeUndefined()
-    await socket.send(getActionTracesMessage({ account: "test" }, { req_id: "test", listen: true }))
+    await socket.send(
+      getActionTracesMessage({ accounts: "test" }, { req_id: "test", listen: true })
+    )
 
     expect(mockWebSocket.sendMock).toHaveBeenCalledTimes(1)
     expect(mockWebSocket.sendMock).toHaveBeenCalledWith(
-      '{"type":"get_action_traces","req_id":"test","listen":true,"data":{"account":"test"}}'
+      '{"type":"get_action_traces","req_id":"test","listen":true,"data":{"accounts":"test"}}'
     )
   })
 
@@ -493,9 +522,9 @@ describe("socket", () => {
     socket.connect(noopListener).then(() => {
       expect.hasAssertions()
 
-      socket.send(getActionTracesMessage({ account: "test1" }, { req_id: "test1" }))
-      socket.send(getActionTracesMessage({ account: "test2" }, { req_id: "test2" }))
-      socket.send(getActionTracesMessage({ account: "test3" }, { req_id: "test3" }))
+      socket.send(getActionTracesMessage({ accounts: "test1" }, { req_id: "test1" }))
+      socket.send(getActionTracesMessage({ accounts: "test2" }, { req_id: "test2" }))
+      socket.send(getActionTracesMessage({ accounts: "test3" }, { req_id: "test3" }))
 
       openConnection(mockWebSocket)
 

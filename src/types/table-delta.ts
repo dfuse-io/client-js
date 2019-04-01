@@ -2,6 +2,7 @@ import { ErrorData } from "./error"
 
 export type TableDeltaData<T = Record<string, any>> = {
   block_num: number
+  block_id: string
   dbop: DbOp<T>
   step: string
 }

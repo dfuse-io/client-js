@@ -123,7 +123,7 @@ Instead of:
     const ws = new WebSocket(`wss://${endpoint}/v1/stream?token=${token}`, { origin })
 
     ws.onopen = () => {
-      ws.send(get_actions({ account: 'eosio.token', action_name: 'transfer' }))
+      ws.send(get_actions({ accounts: 'eosio.token', action_names: 'transfer' }))
     }
 
     ws.onmessage = (message) => {
@@ -146,7 +146,7 @@ You should replace with:
 
     client.connect().then(() => {
         client
-            .getActionTraces({ account: 'eosio.token', action_name: 'transfer' })
+            .getActionTraces({ accounts: 'eosio.token', action_names: 'transfer' })
             .onMessage((message) => {
                 if (message.type === InboundMessageType.ACTION_TRACE) {
                     const { from, to, quantity, memo } = message.data.trace.act.data
@@ -173,13 +173,13 @@ If you only want to create messages, the functionality is still available. Inste
 
     // ... WebSocket stuff here
 
-    ws.send(get_actions({ account: 'eosio.token', action_name: 'transfer' }))
+    ws.send(get_actions({ accounts: 'eosio.token', action_names: 'transfer' }))
 
 Do this instead:
 
     import { getActionTracesMessage } from '@dfuse/eosws-js'
 
-    ws.send(getActionTracesMessage({ account: 'eosio.token', action_name: 'transfer' }))
+    ws.send(getActionTracesMessage({ accounts: 'eosio.token', action_names: 'transfer' }))
 
 Here the list of available message constructors:
 

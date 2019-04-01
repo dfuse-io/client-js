@@ -8,7 +8,7 @@ async function main() {
   })
 
   const stream = await client.streamActionTraces(
-    { account: "eosio.token", action_name: "transfer" },
+    { accounts: "eosio.token", action_names: "transfer" },
     (message: InboundMessage<any>) => {
       if (message.type !== InboundMessageType.ACTION_TRACE) {
         return
@@ -20,7 +20,7 @@ async function main() {
   )
 
   await waitFor(5000)
-  await stream.unlisten()
+  await stream.close()
 }
 
 runMain(main)

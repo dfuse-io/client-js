@@ -24,7 +24,7 @@ When targeting a browser (you will need a bundler like WebPack since we only shi
 const { createDfuseClient, InboundMessageType } = require("@dfuse/client")
 
 const client = createDfuseClient({ apiKey: "<Paste your API key here>", network: "mainnet" })
-client.streamActionTraces({ account: "eosio.token", action_name: "transfer" }, (message) => {
+client.streamActionTraces({ accounts: "eosio.token", action_names: "transfer" }, (message) => {
   if (message.type === InboundMessageType.ACTION_TRACE) {
     const { from, to, quantity, memo } = message.data.trace.act.data
     console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)

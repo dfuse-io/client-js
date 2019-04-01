@@ -20,19 +20,17 @@ export enum OutboundMessageType {
 }
 
 export type StreamOptions = {
-  listen?: boolean
   req_id?: string
-  start_block?: number
   fetch?: boolean
+  listen?: boolean
+  start_block?: number
   with_progress?: number
+  irreversible_only?: boolean
 }
 
 export type GetActionTracesMessageData = {
-  account?: string // @deprecated, will be removed in next major bump
-  accounts?: string
-  receiver?: string // @deprecated, will be removed in next major bump
+  accounts: string
   receivers?: string
-  action_name?: string // @deprecated, will be removed in next major bump
   action_names?: string
   with_dbops?: boolean
   with_dtrxops?: boolean
@@ -89,9 +87,7 @@ export function getTransactionLifecycleMessage(
   )
 }
 
-export function getHeadInfoMessage(
-  streamOptions: StreamOptions = {}
-): OutboundMessage<GetActionTracesMessageData> {
+export function getHeadInfoMessage(streamOptions: StreamOptions = {}): OutboundMessage<{}> {
   return createOutboundMessage(
     OutboundMessageType.GET_HEAD_INFO,
     {},

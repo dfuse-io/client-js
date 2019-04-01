@@ -87,8 +87,11 @@ class DefaultSocket implements Socket {
   private debug: IDebugger
   private listener?: SocketMessageListener
   private onReconnectListener?: () => void
-  private connectionPromise?: Promise<void>
   private intervalHandler?: any
+
+  private connectionPromise?: Promise<void>
+  private closePromise?: Promise<void>
+  private closeResolver?: Resolver<void>
 
   public constructor(url: string, options: SocketOptions) {
     this.url = url
@@ -133,13 +136,20 @@ class DefaultSocket implements Socket {
 
   public async disconnect(): Promise<void> {
     this.debug("About to disconnect from remote endpoint.")
+    if (this.closePromise) {
+      this.debug("A disconnect is already in progress, joining it for termination.")
+      return this.closePromise
+    }
+
+    if (this.socket === undefined) {
+      return
+    }
+
     this.onReconnectListener = undefined
     this.listener = undefined
 
-    if (this.socket !== undefined && this.isConnected) {
-      this.debug("Socket not closed, closing it.")
-      this.socket.close()
-    }
+    this.debug("Closing socket.")
+    this.socket.close()
 
     // We must not clean up the socket at this point yet. Cleaning up the socket means
     // removing the actual event listeners. If you clean up just yet, the `onclose` event
@@ -152,8 +162,12 @@ class DefaultSocket implements Socket {
     )
     this.isConnected = false
 
-    // FIXME: Shall we wait for the `onClose` to resolve a promise we set up so we effectively
-    //        wait for the onclose event to happen?
+    this.closePromise = new Promise((resolve) => {
+      // Shall be resolved by the `onClose` event handler on this class
+      this.closeResolver = resolve
+    })
+
+    return this.closePromise
   }
 
   public async send<T>(message: OutboundMessage<T>): Promise<void> {
@@ -255,6 +269,13 @@ class DefaultSocket implements Socket {
     this.debug("Received `onclose` notification from socket.")
     this.isConnected = false
     this.connectionPromise = undefined
+
+    if (this.closeResolver) {
+      this.debug("Resolving disconnect close promise.")
+      this.closeResolver()
+      this.closeResolver = undefined
+      this.closePromise = undefined
+    }
 
     this.cleanSocket()
 

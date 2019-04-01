@@ -1,113 +1,150 @@
-// import { socketFactory, runMain, waitFor, DFUSE_URL, DFUSE_API_KEY } from "./config"
-// import {
-//   EoswsClient,
-//   InboundMessageType,
-//   InboundMessage,
-//   createEoswsSocket,
-//   TableDeltaData,
-//   ActionTraceData,
-//   ListeningData,
-//   ErrorData,
-//   ApiTokenStorage,
-//   EoswsConnector
-// } from "@dfuse/client"
-// import fetch from "node-fetch"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
+import {
+  createDfuseClient,
+  InboundMessage,
+  waitFor,
+  Stream,
+  dynamicMessageDispatcher,
+  ListeningInboundMessage,
+  ActionTraceInboundMessage,
+  OnStreamMessage
+} from "@dfuse/client"
 
-// interface Transfer {
-//   from: string
-//   to: string
-//   quantity: string
-//   memo: string
-// }
+type BuyRamBytesData = {
+  bytes: number
+  receiver: string
+  payer: string
+}
 
-// async function main() {
-//   const client = new EoswsClient({
-//     socket: createEoswsSocket(socketFactory),
-//     baseUrl: `https://${DFUSE_URL!}`,
-//     httpClient: fetch as any
-//   })
-//   const connector = new EoswsConnector({ client, apiKey: DFUSE_API_KEY! })
-//   await connector.connect()
+type TransferData = {
+  from: string
+  to: string
+  quantity: string
+  memo: string
+}
 
-//   const tableRowsStream = client.getTableRows({
-//     code: "eosio",
-//     scope: "eosio",
-//     table: "global",
-//     json: true
-//   })
+/**
+ * In this example, we showcase how to have multiple streams active
+ * at the same time. We will listen for `eosio` `buyrambytes` action
+ * on one stream on `eosio.token` `transfer` notification performed
+ * on receiver `eosio.ram`.
+ *
+ * We will also show the differences and impacts of having two separate
+ * streams instead of a single one by implementing a sinle stream that
+ * listens for both actions one pass.
+ *
+ * You will learn how to have multiple active streams, that multiple
+ * active streams are independent from each other and ordering of messages
+ * across streams is not guaranteed.
+ *
+ * You will also see how to workaround this problem in some circumstances
+ * by creating a merged stream filtering required messages from
+ * a pool of possibilities. Having a single stream will alwyas guaranteed
+ * ordering of messages.
+ */
+async function main() {
+  const client = createDfuseClient({
+    apiKey: DFUSE_API_KEY,
+    network: DFUSE_API_NETWORK
+  })
 
-//   const actionTracesStream = client.getActionTraces({
-//     account: "eosio.token",
-//     action_name: "transfer"
-//   })
+  const buyRamData = { accounts: "eosio", action_names: "buyrambytes" }
+  const buyRamStream: Stream = await client.streamActionTraces(
+    buyRamData,
+    dynamicMessageDispatcher({
+      listening: onListeningFactory("buy_ram"),
+      action_trace: onBuyRamAction
+    })
+  )
 
-//   tableRowsStream.onMessage((message: InboundMessage) => {
-//     switch (message.type) {
-//       case InboundMessageType.TABLE_DELTA:
-//         const tableDelta = message.data as TableDeltaData
-//         console.log(
-//           `Table eosio/eosio#global delta operation ${tableDelta.dbop.op} at block #${
-//             tableDelta.block_num
-//           }`
-//         )
-//         break
+  const ramData = { accounts: "eosio.token", action_names: "transfer", receivers: "eosio.ram" }
+  const ramStream: Stream = await client.streamActionTraces(
+    ramData,
+    dynamicMessageDispatcher({
+      listening: onListeningFactory("ram_transfer"),
+      action_trace: onTransferToEosioRamAction
+    })
+  )
 
-//       case InboundMessageType.LISTENING:
-//         const listeningResp = message as InboundMessage<ListeningData>
-//         console.log(
-//           `Received Listening message event, reqID: ${listeningResp.req_id}, next_block: ${
-//             listeningResp.data.next_block
-//           }`
-//         )
-//         break
+  console.log(
+    "Notice how `Buy RAM` and `RAM cost` happens in random order, due to using 2 independent streams."
+  )
+  await waitFor(60000)
+  await buyRamStream.close()
+  await ramStream.close()
 
-//       case InboundMessageType.ERROR:
-//         const error = message.data as ErrorData
-//         console.log(`Received error: ${error.message} (${error.code})`, error.details)
-//         break
+  console.log("")
 
-//       default:
-//         console.log(`Unhandled message of type [${message.type}].`)
-//     }
-//   })
+  const mergedData = {
+    accounts: "eosio|eosio.token",
+    action_names: "buyrambytes|transfer",
+    receivers: "eosio|eosio.token|eosio.ram"
+  }
+  const mergedStream: Stream = await client.streamActionTraces(
+    mergedData,
+    dynamicMessageDispatcher({
+      listening: onListeningFactory("merged"),
+      action_trace: onMergedAction
+    })
+  )
 
-//   actionTracesStream.onMessage((message: InboundMessage) => {
-//     switch (message.type) {
-//       case InboundMessageType.ACTION_TRACE:
-//         const transfer = (message.data as ActionTraceData<Transfer>).trace.act.data
-//         console.log(
-//           `Transfer [${transfer.from} -> ${transfer.to}, ${transfer.quantity}] (${transfer.memo})`
-//         )
-//         break
+  console.log(
+    "Notice how `Buy RAM` is always before `RAM cost` thanks to strict ordering of a single stream."
+  )
+  await waitFor(60000)
+  await mergedStream.close()
 
-//       case InboundMessageType.LISTENING:
-//         const listeningResp = message as InboundMessage<ListeningData>
-//         console.log(
-//           `Received Listening message event, reqID: ${listeningResp.req_id}, next_block: ${
-//             listeningResp.data.next_block
-//           }`
-//         )
-//         break
+  console.log("Completed")
+}
 
-//       case InboundMessageType.ERROR:
-//         const error = message.data as ErrorData
-//         console.log(`Received error: ${error.message} (${error.code})`, error.details)
-//         break
+function onListeningFactory(tag: string): OnStreamMessage {
+  return () => {
+    console.log(`Stream [${tag}] is now listening.`)
+  }
+}
 
-//       default:
-//         console.log(`Unhandled message of type [${message.type}].`)
-//     }
-//   })
+function onBuyRamAction(message: ActionTraceInboundMessage<BuyRamBytesData>) {
+  const data = message.data.trace.act.data
+  console.log(`Buy RAM: ${data.payer} pays ${data.bytes} bytes to ${data.receiver}`)
+}
 
-//   await waitFor(1000)
-//   console.log("Unlistening from table row updates...")
-//   tableRowsStream.unlisten()
+function onTransferToEosioRamAction(message: ActionTraceInboundMessage<TransferData>) {
+  const data = message.data.trace.act.data
+  console.log(`RAM cost: ${data.from} pays ${data.quantity} for the RAM`)
+}
 
-//   await waitFor(2000)
-//   console.log("Unlistening from action trace updates...")
-//   actionTracesStream.unlisten()
+/**
+ * This is coming from a stream with multiple possibilities. The default
+ * logic is that you will receive any action matching one of the various
+ * combination of forming the three parameters `account/action/receiver`.
+ *
+ * In most use cases, you are caring really about a subset of the
+ * combinations, like in our example here where we are caring about
+ * only two possibility.
+ *
+ * When using a merged stream, you have a strict ordering of the
+ * action as they appear on the chain, in the correct order. So
+ * buy ram will come in after `eosio.ram` transfer action (as our
+ * current `newaccount` action is implemented, might be different in
+ * the future on a different side/siste chain).
+ */
+function onMergedAction(message: ActionTraceInboundMessage) {
+  const action = message.data.trace.act
+  if (action.account === "eosio" && action.name === "buyrambytes") {
+    onBuyRamAction(message as ActionTraceInboundMessage<BuyRamBytesData>)
+    return
+  }
 
-//   client.disconnect()
-// }
+  if (
+    action.account === "eosio.token" &&
+    action.name === "transfer" &&
+    message.data.trace.receipt.receiver === "eosio.ram"
+  ) {
+    onTransferToEosioRamAction(message as ActionTraceInboundMessage<TransferData>)
+    return
+  }
 
-// runMain(main)
+  // We don't care about any other possibilities, so let's discard them
+}
+
+runMain(main)
