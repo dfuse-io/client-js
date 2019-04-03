@@ -30,8 +30,7 @@
     "lint": "tslint **/*.ts",
     "lint:specific": "tslint",
     "test": "jest",
-    "run:example": "yarn run ts-node",
-    "postinstall": "patch-package"
+    "run:example": "yarn run ts-node"
   },
   "husky": {
     "hooks": {
