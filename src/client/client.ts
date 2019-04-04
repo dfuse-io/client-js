@@ -43,7 +43,7 @@ import {
 import { DfuseClientError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
 import { StreamClient, OnStreamMessage } from "../types/stream-client"
-import { ApiTokenStore, InMemoryApiTokenStore } from "./api-token-store"
+import { ApiTokenStore, InMemoryApiTokenStore, LocalStorageApiTokenStore } from "./api-token-store"
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
 
@@ -90,7 +90,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const streamClient =
     options.streamClient || createStreamClient(wsUrl + "/v1/stream", options.streamClientOptions)
 
-  const apiTokenStore = options.apiTokenStore || new InMemoryApiTokenStore()
+  const apiTokenStore = options.apiTokenStore || inferApiTokenStore()
   const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
 
   const requestIdGenerator = options.requestIdGenerator || randomReqId
@@ -103,6 +103,14 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
     refreshScheduler,
     requestIdGenerator
   )
+}
+
+export function inferApiTokenStore() {
+  if (typeof window !== "undefined" && window.localStorage != null) {
+    return new LocalStorageApiTokenStore("dfuse:token")
+  }
+
+  return new InMemoryApiTokenStore()
 }
 
 export function networkToEndpoint(network: string): string {

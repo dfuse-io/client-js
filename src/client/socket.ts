@@ -60,7 +60,9 @@ function inferWebSocketFactory(webSocketFactory?: WebSocketFactory): WebSocketFa
     "To resolve the issue, either pass a compatible `webSocket` option or globally defined a `global.WebSocket`",
     "variable pointing to a compatible `WebSocket` client.",
     "",
-    "We invite you to read our documentation to learn more about this problem."
+    "We invite you to read our documentation to learn more about this problem.",
+    "",
+    "See https://github.com/dfuse-io/client-js#nodejs"
   ]
 
   throw new DfuseClientError(messages.join("\n"))

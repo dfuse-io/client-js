@@ -53,7 +53,9 @@ function inferFetch(fetch?: Fetch): Fetch {
     "To resolve the issue, either pass a compatible `fetch` option or globally defined a `global.fetch`",
     "variable pointing to a compatible `fetch` method.",
     "",
-    "We invite you to read our documentation to learn more about this problem."
+    "We invite you to read our documentation to learn more about this problem.",
+    "",
+    "See https://github.com/dfuse-io/client-js#nodejs"
   ]
 
   throw new DfuseClientError(messages.join("\n"))
