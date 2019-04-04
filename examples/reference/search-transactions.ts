@@ -5,13 +5,9 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = await client.searchTransactions(
-      "receiver:eosio.token action:transfer data.to:arushgateway",
-      {
-        limit: 24,
-        cursor: "_xTcYDJvGKPfLwkWbLLmXKrodpw8AV9nUA7hIxtA"
-      }
-    )
+    const response = await client.searchTransactions("auth:eoscanadacom", {
+      limit: 10
+    })
 
     console.log(`Search transactions response`, prettifyJson(response))
 

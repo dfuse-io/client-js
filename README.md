@@ -23,7 +23,8 @@ When targeting a browser (you will need a bundler like WebPack since we only shi
 ```js
 const { createDfuseClient, InboundMessageType } = require("@dfuse/client")
 
-const client = createDfuseClient({ apiKey: "<Paste your API key here>", network: "mainnet" })
+const client = createDfuseClient({ apiKey: "<Your dfuse API key here>", network: "mainnet" })
+
 client.streamActionTraces({ accounts: "eosio.token", action_names: "transfer" }, (message) => {
   if (message.type === InboundMessageType.ACTION_TRACE) {
     const { from, to, quantity, memo } = message.data.trace.act.data
@@ -103,22 +104,18 @@ In this folder, you will get full reference examples. Those are used to showcase
 you receive with each call. It's also there where you can check the flow of messages that can be handled
 in each dfuse Stream and full configuration options for the library itself and all the API calls.
 
-- Library
-
-  - [all-configuration-options.ts](./examples/reference/all-configuration-options.ts)
-
 - HTTP
 
-  - [fetch-auth-issue.ts](./examples/reference/fetch-auth-issue.ts)
-  - [fetch-search-transactions.ts](./examples/reference/fetch-search-transactions.ts)
-  - [fetch-state-abi-bin-to-json.ts](./examples/reference/fetch-state-abi-bin-to-json.ts)
-  - [fetch-state-abi.ts](./examples/reference/fetch-state-abi.ts)
-  - [fetch-state-key-accounts.ts](./examples/reference/fetch-state-key-accounts.ts)
-  - [fetch-state-permission-links.ts](./examples/reference/fetch-state-permission-links.ts)
-  - [fetch-state-table-scopes.ts](./examples/reference/fetch-state-table-scopes.ts)
-  - [fetch-state-table.ts](./examples/reference/fetch-state-table.ts)
-  - [fetch-state-tables-for-accounts.ts](./examples/reference/fetch-state-tables-for-accounts.ts)
-  - [fetch-state-tables-for-scopes.ts](./examples/reference/fetch-state-tables-for-scopes.ts)
+  - [auth-issue.ts](./examples/reference/auth-issue.ts)
+  - [search-transactions.ts](./examples/reference/search-transactions.ts)
+  - [state-abi-bin-to-json.ts](./examples/reference/state-abi-bin-to-json.ts)
+  - [state-abi.ts](./examples/reference/state-abi.ts)
+  - [state-key-accounts.ts](./examples/reference/state-key-accounts.ts)
+  - [state-permission-links.ts](./examples/reference/state-permission-links.ts)
+  - [state-table-scopes.ts](./examples/reference/state-table-scopes.ts)
+  - [state-table.ts](./examples/reference/state-table.ts)
+  - [state-tables-for-accounts.ts](./examples/reference/state-tables-for-accounts.ts)
+  - [state-tables-for-scopes.ts](./examples/reference/state-tables-for-scopes.ts)
 
 - Stream
   - [stream-action-traces.ts](./examples/reference/stream-action-traces.ts)
