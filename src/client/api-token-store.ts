@@ -61,11 +61,8 @@ export class InMemoryApiTokenStore {
  * Represents an local storage token store concrete implementation of
  * a [[ApiTokenStore]]. This will save the
  *
- * It is **never** persisted and will be reset upon restart of the Browser tab
- * or process, leading to a new token being issued.
- *
- * You should try hard to use a persistent solution so that you re-use the
- * same token as long as it's valid.
+ * It is persisted in the local storage of the Browser will be picked uo
+ * upon restart of the Browser tab.
  */
 export class LocalStorageApiTokenStore {
   private key: string
@@ -114,5 +111,94 @@ export class LocalStorageApiTokenStore {
   public async set(apiTokenInfo: ApiTokenInfo): Promise<void> {
     this.apiTokenInfo = apiTokenInfo
     localStorage.setItem(this.key, JSON.stringify(apiTokenInfo))
+  }
+}
+
+/**
+ * Represents an local storage token store concrete implementation of
+ * a [[ApiTokenStore]]. This will save the token in the given file.
+ * The directory structure is created when it does not exists.
+ *
+ * **Note** This should not be used in a Browser environment as it
+ *          makes really no sense in this context.
+ */
+export class FileApiTokenStore {
+  private filePath: string
+  private apiTokenInfo?: ApiTokenInfo
+
+  private fs: any
+  private path: any
+
+  constructor(filePath: string) {
+    this.filePath = filePath
+
+    // Let's have the require(s) resolved only when actually used
+    // so they don't clutter the runtime environment when not used.
+    this.fs = require("fs")
+    this.path = require("path")
+  }
+
+  public async get(): Promise<ApiTokenInfo | undefined> {
+    if (this.apiTokenInfo !== undefined) {
+      return this.apiTokenInfo
+    }
+
+    const data = await readData(this.fs, this.filePath)
+    if (data === undefined) {
+      return undefined
+    }
+
+    this.apiTokenInfo = JSON.parse(data)
+
+    return this.apiTokenInfo
+  }
+
+  public async set(apiTokenInfo: ApiTokenInfo): Promise<void> {
+    this.apiTokenInfo = apiTokenInfo
+
+    await writeData(this.fs, this.path, this.filePath, JSON.stringify(apiTokenInfo))
+  }
+}
+
+async function readData(fs: any, filePath: string): Promise<string | undefined> {
+  return new Promise<string | undefined>((resolve, reject) => {
+    if (!fs.existsSync(filePath)) {
+      resolve(undefined)
+      return
+    }
+
+    fs.readFile(filePath, (error: any, data: string) => {
+      error ? reject(error) : resolve(data)
+    })
+  })
+}
+
+async function writeData(fs: any, path: any, filePath: string, data: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    try {
+      mkdirpSync(fs, path, path.dirname(filePath))
+    } catch (error) {
+      reject(error)
+      return
+    }
+
+    fs.writeFile(filePath, data, (error: any) => {
+      error ? reject(error) : resolve()
+    })
+  })
+}
+
+async function mkdirpSync(fs: any, path: any, directory: string) {
+  if (!path.isAbsolute(directory)) {
+    return
+  }
+
+  const parent = path.join(directory, "..")
+  if (parent !== path.join("/") && !fs.existsSync(parent)) {
+    mkdirpSync(fs, path, parent)
+  }
+
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory)
   }
 }

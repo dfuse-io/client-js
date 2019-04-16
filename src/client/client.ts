@@ -106,10 +106,17 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 }
 
 export function inferApiTokenStore() {
+  const debug = debugFactory("dfuse:client")
+
+  debug("Inferring API token store default concrete implementation to use")
   if (typeof window !== "undefined" && window.localStorage != null) {
+    debug(
+      "Using `LocalStorageApiTokenStore` as we found a `localStorage` object on the 'window' variable (Browser environment)."
+    )
     return new LocalStorageApiTokenStore("dfuse:token")
   }
 
+  debug("Falling back default `InMemoryApiTokenStore` concrete implementation")
   return new InMemoryApiTokenStore()
 }
 

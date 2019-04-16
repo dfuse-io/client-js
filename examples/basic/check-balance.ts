@@ -1,11 +1,14 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import { createDfuseClient, SearchTransactionRow, StateResponse, DfuseClient } from "@dfuse/client"
+import { createDfuseClient, DfuseClient } from "@dfuse/client"
 
 const account = "eoscanadacom"
 const blockNum = 42_500_250
 
 async function main() {
-  const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
+  const client = createDfuseClient({
+    apiKey: DFUSE_API_KEY,
+    network: DFUSE_API_NETWORK
+  })
 
   try {
     const { balance: atBalance, blockNum: atBlockNum } = await fetchBalance(client, blockNum)

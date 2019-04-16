@@ -124,6 +124,7 @@ in each dfuse Stream and full configuration options for the library itself and a
   - [state-tables-for-scopes.ts](./examples/reference/state-tables-for-scopes.ts)
 
 - Stream
+
   - [stream-action-traces.ts](./examples/reference/stream-action-traces.ts)
   - [stream-head-info.ts](./examples/reference/stream-head-info.ts)
   - [stream-table-rows.ts](./examples/reference/stream-table-rows.ts)
