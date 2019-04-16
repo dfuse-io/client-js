@@ -8,8 +8,9 @@ install the new version. Examples below are using Yarn, NPM is similar.
     yarn remove @dfuse/eosws-js
     yarn add @dfuse/client
 
-Next step is to rename all imports to the new library. Some renamed
-all instances of `@dfuse/eosws-js` to `@dfuse/client`.
+Next step is to rename all imports to the new library. So, rename
+all instances of `@dfuse/eosws-js` to `@dfuse/client` using a global
+search & replace in your editor.
 
 After having change the import/require clauses, it's time to change the
 client. Indeed, we now have a full fledge dfuse Client and the way
