@@ -12,6 +12,9 @@ coverage/
 # NPM
 package-lock.json
 
+# Rollup
+.rpt2_cache
+
 # System Files
 *.orig
 .DS_Store

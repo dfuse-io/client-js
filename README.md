@@ -144,11 +144,11 @@ To run the examples, it's quite simple, follow these instructions:
     ```
 
 1.  Link the project inside itself, that will be necessary to correct run the
-    examples which import `@dfuse/eosws-js`:
+    examples which import `@dfuse/client`:
 
     ```
     yarn link
-    yarn link @dfuse/eosws-js
+    yarn link @dfuse/client
     ```
 
 1.  Start the build watcher so distribution files are always up-to-date. Forgetting
@@ -156,7 +156,7 @@ To run the examples, it's quite simple, follow these instructions:
     source files!
 
     ```
-    yarn build:watch
+    yarn start
     ```
 
 1.  Last step is to add `.env` file containing the [dfuse](https://dfuse.io) API key
@@ -164,20 +164,20 @@ To run the examples, it's quite simple, follow these instructions:
     with the following content:
 
     ```
-    DFUSE_IO_API_KEY=Replace this with API key!
+    DFUSE_API_KEY=Replace this with API key!
     ```
 
 1.  Final check, let's run an example to ensure everything is working:
 
     ```
-    yarn run ts-node examples/get-action-traces.ts
+    yarn run:example examples/basic/check-balance.ts
     ```
 
 ### Publishing
 
-First, ensure you have a pristine state of your working directory, and check tests & compilation:
+First, build the project, this steps ensures you have a pristine state of your working directory,
+then run the test suite.
 
-    yarn clean
     yarn build
     yarn test
 

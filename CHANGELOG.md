@@ -2,6 +2,9 @@
 
 ## In Progress (Next)
 
+- Now distributing an `es5` and `umd` build in addition to the old previous
+  `commonjs` build (now under `dist/lib`).
+
 - Added `dynamicMessageDispatcher` helper to easily create an `OnStreamMessage`
   that dispatches to correct handler based on the message's type.
 

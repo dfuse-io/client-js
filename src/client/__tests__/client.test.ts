@@ -69,7 +69,7 @@ describe("DfuseClient", () => {
       const stream = { id: "any", unlisten: () => Promise.resolve() }
 
       streamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
-      const result = await client.streamActionTraces({ account: "test" }, onMessage)
+      const result = await client.streamActionTraces({ accounts: "test" }, onMessage)
 
       expect(result).toEqual(stream)
 
@@ -80,7 +80,7 @@ describe("DfuseClient", () => {
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
         {
           type: OutboundMessageType.GET_ACTION_TRACES,
-          data: { account: "test" },
+          data: { accounts: "test" },
           listen: true,
           req_id: defaultRequestId
         },
@@ -90,7 +90,7 @@ describe("DfuseClient", () => {
 
     it("correctly register action traces stream with overridden options", async () => {
       const onMessage = jest.fn()
-      await client.streamActionTraces({ account: "test" }, onMessage, {
+      await client.streamActionTraces({ accounts: "test" }, onMessage, {
         req_id: "dc-fixed",
         fetch: true,
         listen: false,
@@ -102,7 +102,7 @@ describe("DfuseClient", () => {
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
         {
           type: OutboundMessageType.GET_ACTION_TRACES,
-          data: { account: "test" },
+          data: { accounts: "test" },
           fetch: true,
           listen: false,
           req_id: "dc-fixed",
