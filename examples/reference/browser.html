@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<!--
+    In this example, we show case how to use the UMD build of dfuse client to
+    enable usage of the `@dfuse/client` in a Browser directly whitout the need
+    to use bundling tool like WebPack or Rollup.
+-->
+
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>dfuse Client - Browser Example</title>
+
+    <!-- In production, you can use our CDN location `https://unpkg.com/@dfuse/client` (Append `@0.2.0` for a pinned version) -->
+    <script src="../../dist/dfuse-client.umd.js"></script>
+    <style>
+      body {
+        background-color: #f3f3f7;
+        margin: 0;
+        padding: 0;
+        font-family: "Open Sans", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-size: 16px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        font-weight: 900;
+      }
+
+      h2 {
+        color: #ff4661;
+        font-size: 2rem;
+        font-weight: 900;
+        margin-bottom: 0.25rem;
+      }
+
+      main {
+        color: #ff4661;
+        width: 80%;
+        margin: 0.25rem auto;
+      }
+
+      header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+
+      #status {
+        color: #ff4661;
+        padding: 0.5rem 0;
+        margin: 0 0;
+        font-size: 1rem;
+        text-align: left;
+      }
+
+      #transfers {
+        border: 2px solid #ff4661;
+        padding: 0.75rem 0.5rem;
+        height: 500px;
+        overflow-x: hidden;
+        overflow-y: scroll;
+      }
+
+      .transfer {
+        display: block;
+        color: #2d234c;
+        font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+        font-size: 0.85rem;
+        margin: 0.25rem 0;
+        text-align: left;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <header>
+        <h2>Stream Transfers</h2>
+        <p id="status">
+          Streams transfers on EOS Mainnet for 5 seconds than stops
+        </p>
+      </header>
+      <main>
+        <div id="transfers">
+          <code class="transfer">Nothing yet, should start in a few milliseconds...</code>
+          <code class="transfer">(If not, check Developer Tools console, something's wrong!)</code>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // The syntax used in this snippet should be working on 90% of the browser
+      // and uses latest async/await syntax. The library in itself should be working
+      // with previous syntax, the UMD build using ES5 features only.
+      //
+      // Don't hesitate to report an error if it's not the case.
+      //
+      const { createDfuseClient, InboundMessageType, waitFor } = dfuseClient
+
+      const client = createDfuseClient({
+        apiKey: "web_6d99c117406c10f6fd9ee25c7d6f7323",
+        network: "mainnet"
+      })
+
+      let transfers = []
+
+      const onMessage = (message) => {
+        if (message.type === InboundMessageType.ACTION_TRACE) {
+          const { from, to, quantity, memo } = message.data.trace.act.data
+          const transfer = `Transfer [${from} -> ${to}, ${quantity}] (${memo})`
+
+          transfers = [...transfers.slice(-100), transfer]
+
+          updateTransfers(transfers)
+        }
+      }
+
+      const updateTransfers = () => {
+        document.getElementById("transfers").innerHTML = transfers
+          .reverse()
+          .map((transfer) => `<code class="transfer">${transfer}</code>`)
+          .join("\n")
+      }
+
+      const run = async () => {
+        const stream = await client.streamActionTraces(
+          { accounts: "eosio.token", action_names: "transfer" },
+          onMessage
+        )
+        await waitFor(5000)
+        await stream.close()
+      }
+
+      run()
+        .then(() => {
+          console.log("Completed")
+        })
+        .catch((error) => {
+          console.log("An error occurred", error)
+        })
+    </script>
+  </body>
+</html>

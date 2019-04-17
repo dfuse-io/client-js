@@ -15,6 +15,16 @@ Using Yarn:
     # Use this command if you are using npm
     #npm install --save @dfuse/client
 
+## Features
+
+What you get by using this library:
+
+- Full dfuse API coverage (REST & WebSocket)
+- API Token issuance & management (auto-refresh, expiration handling, storage, etc)
+- Automatic re-connection on socket close
+- Stream progress management and auto-restart on socket re-connection
+- Full customization power
+
 ## Quick Start
 
 When targeting a browser (you will need a bundler like WebPack since we only ship ES5 modules files for now):
@@ -58,6 +68,14 @@ put the following code:
 You can check the [Node.js Configuration](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
 example for how to avoid polluting the global scope.
 
+### Sane Defaults
+
+#### Fetch
+
+#### WebSocket
+
+#### API Token Store
+
 ### API
 
 The full API reference can be found at https://dfuse-io.github.io/client-js/.
@@ -77,6 +95,15 @@ Ensures you have an environment variable `DFUSE_API_KEY` set to your dfuse API K
 Then simply issue the following command (pick the example file you want to run):
 
     yarn run:example examples/basic/stream-transfers.ts
+
+#### Browser Example
+
+For the browser example to work, you need two things:
+
+- Either build the project locally with a `yarn build` or edit the `browser.html` and change script loading by the CDN version
+- Edit the `browser.html` file to put your own API key, there is none provided in the checked-in version of the file
+
+Once this is done, simply double-click on the `browser.html` file (`open examples/reference/browser.html` on Unix/Mac system).
 
 #### Basic
 
@@ -129,6 +156,10 @@ in each dfuse Stream and full configuration options for the library itself and a
   - [stream-head-info.ts](./examples/reference/stream-head-info.ts)
   - [stream-table-rows.ts](./examples/reference/stream-table-rows.ts)
   - [stream-transaction.ts](./examples/reference/stream-transaction.ts)
+
+- Browser
+
+  - [browser.html (Showcase Browser using UMD build)](./examples/reference/browser.html)
 
 ## Development
 

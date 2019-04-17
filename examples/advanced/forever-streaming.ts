@@ -26,7 +26,7 @@ async function main() {
   const streamClientOptions = {
     socketOptions: {
       onReconnect() {
-        console.log("Sokect re-connected, your stream(s) will have restarted automatically!")
+        console.log("Socket re-connected, your stream(s) will have restarted automatically!")
       }
     }
   }

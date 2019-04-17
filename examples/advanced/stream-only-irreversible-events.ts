@@ -19,14 +19,7 @@ async function main() {
 
   const stream = await client.streamActionTraces(
     { accounts: "eosio.token", action_names: "transfer" },
-    (message: InboundMessage) => {
-      if (message.type !== InboundMessageType.ACTION_TRACE) {
-        return
-      }
-
-      const { from, to, quantity, memo } = (message.data as ActionTraceData<any>).trace.act.data
-      console.log(`Irreversible transfer [${from} -> ${to}, ${quantity}] (${memo})`)
-    },
+    onMessage,
     {
       /**
        * We request to only obtain irreversible notifications by specifying this
@@ -38,6 +31,15 @@ async function main() {
 
   await waitFor(5000)
   await stream.close()
+}
+
+function onMessage(message: InboundMessage) {
+  if (message.type !== InboundMessageType.ACTION_TRACE) {
+    return
+  }
+
+  const { from, to, quantity, memo } = (message.data as ActionTraceData<any>).trace.act.data
+  console.log(`Irreversible transfer [${from} -> ${to}, ${quantity}] (${memo})`)
 }
 
 runMain(main)

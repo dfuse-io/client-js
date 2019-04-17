@@ -13,8 +13,6 @@
 
 - Add full support for marking the stream at the right location.
 
-### 0.2.0
-
 - Renamed the library to `@dfuse/client`.
 
 - Major overhaul of the full API of the library to become a full dfuse Client library,

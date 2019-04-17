@@ -1,11 +1,9 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
 import {
   createDfuseClient,
-  InboundMessage,
   waitFor,
   Stream,
   dynamicMessageDispatcher,
-  ListeningInboundMessage,
   ActionTraceInboundMessage,
   OnStreamMessage
 } from "@dfuse/client"
