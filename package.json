@@ -1,6 +1,6 @@
 {
   "name": "@dfuse/client",
-  "version": "0.2.0-rc.5",
+  "version": "0.2.0-rc.20",
   "description": "dfuse JavaScript/TypeScript Client Library (for [dfuse API](https://docs.dfuse.io/))",
   "main": "dist/lib/index.js",
   "module": "dist/dfuse-client.es5.js",
