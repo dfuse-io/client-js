@@ -206,15 +206,12 @@ To run the examples, it's quite simple, follow these instructions:
 
 ### Publishing
 
-First, build the project, this steps ensures you have a pristine state of your working directory,
-then run the test suite.
-
-    yarn build
-    yarn test
-
 Assuming you have been granted access rights to publish this package, the command to perform is simply:
 
     yarn publish --access public
+
+This command will automatically perform a clean build followed by the execution of the full test
+suite and then publish the package.
 
 #### Pre-release
 

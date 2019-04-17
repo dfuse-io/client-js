@@ -3,7 +3,7 @@ import {
   createApiTokenManager,
   isExpiredOrNearExpiration
 } from "../api-token-manager"
-import { MockApiTokenStore, MockRefreshScheduler } from "./mocks"
+import { MockApiTokenStore, MockRefreshScheduler, mock } from "./mocks"
 import { ApiTokenInfo } from "../../types/auth-token"
 
 // In milliseconds
@@ -28,8 +28,8 @@ describe("ApiTokenManager", () => {
   beforeEach(() => {
     spyOn(Date, "now").and.returnValue(currentDate)
 
-    fetchApiToken = jest.fn<Promise<ApiTokenInfo>>(() => Promise.resolve(defaultFetchApiTokenInfo))
-    onTokenRefresh = jest.fn()
+    fetchApiToken = mock<Promise<ApiTokenInfo>>(() => Promise.resolve(defaultFetchApiTokenInfo))
+    onTokenRefresh = mock()
     apiTokenStore = new MockApiTokenStore()
     refreshScheduler = new MockRefreshScheduler()
 

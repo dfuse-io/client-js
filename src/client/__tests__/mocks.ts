@@ -7,9 +7,17 @@ import { StreamClient, OnStreamMessage } from "../../types/stream-client"
 import { HttpClient, HttpQueryParameters } from "../../types/http-client"
 import { Stream } from "../../types/stream"
 
+export function mock<T>(implementation?: (...args: any) => T): jest.Mock<T, any> {
+  if (implementation === undefined) {
+    return jest.fn() as jest.Mock<T, any>
+  }
+
+  return jest.fn<T, any>(implementation)
+}
+
 export class MockHttpClient implements HttpClient {
-  public authRequestMock = jest.fn<Promise<any>>(() => Promise.resolve())
-  public apiRequestMock = jest.fn<Promise<any>>(() => Promise.resolve())
+  public authRequestMock = mock<Promise<any>>(() => Promise.resolve())
+  public apiRequestMock = mock<Promise<any>>(() => Promise.resolve())
 
   public authRequest<T>(
     path: string,
@@ -32,8 +40,8 @@ export class MockHttpClient implements HttpClient {
 }
 
 export class MockStreamClient implements StreamClient {
-  public registerStreamMock = jest.fn<Promise<Stream>>(() => Promise.resolve())
-  public unregisterStreamMock = jest.fn<Promise<void>>(() => Promise.resolve())
+  public registerStreamMock = mock<Promise<Stream>>()
+  public unregisterStreamMock = mock<Promise<void>>(() => Promise.resolve())
 
   public socket: MockSocket = new MockSocket()
 
@@ -47,13 +55,13 @@ export class MockStreamClient implements StreamClient {
 }
 
 export class MockSocket implements Socket {
-  public isConnectedMock = jest.fn<boolean>(() => true)
-  public connectMock = jest.fn<Promise<void>>()
-  public disconnectMock = jest.fn<Promise<void>>()
-  public sendMock = jest.fn<Promise<boolean>>()
-  public setApiTokenMock = jest.fn<void>()
+  public isConnectedMock = mock<boolean>(() => true)
+  public connectMock = mock<Promise<void>>()
+  public disconnectMock = mock<Promise<void>>()
+  public sendMock = mock<Promise<void>>()
+  public setApiTokenMock = mock<void>()
 
-  public getMock = jest.fn<Promise<ApiTokenInfo | undefined>>()
+  public getMock = mock<Promise<ApiTokenInfo | undefined>>()
 
   public get isConnected(): boolean {
     return this.isConnectedMock()
@@ -94,8 +102,8 @@ export class MockWebSocket implements WebSocket {
   public onmessage?: (event: any) => any
   public onopen?: (event: any) => any
 
-  public closeMock = jest.fn<void>()
-  public sendMock = jest.fn<string | ArrayBufferLike | Blob | ArrayBufferView>()
+  public closeMock = mock<void>()
+  public sendMock = mock<string | ArrayBufferLike | Blob | ArrayBufferView>()
 
   constructor(url: string) {
     // Our mock does not move around those states, there only to please TypeScript
@@ -114,8 +122,8 @@ export class MockWebSocket implements WebSocket {
 }
 
 export class MockApiTokenStore implements ApiTokenStore {
-  public setMock = jest.fn<Promise<void>>()
-  public getMock = jest.fn<Promise<ApiTokenInfo | undefined>>()
+  public setMock = mock<Promise<void>>()
+  public getMock = mock<Promise<ApiTokenInfo | undefined>>()
 
   public set(apiTokenInfo: ApiTokenInfo): Promise<void> {
     return this.setMock(apiTokenInfo)
@@ -127,8 +135,8 @@ export class MockApiTokenStore implements ApiTokenStore {
 }
 
 export class MockRefreshScheduler implements RefreshScheduler {
-  public hasScheduledJobMock = jest.fn<boolean>()
-  public scheduleMock = jest.fn<void>()
+  public hasScheduledJobMock = mock<boolean>()
+  public scheduleMock = mock<void>()
 
   public hasScheduledJob(): boolean {
     return this.hasScheduledJobMock()

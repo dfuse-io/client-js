@@ -19,6 +19,10 @@ export type SocketOptions = {
   onClose?: (message: object) => void
 }
 
+export type ConnectOptions = {
+  onReconnect?: () => void
+}
+
 export function createSocket(url: string, options: SocketOptions = {}): Socket {
   return new DefaultSocket(url, {
     id: "",
@@ -109,7 +113,7 @@ class DefaultSocket implements Socket {
 
   public async connect(
     listener: SocketMessageListener,
-    options: { onReconnect?: () => void } = {}
+    options: ConnectOptions = {}
   ): Promise<void> {
     this.debug("About to connect to remote endpoint.")
     if (this.connectionPromise !== undefined) {

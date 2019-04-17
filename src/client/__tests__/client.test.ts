@@ -1,8 +1,15 @@
 import { createDfuseClient, networkToEndpoint } from "../client"
 import { DfuseClient, RequestIdGenerator } from "../../types/client"
-import { MockHttpClient, MockStreamClient, MockApiTokenStore, MockRefreshScheduler } from "./mocks"
+import {
+  MockHttpClient,
+  MockStreamClient,
+  MockApiTokenStore,
+  MockRefreshScheduler,
+  mock
+} from "./mocks"
 import { InboundMessageType } from "../../message/inbound"
 import { OutboundMessageType } from "../../message/outbound"
+import { Stream } from "../../types/stream"
 
 const defaultRequestId = "dc-123"
 
@@ -27,7 +34,7 @@ describe("DfuseClient", () => {
     streamClient = new MockStreamClient()
     apiTokenStore = new MockApiTokenStore()
     refreshScheduler = new MockRefreshScheduler()
-    requestIdGenerator = jest.fn<string>(() => defaultRequestId)
+    requestIdGenerator = mock<string>(() => defaultRequestId)
 
     apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
 
@@ -66,7 +73,7 @@ describe("DfuseClient", () => {
   describe("stream", () => {
     it("correctly register action traces stream with default options", async () => {
       const onMessage = jest.fn()
-      const stream = { id: "any", unlisten: () => Promise.resolve() }
+      const stream: Stream = { id: "any", unlisten: () => Promise.resolve() } as any
 
       streamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
       const result = await client.streamActionTraces({ accounts: "test" }, onMessage)
@@ -115,7 +122,7 @@ describe("DfuseClient", () => {
 
     it("correctly register table rows stream with default options", async () => {
       const onMessage = jest.fn()
-      const stream = { id: "any", unlisten: () => Promise.resolve() }
+      const stream: Stream = { id: "any", unlisten: () => Promise.resolve() } as any
 
       streamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
       const result = await client.streamTableRows(
@@ -171,7 +178,7 @@ describe("DfuseClient", () => {
 
     it("correctly register transaction stream with default options", async () => {
       const onMessage = jest.fn()
-      const stream = { id: "any", unlisten: () => Promise.resolve() }
+      const stream: Stream = { id: "any", unlisten: () => Promise.resolve() } as any
 
       streamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
       const result = await client.streamTransaction({ id: "123" }, onMessage)
@@ -221,7 +228,7 @@ describe("DfuseClient", () => {
 
     it("correctly register head info stream with default options", async () => {
       const onMessage = jest.fn()
-      const stream = { id: "any", unlisten: () => Promise.resolve() }
+      const stream: Stream = { id: "any", unlisten: () => Promise.resolve() } as any
 
       streamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
       const result = await client.streamHeadInfo(onMessage)

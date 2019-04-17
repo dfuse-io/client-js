@@ -3,11 +3,11 @@ import { createHttpClient } from "../http-client"
 import { DfuseApiError, DfuseClientError } from "../../types/error"
 
 describe("HttpClient", () => {
-  let fetch: jest.Mock<Fetch>
+  let fetch: jest.Mock<ReturnType<Fetch>, ArgsType<Fetch>>
   let client: HttpClient
 
   beforeEach(() => {
-    fetch = jest.fn<Fetch>(() => Promise.resolve(okResponse()))
+    fetch = jest.fn<ReturnType<Fetch>, ArgsType<Fetch>>(() => Promise.resolve(okResponse()))
     client = createHttpClient("auth", "api", {
       fetch
     })
@@ -200,11 +200,11 @@ describe("HttpClient", () => {
     }
   })
 
-  function calledFetchUrl(call?: number): RequestInit {
+  function calledFetchUrl(call?: number): string {
     return fetch.mock.calls[call || 0][0]
   }
 
-  function calledFetchHttpRequest(call?: number): RequestInit {
+  function calledFetchHttpRequest(call?: number): RequestInit | undefined {
     return fetch.mock.calls[call || 0][1]
   }
 })

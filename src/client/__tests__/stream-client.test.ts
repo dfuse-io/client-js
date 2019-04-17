@@ -1,9 +1,11 @@
 import { InboundMessageType, InboundMessage } from "../../message/inbound"
-import { createStreamClient } from "../stream-client"
+import { createStreamClient, StreamClientOptions } from "../stream-client"
 import { StreamClient } from "../../types/stream-client"
-import { MockSocket } from "./mocks"
+import { mock, MockSocket } from "./mocks"
 import { OutboundMessageType, OutboundMessage } from "../../message/outbound"
 import { DfuseClientError } from "../../types/error"
+import { SocketMessageListener } from "../../types/socket"
+import { SocketOptions, ConnectOptions } from "../socket"
 
 const message1: OutboundMessage = {
   type: OutboundMessageType.GET_HEAD_INFO,
@@ -25,7 +27,7 @@ describe("StreamClient", () => {
     socket = new MockSocket()
     socket.connectMock.mockReturnValue(Promise.resolve())
     socket.disconnectMock.mockReturnValue(Promise.resolve())
-    socket.sendMock.mockReturnValue(Promise.resolve(true))
+    socket.sendMock.mockReturnValue(Promise.resolve())
 
     client = createStreamClient("any", {
       socket
@@ -151,10 +153,10 @@ describe("StreamClient", () => {
 
   it("forwards message to right registered stream when there is a single one", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = mock<InboundMessage>()
 
-    socket.connectMock.mockImplementation((handler) => {
-      sendMessage = handler
+    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
+      sendMessage = listener
       return Promise.resolve()
     })
 
@@ -171,11 +173,11 @@ describe("StreamClient", () => {
 
   it("forwards message to right registered stream when there is multiples", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const streamOnMessage1 = jest.fn<InboundMessage>()
-    const streamOnMessage2 = jest.fn<InboundMessage>()
+    const streamOnMessage1 = mock<InboundMessage>()
+    const streamOnMessage2 = mock<InboundMessage>()
 
-    socket.connectMock.mockImplementation((handler) => {
-      sendMessage = handler
+    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
+      sendMessage = listener
       return Promise.resolve()
     })
 
@@ -208,10 +210,10 @@ describe("StreamClient", () => {
 
   it("ignores message when no registered stream", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = mock<InboundMessage>()
 
-    socket.connectMock.mockImplementation((handler) => {
-      sendMessage = handler
+    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
+      sendMessage = listener
       return Promise.resolve()
     })
 
@@ -228,10 +230,10 @@ describe("StreamClient", () => {
 
   it("ignores message when no registered stream exists for id", async () => {
     let sendMessage: (message: InboundMessage) => void
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = mock<InboundMessage>()
 
-    socket.connectMock.mockImplementation((handler) => {
-      sendMessage = handler
+    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
+      sendMessage = listener
       return Promise.resolve()
     })
 
@@ -257,16 +259,16 @@ describe("StreamClient", () => {
 
   it("automatically restarts stream by default on reconnection", async () => {
     let notifyOnReconnect: (message: InboundMessage) => void
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = mock<InboundMessage>()
 
-    socket.connectMock.mockImplementation((_, options) => {
-      notifyOnReconnect = options.onReconnect
+    socket.connectMock.mockImplementation((_: any, options: ConnectOptions) => {
+      notifyOnReconnect = options.onReconnect!
       return Promise.resolve()
     })
 
     await client.registerStream(message1, streamOnMessage)
 
-    // @ts-ignore Will have been set by the time we reach this execution point
+    // @ts-ignore Flagged as potentially undefined, but will have been set by the time we reach this execution point
     notifyOnReconnect()
 
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
@@ -280,10 +282,10 @@ describe("StreamClient", () => {
     })
 
     let notifyOnReconnect: (message: InboundMessage) => void
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = mock<InboundMessage>()
 
-    socket.connectMock.mockImplementation((_, options) => {
-      notifyOnReconnect = options.onReconnect
+    socket.connectMock.mockImplementation((_: any, options: ConnectOptions) => {
+      notifyOnReconnect = options.onReconnect!
       return Promise.resolve()
     })
 
@@ -300,7 +302,7 @@ describe("StreamClient", () => {
   })
 
   it("change start_block when restart marker is used to restart", async () => {
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = mock<InboundMessage>()
 
     const stream = await client.registerStream(message1, streamOnMessage)
 
@@ -317,7 +319,7 @@ describe("StreamClient", () => {
   })
 
   it("restart marker takes precedence over mark when set for start_block upon restart", async () => {
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = mock<InboundMessage>()
     const stream = await client.registerStream(message1, streamOnMessage)
 
     stream.mark({ atBlockNum: 100 })
@@ -335,7 +337,7 @@ describe("StreamClient", () => {
   })
 
   it("change start_block when mark was used on stream prior restart", async () => {
-    const streamOnMessage = jest.fn<InboundMessage>()
+    const streamOnMessage = jest.fn()
 
     const stream = await client.registerStream(message1, streamOnMessage)
 

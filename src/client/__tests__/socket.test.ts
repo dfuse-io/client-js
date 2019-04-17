@@ -108,10 +108,7 @@ describe("socket", () => {
 
     expect.hasAssertions()
     await expect(
-      socket.connect(
-        noopListener,
-        { onReconnect: connectOnReconnect }
-      )
+      socket.connect(noopListener, { onReconnect: connectOnReconnect })
     ).resolves.toBeUndefined()
 
     await waitForReconnectionToTrigger()
@@ -409,8 +406,8 @@ describe("socket", () => {
     expect(callCount >= 1 && callCount <= 2).toBeTruthy()
 
     // Let's at least ensures we only get `pong` messages
-    mockWebSocket.sendMock.mock.calls.forEach((message) => {
-      expect(message[0]).toEqual('{"type":"pong"}')
+    mockWebSocket.sendMock.mock.calls.forEach((call: any) => {
+      expect(call[0]).toEqual('{"type":"pong"}')
     })
   })
 

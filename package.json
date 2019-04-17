@@ -24,7 +24,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "prepare": "yarn run build",
+    "prepare": "yarn build && yarn test",
     "prebuild": "rimraf build dist",
     "build": "yarn run build:cjs && yarn run build:es && yarn run build:web",
     "build:cjs": "tsc --module commonjs",
