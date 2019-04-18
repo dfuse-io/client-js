@@ -98,10 +98,9 @@ Then simply issue the following command (pick the example file you want to run):
 
 #### Browser Example
 
-For the browser example to work, you need two things:
+For the browser example to work, you need to edit the `browser.html` file:
 
-- Either build the project locally with a `yarn build` or edit the `browser.html` and change script loading by the CDN version
-- Edit the `browser.html` file to put your own API key, there is none provided in the checked-in version of the file
+- Edit the `browser.html` file to put your own API key, search for `apiKey: "<Paste API key here!>",` in the file.
 
 Once this is done, simply double-click on the `browser.html` file (`open examples/reference/browser.html` on Unix/Mac system).
 

@@ -12,8 +12,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>dfuse Client - Browser Example</title>
 
-    <!-- In production, you can use our CDN location `https://unpkg.com/@dfuse/client` (Append `@0.2.0` for a pinned version) -->
-    <script src="../../dist/dfuse-client.umd.js"></script>
+    <!-- In development, you can run `yarn build` and use `./../dist/dfuse-client.umd.js` -->
+    <script src="https://unpkg.com/@dfuse/client"></script>
+    <!-- (Append `@0.2.0` for a pinned version) -->
     <style>
       body {
         background-color: #f3f3f7;
@@ -102,7 +103,7 @@
       const { createDfuseClient, InboundMessageType, waitFor } = dfuseClient
 
       const client = createDfuseClient({
-        apiKey: "web_6d99c117406c10f6fd9ee25c7d6f7323",
+        apiKey: "<Paste API key here!>",
         network: "mainnet"
       })
 
