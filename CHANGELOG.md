@@ -2,6 +2,16 @@
 
 ## In Progress (Next)
 
+- Added a `OnDiskApiTokenStore` to store the token under
+  `~/.dfuse/<sha256-api-key>/token.json` file using the `FileApiTokenStore`
+  and make it the default in a Node.js environment.
+
+- Added a `FileApiTokenStore` to store the token info under a given file
+  (can be used only in a Node.js environment).
+
+- Added `LocalStorageApiTokenStore` implementation and make it the default
+  in a Browser environment.
+
 - Now distributing an `es5` and `umd` build in addition to the old previous
   `commonjs` build (now under `dist/lib`).
 

@@ -43,7 +43,12 @@ import {
 import { DfuseClientError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
 import { StreamClient, OnStreamMessage } from "../types/stream-client"
-import { ApiTokenStore, InMemoryApiTokenStore, LocalStorageApiTokenStore } from "./api-token-store"
+import {
+  ApiTokenStore,
+  InMemoryApiTokenStore,
+  LocalStorageApiTokenStore,
+  OnDiskApiTokenStore
+} from "./api-token-store"
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
 
@@ -73,6 +78,8 @@ export type DfuseClientOptions = {
  * Only the `apiKey` and `network` parameters are mandatory, all others have sane
  * default values based on your execution environment (be it a Browser or Node.js).
  *
+ * This will create the default
+ *
  * @param options The options that can be passed to customize [[DfuseClient]] instance, refer to the [[DfuseClientOptions]] for further details.
  *
  * @kind Factories
@@ -90,7 +97,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const streamClient =
     options.streamClient || createStreamClient(wsUrl + "/v1/stream", options.streamClientOptions)
 
-  const apiTokenStore = options.apiTokenStore || inferApiTokenStore()
+  const apiTokenStore = options.apiTokenStore || inferApiTokenStore(options.apiKey)
   const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
 
   const requestIdGenerator = options.requestIdGenerator || randomReqId
@@ -105,15 +112,24 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   )
 }
 
-export function inferApiTokenStore() {
+function inferApiTokenStore(apiKey: string) {
   const debug = debugFactory("dfuse:client")
 
   debug("Inferring API token store default concrete implementation to use")
   if (typeof window !== "undefined" && window.localStorage != null) {
     debug(
-      "Using `LocalStorageApiTokenStore` as we found a `localStorage` object on the 'window' variable (Browser environment)."
+      'Using `LocalStorageApiTokenStore` as we assumed a Browser environment (`typeof window.localStorage !== "undefined"`).'
     )
     return new LocalStorageApiTokenStore("dfuse:token")
+  }
+
+  // Just in the sake that `window.localStorage` is not supported for whatever, fall
+  // back to Node.js default only if we are really in a Node.js like environment.
+  if (typeof window === "undefined") {
+    debug(
+      'Using `OnDiskLocalStorageApiTokenStore` as we assumed a Node.js enviroment (`typeof window === "undefined"`).'
+    )
+    return new OnDiskApiTokenStore(apiKey)
   }
 
   debug("Falling back default `InMemoryApiTokenStore` concrete implementation")

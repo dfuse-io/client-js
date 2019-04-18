@@ -7,25 +7,12 @@ import { DfuseClientError } from "../types/error"
  * as well as retrieving a token from the store.
  *
  * By providing your own [[ApiTokenStore]] implementation, you can for
- * example easily store the token in the `localStorage` of the Browser
- * if your targeting this environment by rolling your own version:
+ * example easily store the token in the `localStorage` ([[LocalStorageApiTokenStore]]),
+ * under `~/.dfuse/<sha256-api-key>` folder ([[OnDiskLocalStorageApiTokenStore]]) or
+ * more generically at any path ([[FileApiTokenStore]]).
  *
- * ```typescript
- * class LocalStorageApiTokenStore implements ApiTokenStore {
- *   async set(apiTokenInfo: ApiTokenInfo): Promise<void> {
- *     localStorage.set('dfuse-token', JSON.stringify(apiTokenInfo))
- *   }
- *
- *   async get(apiTokenInfo: ApiTokenInfo): Promise<ApiTokenInfo | undefined> {
- *     const tokenData = localStorage.get('dfuse-token')
- *     if (tokenData === null) {
- *       return undefined
- *     }
- *
- *     return JSON.parse(tokenData)
- *   }
- * }
- * ```
+ * **Note** The [[OnDiskLocalStorageApiTokenStore]] and [[FileApiTokenStore]] are available
+ * only on a Node.js environment.
  *
  * @kind Interfaces
  */
@@ -36,7 +23,7 @@ export interface ApiTokenStore {
 
 /**
  * Represents an in-memory token storage concrete implementation of
- * a [[ApiTokenStore]]. This simply keep the token in variable and serves
+ * a . This simply keep the token in variable and serves
  * it from there.
  *
  * It is **never** persisted and will be reset upon restart of the Browser tab
@@ -58,13 +45,18 @@ export class InMemoryApiTokenStore {
 }
 
 /**
- * Represents an local storage token store concrete implementation of
- * a [[ApiTokenStore]]. This will save the
+ * Represents an [[ApiTokenStore]] that saves the token as a JSON string
+ * in the `localStorage` of the Browser.
  *
- * It is persisted in the local storage of the Browser will be picked uo
+ * Trying to use this class when `window.localStorage` is not a function
+ * (like in a Node.js environment) will throw an error at construction
+ * time. Use another implementation. If this error is thrown nonetheless
+ * in your Browser, local storage is probably not supported there.
+ *
+ * It is persisted in the local storage of the Browser it will be picked up
  * upon restart of the Browser tab.
  */
-export class LocalStorageApiTokenStore {
+export class LocalStorageApiTokenStore implements ApiTokenStore {
   private key: string
   private apiTokenInfo?: ApiTokenInfo
 
@@ -115,14 +107,14 @@ export class LocalStorageApiTokenStore {
 }
 
 /**
- * Represents an local storage token store concrete implementation of
- * a [[ApiTokenStore]]. This will save the token in the given file.
+ * Represents an [[ApiTokenStore]] implementation that will save
+ * as a JSON string in plain text in the given file.
+ *
  * The directory structure is created when it does not exists.
  *
- * **Note** This should not be used in a Browser environment as it
- *          makes really no sense in this context.
+ * **Note** This cannot be used in a browser environment
  */
-export class FileApiTokenStore {
+export class FileApiTokenStore implements ApiTokenStore {
   private filePath: string
   private apiTokenInfo?: ApiTokenInfo
 
@@ -157,6 +149,25 @@ export class FileApiTokenStore {
     this.apiTokenInfo = apiTokenInfo
 
     await writeData(this.fs, this.path, this.filePath, JSON.stringify(apiTokenInfo))
+  }
+}
+
+/**
+ * Represents an [[ApiTokenStore]] implementation that will save
+ * as a JSON string in a file located at
+ * `~/.dfuse/<sha256-api-key>/token.json`.
+ *
+ * The directory structure is created when it does not exists.
+ *
+ * **Note** This cannot be used in a browser environment.
+ */
+export class OnDiskApiTokenStore extends FileApiTokenStore {
+  constructor(apiKey: string) {
+    // Resolve `require` only when invoked to not clutter a Browser build
+    const homeDirectory = require("os").homedir()
+    const sha256sum = require("crypto").createHash("sha256")
+
+    super(`${homeDirectory}/.dfuse/${sha256sum.update(apiKey).digest("hex")}/token.json`)
   }
 }
 

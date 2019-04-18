@@ -1,5 +1,5 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import { createDfuseClient, DfuseClient, FileApiTokenStore } from "@dfuse/client"
+import { createDfuseClient, DfuseClient } from "@dfuse/client"
 
 const account = "eoscanadacom"
 const blockNum = 42_500_250
@@ -7,8 +7,7 @@ const blockNum = 42_500_250
 async function main() {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK,
-    apiTokenStore: new FileApiTokenStore("/Users/maoueh/.config/dfuse-client-js/token.json")
+    network: DFUSE_API_NETWORK
   })
 
   try {

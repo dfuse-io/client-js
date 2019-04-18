@@ -1,5 +1,5 @@
-import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
-import { ApiTokenStore, InMemoryApiTokenStore } from "./api-token-store"
+import { RefreshScheduler } from "./refresh-scheduler"
+import { ApiTokenStore } from "./api-token-store"
 import debugFactory, { IDebugger } from "debug"
 import { ApiTokenInfo } from "../types/auth-token"
 
@@ -44,7 +44,7 @@ export function createApiTokenManager(
  * Check wheter the received [[ApiTokenInfo]] parameter is expired or near its
  * expiration.
  */
-export function isExpiredOrNearExpiration(tokenInfo: ApiTokenInfo): boolean {
+export function isApiTokenExpired(tokenInfo: ApiTokenInfo): boolean {
   const now = Date.now() / 1000
   return tokenInfo.expires_at <= now
 }
@@ -77,7 +77,7 @@ class DefaultApiTokenManager implements ApiTokenManager {
 
   public async getTokenInfo(): Promise<ApiTokenInfo> {
     const tokenInfo = await this.tokenStore.get()
-    if (tokenInfo && !isExpiredOrNearExpiration(tokenInfo)) {
+    if (tokenInfo && !isApiTokenExpired(tokenInfo)) {
       this.maybeScheduleNextRefresh(tokenInfo, { forceRefresh: false })
 
       this.debug("Returning token found in API token store since it was still valid")
