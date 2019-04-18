@@ -1,5 +1,5 @@
 const { exec, echo } = require("shelljs")
-const { githubPushUrl, exitOnError } = require("./helpers")
+const { exitOnError } = require("./helpers")
 
 echo("Pushing code and tags...")
 
