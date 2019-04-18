@@ -211,17 +211,20 @@ and the commit that.
 
 Assuming you have been granted access rights to publish this package, the command to perform is simply:
 
-    yarn publish --access public
+    yarn run publish:latest
 
 This command will automatically perform a clean build followed by the execution of the full test
-suite and then publish the package.
+suite then a publish the package followed by a publish of the docs and finally push the commits
+and tag to the remote repository.
 
 #### Pre-release
 
 If you want to publish a pre-release version not flagged as the latest so that people still pulls
 the current stable version unless they opt-in explicitly, use the following invocation:
 
-    yarn publish --access public --tag next
+    yarn run publish:next
+
+Does the same work as `publish:latest` but the docs is not published by this step.
 
 ## Credits / Acknowledgement
 
