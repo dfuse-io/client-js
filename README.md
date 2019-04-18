@@ -205,6 +205,10 @@ To run the examples, it's quite simple, follow these instructions:
 
 ### Publishing
 
+First step is to update the change log ([CHANGELOG.md](./CHANGELOG.md)) by updating the
+`## In Progress` header to change to `## <Version> (<Month> <Day>, <Year>)` (i.e. `## 0.11.11 (March 26, 2019)`)
+and the commit that.
+
 Assuming you have been granted access rights to publish this package, the command to perform is simply:
 
     yarn publish --access public

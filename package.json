@@ -24,18 +24,20 @@
   ],
   "license": "MIT",
   "scripts": {
-    "prepare": "yarn build && yarn test",
-    "prebuild": "rimraf build dist",
-    "build": "yarn run build:cjs && yarn run build:es && yarn run build:web",
+    "prepublishOnly": "yarn build && yarn test",
+    "prebuild": "rimraf docs dist",
+    "build": "yarn run build:cjs && yarn run build:es && yarn run build:web && yarn run build:docs",
     "build:cjs": "tsc --module commonjs",
     "build:es": "rollup -c rollup.config.es.js",
     "build:web": "rollup -c rollup.config.web.js && node scripts/compress-umd-build.js",
-    "docs": "rimraf build && typedoc",
+    "build:docs": "typedoc",
+    "postpublish": "node scripts/gh-publish-docs.js",
+    "postversion": "node scripts/gh-push.js",
     "lint": "tslint 'src/**/*.ts'",
     "lint:specific": "tslint",
     "start": "tsc --module commonjs --watch",
-    "test": "jest",
-    "run:example": "yarn run ts-node -O '{\"module\":\"commonjs\"}'"
+    "run:example": "yarn run ts-node -O '{\"module\":\"commonjs\"}'",
+    "test": "jest"
   },
   "husky": {
     "hooks": {
@@ -77,6 +79,7 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-terser": "^4.0.4",
     "rollup-plugin-typescript2": "^0.20.1",
+    "shelljs": "^0.8.3",
     "terser": "^3.17.0",
     "ts-jest": "^24.0.0",
     "ts-node": "^7.0.1",
@@ -86,8 +89,7 @@
     "typedoc-default-themes-extension": "^0.0.3",
     "typedoc-plugin-toc-group": "^0.0.4",
     "typescript": "^3.1.3",
-    "ws": "^6.1.0",
-    "yarn-run-all": "^3.1.1"
+    "ws": "^6.1.0"
   },
   "dependencies": {
     "debug": "^4.1.0"
