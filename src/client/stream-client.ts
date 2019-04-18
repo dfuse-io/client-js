@@ -3,7 +3,7 @@ import { SocketOptions, createSocket } from "./socket"
 import { OutboundMessage, unlistenMessage } from "../message/outbound"
 import { InboundMessage } from "../message/inbound"
 import { DfuseClientError } from "../types/error"
-import { StreamClient, OnStreamMessage } from "../types/stream-client"
+import { StreamClient, OnStreamMessage, OnStreamRestart } from "../types/stream-client"
 import { Socket } from "../types/socket"
 import { Stream, StreamMarker } from "../types/stream"
 
@@ -139,11 +139,13 @@ class DefaultStreamClient {
 }
 
 class DefaultStream implements Stream {
-  public id: string
-  public activeMarker?: StreamMarker
+  public readonly id: string
+  public onPostRestart?: OnStreamRestart
 
+  private activeMarker?: StreamMarker
   private registrationMessage: OutboundMessage
   private onMessageHandler: OnStreamMessage
+
   private client: DefaultStreamClient
 
   constructor(
@@ -160,6 +162,10 @@ class DefaultStream implements Stream {
 
   public get onMessage(): OnStreamMessage {
     return this.onMessageHandler
+  }
+
+  public currentActiveMarker(): undefined | StreamMarker {
+    return this.activeMarker
   }
 
   public async start(): Promise<void> {
@@ -182,7 +188,11 @@ class DefaultStream implements Stream {
       restartMessage.start_block = this.activeMarker.atBlockNum
     }
 
-    return this.client.socket.send(restartMessage)
+    await this.client.socket.send(restartMessage)
+
+    if (this.onPostRestart) {
+      this.onPostRestart()
+    }
   }
 
   public mark(options: { atBlockNum: number }) {
@@ -194,4 +204,8 @@ class DefaultStream implements Stream {
       return this.client.unregisterStream(this.id)
     }
   }
+}
+
+const noop = () => {
+  return
 }

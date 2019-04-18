@@ -1,8 +1,4 @@
-import {
-  ApiTokenManager,
-  createApiTokenManager,
-  isExpiredOrNearExpiration
-} from "../api-token-manager"
+import { ApiTokenManager, createApiTokenManager, isApiTokenExpired } from "../api-token-manager"
 import { MockApiTokenStore, MockRefreshScheduler, mock } from "./mocks"
 import { ApiTokenInfo } from "../../types/auth-token"
 
@@ -156,7 +152,7 @@ describe("ApiTokenManager", () => {
   })
 })
 
-describe("isExpiredOrNearExpiration", () => {
+describe("isApiTokenExpired", () => {
   const testCases = [
     { token: nonExpiredApiTokenInfo, isExpired: false },
     { token: nonExpiredJustBeforeApiTokenInfo, isExpired: false },
@@ -169,7 +165,7 @@ describe("isExpiredOrNearExpiration", () => {
     it(`should pass test case ${testCase.token.token}`, () => {
       spyOn(Date, "now").and.returnValue(currentDate)
 
-      expect(isExpiredOrNearExpiration(testCase.token)).toEqual(testCase.isExpired)
+      expect(isApiTokenExpired(testCase.token)).toEqual(testCase.isExpired)
     })
   })
 })

@@ -30,7 +30,7 @@ export interface SocketOptions {
    * re-connection. As no effect if [[SocketOptions.autoReconnect]] is sets
    * to `false`.
    *
-   * @default `5s` (See [[DEFAULT_RECONNECT_DELAY_IN_MS]])
+   * @default `2.5s` (See [[DEFAULT_RECONNECT_DELAY_IN_MS]])
    */
   reconnectDelayInMs?: number
 
@@ -206,7 +206,7 @@ type Resolver<T> = (value?: T | PromiseLike<T>) => void
 type Rejecter = (reason?: any) => void
 
 export const DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS = 30000 // 30s
-export const DEFAULT_RECONNECT_DELAY_IN_MS = 5000 // 5s
+export const DEFAULT_RECONNECT_DELAY_IN_MS = 2500 // 2.5s
 
 class DefaultSocket implements Socket {
   private url: string
@@ -258,6 +258,7 @@ class DefaultSocket implements Socket {
       this.createAnOpenSocket(
         this.onSocketConnectOpenFactory(resolve),
         this.onSocketErrorFactory(reject),
+        this.onSocketCloseFactory(),
         reject
       )
     })
@@ -320,6 +321,7 @@ class DefaultSocket implements Socket {
   private async createAnOpenSocket(
     onSocketOpen: () => void,
     onSocketError: (event: Event) => void,
+    onSocketClose: (event: CloseEvent) => void,
     onSocketFactoryError: (error: any) => void
   ): Promise<void> {
     const url = this.buildUrl()
@@ -330,7 +332,7 @@ class DefaultSocket implements Socket {
 
       socket.onopen = onSocketOpen
       socket.onerror = onSocketError
-      socket.onclose = this.onSocketClose
+      socket.onclose = onSocketClose
       socket.onmessage = this.onSocketMessage
 
       this.socket = socket
@@ -397,13 +399,36 @@ class DefaultSocket implements Socket {
     this.onError(event)
   }
 
-  private onSocketClose = (event: CloseEvent) => {
-    this.debug("Received `onclose` notification from socket.")
+  private onSocketReconnectErrorFactory = () => (event: Event) => {
+    this.debug("Received `onerror` (via reconnect) notification from socket.")
+
+    this.debug("Sending an `onError` notification to client consumer.")
+    this.onError(event)
+  }
+
+  private onSocketCloseFactory = () => {
+    return this.commonOnSocketCloseFactory("reconnect", () => {
+      this.reconnect().catch((error) => {
+        this.debug("The re-connection never succeed, will not retry anymore.", error)
+      })
+    })
+  }
+
+  private onSocketReconnectCloseFactory = (resolve: Resolver<void>, reject: Rejecter) => {
+    return this.commonOnSocketCloseFactory("reconnect", () => {
+      this.tryReconnect(resolve, reject)
+    })
+  }
+
+  private commonOnSocketCloseFactory = (tag: string, reconnectWorker: () => void) => (
+    event: CloseEvent
+  ) => {
+    this.debug("Received `onclose` (via %s) notification from socket.", tag)
     this.isConnected = false
     this.connectionPromise = undefined
 
     if (this.closeResolver) {
-      this.debug("Resolving disconnect close promise.")
+      this.debug("Resolving disconnect close promise (via %s).", tag)
       this.closeResolver()
       this.closeResolver = undefined
       this.closePromise = undefined
@@ -411,12 +436,15 @@ class DefaultSocket implements Socket {
 
     this.cleanSocket()
 
-    this.debug("Sending a `onClose` notification to client consumer.")
+    this.debug("Sending a `onClose` notification to client consumer (via %s).", tag)
     this.onClose(event)
 
     if (event.code !== 1000 && event.code !== 1005) {
-      this.debug("Socket has close abnormally, trying to re-connect to socket.")
-      this.reconnect()
+      this.debug(
+        "Socket has close abnormally (via %s), trying to re-connect to socket (infinite retry).",
+        tag
+      )
+      reconnectWorker()
     }
   }
 
@@ -483,6 +511,7 @@ class DefaultSocket implements Socket {
   }
 
   private async reconnect(): Promise<boolean> {
+    this.debug("Reconnect has been invoked, perfoming initial re-connection logic.")
     if (this.connectionPromise) {
       try {
         this.debug("Awaiting actual connection to complete.")
@@ -498,20 +527,24 @@ class DefaultSocket implements Socket {
       return false
     }
 
+    return new Promise<boolean>(this.tryReconnect)
+  }
+
+  private tryReconnect = (resolve: any, reject: any) => {
     let reconnectDelay = this.options.reconnectDelayInMs
     if (reconnectDelay === undefined) {
       reconnectDelay = DEFAULT_RECONNECT_DELAY_IN_MS
     }
 
-    return new Promise<boolean>((resolve, reject) => {
-      setTimeout(() => {
-        this.createAnOpenSocket(
-          this.onSocketReconnectOpenFactory(resolve),
-          this.onSocketErrorFactory(reject),
-          reject
-        )
-      }, reconnectDelay)
-    })
+    this.debug(`Waiting ${reconnectDelay}ms before trying to perform the re-connection.`)
+    setTimeout(() => {
+      this.createAnOpenSocket(
+        this.onSocketReconnectOpenFactory(resolve),
+        this.onSocketReconnectErrorFactory(),
+        this.onSocketReconnectCloseFactory(resolve, reject),
+        reject
+      )
+    }, reconnectDelay)
   }
 
   private cleanSocket() {
@@ -543,7 +576,8 @@ class DefaultSocket implements Socket {
    * Those are two different listeners and must be both sent when possible.
    */
   private onReconnect() {
-    // Let's call the `connect` `onReconnectListener` first.
+    // Let's call the `connect` `onReconnectListener` first then followed
+    // by the one the consumer of the socket passed
     ;(this.onReconnectListener || noop)()
     ;(this.options.onReconnect || noop)()
   }

@@ -2,6 +2,18 @@
 
 ## In Progress (Next)
 
+- The function `isExpiredOrNearExpiration` has been renamed to
+  `isApiTokenExpired` to better reflect the intention of the method.
+
+- Changed default reconnect delay value from `5s` to `2.5s`.
+
+- Added a `Stream.onPostRestart` callback that can be used to act after a
+  successful stream restart, see [./examples/advanced/never-miss-a-beat.ts]
+  for usage.
+
+- Fixed a bug where re-connect was not connected back if an error
+  occurred in the reconnect itself.
+
 - Added a `OnDiskApiTokenStore` to store the token under
   `~/.dfuse/<sha256-api-key>/token.json` file using the `FileApiTokenStore`
   and make it the default in a Node.js environment.

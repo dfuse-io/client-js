@@ -67,13 +67,6 @@ class Engine {
   }
 
   public async start() {
-    const dispatcher = dynamicMessageDispatcher({
-      listening: this.onListening,
-      table_delta: this.onTableDelta,
-      table_snapshot: this.onTableSnapshot,
-      progress: this.onProgress
-    })
-
     console.log("Engine starting")
     this.stream = await this.client.streamTableRows(
       {
@@ -81,7 +74,12 @@ class Engine {
         table: "global",
         scope: "eosio"
       },
-      dispatcher,
+      dynamicMessageDispatcher({
+        listening: this.onListening,
+        table_delta: this.onTableDelta,
+        table_snapshot: this.onTableSnapshot,
+        progress: this.onProgress
+      }),
       {
         listen: true,
         fetch: true,
@@ -89,13 +87,6 @@ class Engine {
         with_progress: 50
       }
     )
-  }
-
-  public async stop() {
-    await this.ensureStream().close()
-
-    console.log("Current last 5 updates")
-    printUpdates(this.updates)
   }
 
   private onListening = () => {
@@ -131,6 +122,13 @@ class Engine {
         this.pushUpdate(message.data.dbop.new!.json!)
         break
     }
+  }
+
+  public async stop() {
+    await this.ensureStream().close()
+
+    console.log("Current last 5 updates")
+    printUpdates(this.updates)
   }
 
   private popUpdate() {

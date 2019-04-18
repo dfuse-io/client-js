@@ -1,3 +1,5 @@
+import { OnStreamRestart } from "./stream-client"
+
 /**
  * A [[Stream]] represents a single open streaming pipeline with dfuse API.
  * On a single WebSocket connection, there is multiple streams active,
@@ -17,13 +19,25 @@ export interface Stream {
    *
    * Should be unique among a common pool of Stream.
    */
-  id: string
+  readonly id: string
+
+  /**
+   * The current [[OnStreamRestart]] callback currently registered
+   * by this [[Stream]]. When set to something, it will be invoked after a successful
+   * restart of a stream (to be precise, after succesfully sent the `listen` dfuse Stream
+   * message on the WebSocket without known if the remote end has actually received
+   * yet).
+   *
+   * There can be only one active `onPostRestart` handler for a given [[Stream]].
+   * When set on the [[Stream]] instance.
+   */
+  onPostRestart?: OnStreamRestart
 
   /**
    * The current active marker as last marked on this stream. If undefined,
    * it means the marker was never set.
    */
-  activeMarker?: StreamMarker
+  currentActiveMarker(): undefined | StreamMarker
 
   /**
    * Restart a stream after it has been disconnect. This re-sends the original

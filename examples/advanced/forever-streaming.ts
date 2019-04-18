@@ -22,19 +22,9 @@ import { createDfuseClient, InboundMessage, waitFor, Stream } from "@dfuse/clien
  * you never miss or skip an important message by mistake.
  */
 async function main() {
-  // This is not required in your own code, present in the example so re-connection can be seen
-  const streamClientOptions = {
-    socketOptions: {
-      onReconnect() {
-        console.log("Socket re-connected, your stream(s) will have restarted automatically!")
-      }
-    }
-  }
-
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK,
-    streamClientOptions
+    network: DFUSE_API_NETWORK
   })
 
   const stream: Stream = await client.streamActionTraces(
@@ -44,6 +34,10 @@ async function main() {
     },
     onMessage
   )
+
+  stream.onPostRestart = () => {
+    console.log("Socket re-connected, your stream(s) will have restarted automatically!")
+  }
 
   console.log("Socket is now connected.")
 

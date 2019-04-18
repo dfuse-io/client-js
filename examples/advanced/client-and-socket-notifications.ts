@@ -22,6 +22,10 @@ import {
  * - Socket `onClose`: when the connection of the `Socket` was closed.
  * - Socket `onReconnect`: when the socket has automatically reconnected.
  * - Socket `onInvalidMessage`: when the socket receives a message of type it's not aware of (i.e. it's no in the enum `InbountMessageType`).
+ *
+ * We will also register an `onPostRestart` listener on the `Stream`, which is called after
+ * a `listen` has been sent back to the remote endpoint due to a socket `onReconnect`
+ * event.
  */
 async function main() {
   const socketOptions: SocketOptions = {
@@ -66,6 +70,13 @@ async function main() {
 
   stream = await client.streamActionTraces(data, onMessage)
   console.log("Socket is now connected.")
+
+  stream.onPostRestart = () => {
+    console.log()
+    console.log(
+      "<============= Stream has restart to its previous point (or HEAD if never `mark()`) =============>"
+    )
+  }
 
   await waitFor(35000)
   await stream.close()

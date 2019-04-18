@@ -89,6 +89,7 @@ the various part of the library:
 
 - [DfuseClient](https://dfuse-io.github.io/client-js/interfaces/defaultclient.html)
 - [StreamClient](https://dfuse-io.github.io/client-js/interfaces/streamclient.html)
+- [Stream](https://dfuse-io.github.io/client-js/interfaces/stream.html)
 - [HttpClient](https://dfuse-io.github.io/client-js/interfaces/httpclient.html)
 - [Socket](https://dfuse-io.github.io/client-js/interfaces/socket.html)
 - [ApiTokenStore](https://dfuse-io.github.io/client-js/interfaces/apitokenstore.html)
@@ -115,10 +116,11 @@ the various part of the library:
 
 - [DefaultClient](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
 - [InMemoryApiTokenStore](https://dfuse-io.github.io/client-js/classes/InMemoryApiTokenStore.html)
-- [DefaultClient](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
-- [DefaultClient](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
+- [OnDiskApiTokenStore](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
+- [FileApiTokenStore](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
 
-**Note** `DefaultStreamClient`, `DefaultHttpClient`,
+**Note** `DefaultStreamClient`, `DefaultHttpClient`, `DefaultSocket`, `DefaultApiTokenManager`
+are all private implementations not exposed.
 
 ### Examples
 

@@ -14,3 +14,4 @@ export interface StreamClient {
 }
 
 export type OnStreamMessage = (message: InboundMessage) => void
+export type OnStreamRestart = () => void

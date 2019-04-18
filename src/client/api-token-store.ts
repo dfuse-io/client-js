@@ -8,10 +8,10 @@ import { DfuseClientError } from "../types/error"
  *
  * By providing your own [[ApiTokenStore]] implementation, you can for
  * example easily store the token in the `localStorage` ([[LocalStorageApiTokenStore]]),
- * under `~/.dfuse/<sha256-api-key>` folder ([[OnDiskLocalStorageApiTokenStore]]) or
+ * under `~/.dfuse/<sha256-api-key>` folder ([[OnDiskApiTokenStore]]) or
  * more generically at any path ([[FileApiTokenStore]]).
  *
- * **Note** The [[OnDiskLocalStorageApiTokenStore]] and [[FileApiTokenStore]] are available
+ * **Note** The [[OnDiskApiTokenStore]] and [[FileApiTokenStore]] are available
  * only on a Node.js environment.
  *
  * @kind Interfaces

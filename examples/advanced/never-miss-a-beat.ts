@@ -27,7 +27,6 @@ import {
  * showing our to restart at the exact correct place a commit had
  * occurred.
  *
- *
  * @see https://docs.dfuse.io/#websocket-based-api-never-missing-a-beat
  */
 async function main() {
@@ -36,14 +35,7 @@ async function main() {
     network: DFUSE_API_NETWORK,
     streamClientOptions: {
       socketOptions: {
-        onReconnect() {
-          console.log()
-          console.log("<============= Stream as re-connected to socket correctly =============>")
-          console.log()
-
-          // Upon a re-connection, we need to clear previously accumulated actions
-          engine.flushPending()
-        }
+        reconnectDelayInMs: 250
       }
     }
   })
@@ -66,10 +58,10 @@ class Engine {
   private client: DfuseClient
   private stream?: Stream
 
-  private pendingActions: Array<Action<KarmaTransfer>> = []
+  private pendingActions: Action<KarmaTransfer>[] = []
   private lastCommittedBlockNum: number = 0
 
-  private committedActions: Array<Action<KarmaTransfer>> = []
+  private committedActions: Action<KarmaTransfer>[] = []
 
   constructor(client: DfuseClient) {
     this.client = client
@@ -98,29 +90,18 @@ class Engine {
       }
     )
 
+    this.stream.onPostRestart = () => {
+      console.log()
+      console.log(
+        "<============= Stream has re-connected to socket correctly (at latest `mark()`) =============>"
+      )
+      console.log()
+
+      // Upon a re-connection, we need to clear previously accumulated actions
+      this.flushPending()
+    }
+
     console.log("Stream connected, ready to receive messages")
-  }
-
-  public async stop() {
-    await this.ensureStream().close()
-
-    console.log("Committed actions")
-    this.committedActions.forEach((action) => {
-      const { from, to, quantity } = action.data
-      console.log(`- Commit transfer [${from} -> ${to} ${quantity}]`)
-    })
-  }
-
-  /**
-   * When the stream re-connects, we must flush all our current pending transactions
-   * as the stream re-starts at our last marked block, inclusive.
-   *
-   * Since we mark after commit, anything currently in pending was not committed,
-   * hence let's flush all pending actions, dfuse Stream will stream them back.
-   */
-  public async flushPending() {
-    console.log("Flushing pending action(s) due to refresh")
-    this.pendingActions = []
   }
 
   private onListening = () => {
@@ -189,6 +170,28 @@ class Engine {
      */
 
     console.log("")
+  }
+
+  /**
+   * When the stream re-connects, we must flush all our current pending transactions
+   * as the stream re-starts at our last marked block, inclusive.
+   *
+   * Since we mark after commit, anything currently in pending was not committed,
+   * hence let's flush all pending actions, dfuse Stream will stream them back.
+   */
+  public async flushPending() {
+    console.log("Flushing pending action(s) due to refresh")
+    this.pendingActions = []
+  }
+
+  public async stop() {
+    await this.ensureStream().close()
+
+    console.log("Committed actions")
+    this.committedActions.forEach((action) => {
+      const { from, to, quantity } = action.data
+      console.log(`- Commit transfer [${from} -> ${to} ${quantity}]`)
+    })
   }
 
   private ensureStream(): Stream {
