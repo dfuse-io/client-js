@@ -5,24 +5,150 @@ import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { DfuseClientError, DfuseSocketError } from "../types/error"
 import { WebSocket, Socket, SocketMessageListener, WebSocketFactory } from "../types/socket"
 
-export type SocketOptions = {
+export interface SocketOptions {
+  /**
+   * An id to assign to this socket instance. This is used through the `debug`
+   * package to display a different `debug` tag when provided (i.e. `dfuse:socket:<id>`).
+   *
+   * @default `undefined`
+   */
   id?: string
+
+  /**
+   * Determines if the socket should automatically re-connect with the upstream
+   * service upon an abnormal disconnection.
+   *
+   * The re-connection happens after the given [[SocketOptions.reconnectDelayInMs]]
+   * has elapsed.
+   *
+   * @default `true`
+   */
   autoReconnect?: boolean
+
+  /**
+   * The delay after the abnormal closure of the connection before trying a
+   * re-connection. As no effect if [[SocketOptions.autoReconnect]] is sets
+   * to `false`.
+   *
+   * @default `5s` (See [[DEFAULT_RECONNECT_DELAY_IN_MS]])
+   */
   reconnectDelayInMs?: number
+
+  /**
+   * Whether `ping` messages should be send automatically at regular interval
+   * by the [[Socket]] instance. The actual interval used can be defined by
+   * providing the [[SocketOptions.keepAliveIntervalInMs]] option.
+   *
+   * @default `true`
+   */
   keepAlive?: boolean
+
+  /**
+   * The interval of time at which `ping` messages are automatically sent to
+   * the remote endpoint. This is time that elapsed between two consecutives
+   * `ping` messages.
+   *
+   * As no effect if [[SocketOptions.keepAlive]] is sets to `false`.
+   *
+   * @default `30s` (See [[DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS]])
+   */
   keepAliveIntervalInMs?: number
+
+  /**
+   * A factory method used to create the `WebSocket` instance that should be
+   * used by the [[Socket]] instance.
+   *
+   * **Inferrence**<br><br>
+   * When not provided (default), the factory to use is actually inferred
+   * based on the runtime environment.
+   *
+   * If a `window.WebSocket` variable exists, which should be the case on a Browser
+   * environment, the factory used will call `new window.WebSocket(...)` to instantiate
+   * the `WebSocket` instance.
+   *
+   * If a `global.WebSocket` variable exists, which can be the case upon a
+   * `global.WebSocket = ...` call at the bootstrap phase in a Node.js environment,
+   * the factory used will call `new global.WebSocket(...)` to instantiate
+   * the `WebSocket` instance.
+   *
+   * Finally, if no `WebSocket` instance could be determined, a [[DfuseError]] is
+   * thrown with a message explaining the situtation and a link to the documentation
+   * on how to solve the problem.
+   *
+   * @default `undefined` (Inferred based on environment, see `Inferrence` note above)
+   */
   webSocketFactory?: WebSocketFactory
 
+  /**
+   * A callback that can be provided to be notified when the [[Socket]] receives a
+   * message in which the `type` field is not part of the list on known inbound
+   * message types (see [[InboundMessageType]]).
+   *
+   * @default `() => {}` (noop)
+   */
   onInvalidMessage?: (message: object) => void
+
+  /**
+   * A callback that can be provided to be notified when the [[Socket]] just performed
+   * a re-connection. This will be called after a successful re-connection. When the callback
+   * is invoked, the connection with the server has actually resumed and stream can be
+   * restarted or other actions can be taken.
+   *
+   * This is a post re-connection callback.
+   *
+   * @default `() => {}` (noop)
+   */
   onReconnect?: () => void
-  onError?: (message: object) => void
-  onClose?: (message: object) => void
+
+  /**
+   * A callback that can be provided to be notified when the [[Socket]] receives an
+   * error event. The error event is always emitted only where an error occurred with
+   * the connection. It is not emitted on a normal and expected disconnection with
+   * the server (when closing the underlying socket for example).
+   *
+   * The callback will be invoked with the actual event as defined by the `WebSocket`
+   * instance used.
+   *
+   * **Important Note**<br><br>
+   * The actual `event` object you will receive is different wheter you use
+   * the Browser `WebSocket` instance ([ErrorEvent](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event))
+   * or depending on the Node.js library you use (If you use [ws](https://www.npmjs.com/package/ws) package, then it's
+   * [ErrorEvent](https://github.com/websockets/ws/blob/master/lib/event-target.js#L87))
+   *
+   * @default `() => {}` (noop)
+   */
+  onError?: (event: object) => void
+
+  /**
+   * A callback that can be provided to be notified when the [[Socket]] receives a
+   * close event. The close event is always emitted even when an error has occurred, it
+   * will however always come **after** the error event.
+   *
+   * The callback will be invoked with the actual event as defined by the `WebSocket`
+   * instance used.
+   *
+   * **Important Note**<br><br>
+   * The actual `event` object you will receive is different wheter you use
+   * the Browser `WebSocket` instance ([CloseEvent](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/close_event))
+   * or depending on the Node.js library you use (If you use [ws](https://www.npmjs.com/package/ws) package, then it's
+   * [CloseEvent](https://github.com/websockets/ws/blob/master/lib/event-target.js#L47))
+   *
+   * @default `() => {}` (noop)
+   */
+  onClose?: (event: object) => void
 }
 
 export type ConnectOptions = {
   onReconnect?: () => void
 }
 
+/**
+ * Create an actual [[Socket]] instance that will be used as the interface to wrap all
+ * communicaton of the WebSocket protocol.
+ *
+ * @param url The url used to reach the dfuse Stream API, should **not** contain the `token` query parameter.
+ * @param options The options used to configure the [[Socket]] instance, see [[SocketOptions]] for default options.
+ */
 export function createSocket(url: string, options: SocketOptions = {}): Socket {
   return new DefaultSocket(url, {
     id: "",
@@ -79,8 +205,8 @@ const noop = () => {
 type Resolver<T> = (value?: T | PromiseLike<T>) => void
 type Rejecter = (reason?: any) => void
 
-const DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS = 30000 // 30s
-const DEFAULT_RECONNECT_DELAY_IN_MS = 5000 // 5s
+export const DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS = 30000 // 30s
+export const DEFAULT_RECONNECT_DELAY_IN_MS = 5000 // 5s
 
 class DefaultSocket implements Socket {
   private url: string

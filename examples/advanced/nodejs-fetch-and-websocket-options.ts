@@ -11,7 +11,7 @@ import { IncomingMessage } from "http"
  * the factory to pass the `fetch` and `WebSocket options directly.
  *
  * **Note** This example completely avoids importing `../config` to ensure
- *          we really do not compute the global scope. Ensures you have the
+ *          we really do not pollute the global scope. Ensures you have the
  *          appropriate environment variables set.
  */
 
@@ -78,6 +78,12 @@ async function main() {
     }
   })
 
+  const onMessage = (message: InboundMessage) => {
+    if (message.type === InboundMessageType.LISTENING) {
+      console.log("Stream is now listening.")
+    }
+  }
+
   const stream = await client.streamActionTraces(
     {
       accounts: "eosio.token",
@@ -85,16 +91,10 @@ async function main() {
     },
     onMessage
   )
-  console.log("Socket is now connected.")
 
+  console.log("Socket is now connected.")
   await waitFor(35000)
   await stream.close()
-}
-
-function onMessage(message: InboundMessage) {
-  if (message.type === InboundMessageType.LISTENING) {
-    console.log("Stream is now listening.")
-  }
 }
 
 main()

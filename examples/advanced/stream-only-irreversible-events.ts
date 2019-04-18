@@ -1,6 +1,11 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
-import { ActionTraceData } from "../../src/types/action-trace"
+import {
+  createDfuseClient,
+  InboundMessage,
+  InboundMessageType,
+  waitFor,
+  ActionTraceData
+} from "@dfuse/client"
 
 /**
  * In this example, you will use the `irreversible_only` option on some

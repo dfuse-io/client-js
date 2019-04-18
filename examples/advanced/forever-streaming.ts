@@ -13,7 +13,7 @@ import { createDfuseClient, InboundMessage, waitFor, Stream } from "@dfuse/clien
  * missed while being disconnected from the socket.
  *
  * It's possible to avoid this automatic behavior by using the [[StreamClientOptions]]
- * `autoReconnectStreamsOnReconnect` and set it to `false`.
+ * `autoRestartStreamsOnReconnect` and set it to `false`.
  *
  * **Important**
  * If it's really important to never miss a single message, you will need to also mark

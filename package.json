@@ -24,6 +24,7 @@
   ],
   "license": "MIT",
   "scripts": {
+    "check": "yarn lint && yarn test && yarn build",
     "prepublishOnly": "yarn build && yarn test",
     "prebuild": "rimraf docs dist",
     "build": "yarn run build:cjs && yarn run build:es && yarn run build:web && yarn run build:docs",

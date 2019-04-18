@@ -4,10 +4,8 @@ import {
   InboundMessage,
   InboundMessageType,
   waitFor,
-  dynamicMessageDispatcher,
-  ActionTraceInboundMessage
+  ActionTraceData
 } from "@dfuse/client"
-import { ActionTraceData } from "../../src/types/action-trace"
 
 async function main() {
   const client = createDfuseClient({
@@ -17,12 +15,12 @@ async function main() {
 
   const stream = await client.streamActionTraces(
     { accounts: "eosio.token", action_names: "transfer" },
-    dynamicMessageDispatcher({
-      action_trace: (message: ActionTraceInboundMessage) => {
+    (message: InboundMessage<any>) => {
+      if (message.type !== InboundMessageType.ACTION_TRACE) {
         const { from, to, quantity, memo } = (message.data as ActionTraceData<any>).trace.act.data
         console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
       }
-    })
+    }
   )
 
   await waitFor(5000)

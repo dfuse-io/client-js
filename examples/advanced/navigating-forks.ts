@@ -5,9 +5,6 @@ import {
   Stream,
   DfuseClient,
   dynamicMessageDispatcher,
-  ProgressInboundMessage,
-  ActionTraceInboundMessage,
-  Action,
   TableDeltaInboundMessage,
   TableSnapshotInboundMessage
 } from "@dfuse/client"

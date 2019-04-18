@@ -1,4 +1,4 @@
-import { DFUSE_API_KEY, runMain, prettifyJson, DFUSE_API_NETWORK, waitFor } from "../config"
+import { DFUSE_API_KEY, runMain, prettifyJson, DFUSE_API_NETWORK } from "../config"
 import { createDfuseClient } from "@dfuse/client"
 
 async function main() {

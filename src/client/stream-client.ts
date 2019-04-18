@@ -6,11 +6,30 @@ import { DfuseClientError } from "../types/error"
 import { StreamClient, OnStreamMessage } from "../types/stream-client"
 import { Socket } from "../types/socket"
 import { Stream, StreamMarker } from "../types/stream"
-import { triggerAsyncId } from "async_hooks"
 
-export type StreamClientOptions = {
+export interface StreamClientOptions {
+  /**
+   * The [[Socket]] instance to use, inferred based on the environment when not provided.
+   *
+   * @default `undefined` (Inferred based on runtime environment (Node.js/Browser), see [[createSocket]])
+   */
   socket?: Socket
+
+  /**
+   * The [[SocketOptions]] to pass when creating the default [[Socket]] instance.
+   * This field has no effect if you provide yourself a [[StreamClientOptions.socket]] option.
+   *
+   * @default `undefined` (See [[SocketOptions]] for actual defaults this generates)
+   */
   socketOptions?: SocketOptions
+
+  /**
+   * Determines all streams should automatically restart when the socket disconnects. The stream
+   * will re-connect at their latest marked value (See [[Stream.mark]]) if present or at current
+   * block if it was never marked.
+   *
+   * @default `true`
+   */
   autoRestartStreamsOnReconnect?: boolean
 }
 
@@ -42,10 +61,7 @@ class DefaultStreamClient {
   ): Promise<Stream> {
     if (Object.keys(this.streams).length <= 0) {
       this.debug("No prior stream present, connecting socket first.")
-      await this.socket.connect(
-        this.handleMessage,
-        { onReconnect: this.handleReconnection }
-      )
+      await this.socket.connect(this.handleMessage, { onReconnect: this.handleReconnection })
     }
 
     const id = message.req_id
