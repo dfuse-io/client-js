@@ -1,5 +1,11 @@
 import { DfuseError, DfuseClientError, DfuseApiError } from "../types/error"
-import { Fetch, HttpResponse, HttpQueryParameters, HttpClient } from "../types/http-client"
+import {
+  Fetch,
+  HttpResponse,
+  HttpQueryParameters,
+  HttpClient,
+  HttpHeaders
+} from "../types/http-client"
 import debugFactory, { IDebugger } from "debug"
 
 export interface HttpClientOptions {
@@ -74,7 +80,6 @@ class DefaultHttpClient {
   protected apiUrl: string
   protected fetch: Fetch
 
-  private apiToken?: string
   private debug: IDebugger = debugFactory("dfuse:http")
 
   constructor(authUrl: string, apiUrl: string, fetch: Fetch) {
@@ -87,9 +92,10 @@ class DefaultHttpClient {
     path: string,
     method: string,
     params?: HttpQueryParameters,
-    body?: any
+    body?: any,
+    headers?: HttpHeaders
   ): Promise<T> {
-    return this.request<T>(undefined, this.authUrl + path, method, params, body)
+    return this.request<T>(undefined, this.authUrl + path, method, params, body, headers)
   }
 
   public async apiRequest<T>(
@@ -97,9 +103,10 @@ class DefaultHttpClient {
     path: string,
     method: string,
     params?: HttpQueryParameters,
-    body?: any
+    body?: any,
+    headers?: HttpHeaders
   ): Promise<T> {
-    return this.request<T>(apiToken, this.apiUrl + path, method, params, body)
+    return this.request<T>(apiToken, this.apiUrl + path, method, params, body, headers)
   }
 
   private async request<T>(
@@ -107,7 +114,8 @@ class DefaultHttpClient {
     url: string,
     method: string,
     params?: HttpQueryParameters,
-    body?: any
+    body?: any,
+    headers?: HttpHeaders
   ): Promise<T> {
     this.debug("Preparing request [%s %s](%o)", method, url, params)
 
@@ -115,10 +123,13 @@ class DefaultHttpClient {
       url += "?" + this.queryParams(params)
     }
 
-    const headers: { [key: string]: any } = {}
+    const defaultHeaders: HttpHeaders = {}
     if (apiToken !== undefined) {
-      headers.Authorization = `Bearer ${apiToken}`
+      defaultHeaders.Authorization = `Bearer ${apiToken}`
     }
+
+    const userHeaders = headers || {}
+    const mergedHeaders = { ...defaultHeaders, ...userHeaders }
 
     let jsonBody: string | undefined
     if (body !== undefined) {
@@ -130,11 +141,11 @@ class DefaultHttpClient {
         "Executing request [%s %s](headers: %o, bodyLength: %s)",
         method,
         url,
-        headers,
+        mergedHeaders,
         (jsonBody || "").length
       )
 
-      const response = await this.fetch(url, { headers, method, body: jsonBody })
+      const response = await this.fetch(url, { headers: mergedHeaders, method, body: jsonBody })
 
       this.debug(
         "Received response [%s %s %s](headers: %o)",

@@ -18,17 +18,25 @@ export const V0_SEARCH_TRANSACTIONS = "/v0/search/transactions"
  * @group Interfaces
  */
 export interface HttpClient {
-  authRequest<T>(path: string, method: string, params?: HttpQueryParameters, body?: any): Promise<T>
+  authRequest<T>(
+    path: string,
+    method: string,
+    params?: HttpQueryParameters,
+    body?: any,
+    headers?: HttpHeaders
+  ): Promise<T>
 
   apiRequest<T>(
     apiToken: string,
     path: string,
     method: string,
     params?: HttpQueryParameters,
-    body?: any
+    body?: any,
+    headers?: HttpHeaders
   ): Promise<T>
 }
 
+export type HttpHeaders = Record<string, string>
 export type HttpQueryParameters = Record<string, any>
 
 /**

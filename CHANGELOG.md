@@ -2,6 +2,13 @@
 
 ## In Progress (Next)
 
+- It's now possible to add custom headers when using
+  `DfuseClient.apiRequest` method (same on underlying `HttpClient`
+  interface).
+
+- Now exposing `dfuseClient.apiRequest` as a public method of the
+  `DfuseClient` interface.
+
 - Fixed UMD build that was not minified anymore due to an oversight.
 
 - Fixed UMD build that incorrectly had `require(...)` clauses and

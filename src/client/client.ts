@@ -38,7 +38,8 @@ import {
   V0_STATE_TABLE,
   V0_STATE_TABLES_ACCOUNTS,
   V0_STATE_TABLES_SCOPES,
-  HttpClient
+  HttpClient,
+  HttpHeaders
 } from "../types/http-client"
 import { DfuseClientError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
@@ -409,14 +410,15 @@ export class DefaultClient implements DfuseClient {
     })
   }
 
-  protected async apiRequest<T>(
+  public async apiRequest<T>(
     path: string,
     method: string,
     params?: HttpQueryParameters,
-    body?: any
+    body?: any,
+    headers?: HttpHeaders
   ): Promise<T> {
     return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
-      return this.httpClient.apiRequest<T>(apiTokenInfo.token, path, method, params, body)
+      return this.httpClient.apiRequest<T>(apiTokenInfo.token, path, method, params, body, headers)
     })
   }
 

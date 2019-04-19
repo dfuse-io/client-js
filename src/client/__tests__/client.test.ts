@@ -286,9 +286,15 @@ describe("DfuseClient", () => {
       expect(result).toEqual(data)
 
       expect(httpClient.authRequestMock).toHaveBeenCalledTimes(1)
-      expect(httpClient.authRequestMock).toHaveBeenCalledWith("/v1/auth/issue", "POST", undefined, {
-        api_key: "123"
-      })
+      expect(httpClient.authRequestMock).toHaveBeenCalledWith(
+        "/v1/auth/issue",
+        "POST",
+        undefined,
+        {
+          api_key: "123"
+        },
+        undefined
+      )
     })
 
     it("correctly forwards searchTransactions to underlying http client, all defaults", async () => {
@@ -308,6 +314,7 @@ describe("DfuseClient", () => {
           block_count: 9007199254740991,
           q: "123"
         },
+        undefined,
         undefined
       )
     })
@@ -341,6 +348,7 @@ describe("DfuseClient", () => {
           start_block: 10,
           with_reversible: true
         },
+        undefined,
         undefined
       )
     })
@@ -359,6 +367,7 @@ describe("DfuseClient", () => {
         "/v0/state/abi",
         "GET",
         { account: "eosio", json: true },
+        undefined,
         undefined
       )
     })
@@ -380,6 +389,7 @@ describe("DfuseClient", () => {
         "/v0/state/abi",
         "GET",
         { account: "eosio", block_num: 10, json: false },
+        undefined,
         undefined
       )
     })
@@ -398,7 +408,8 @@ describe("DfuseClient", () => {
         "/v0/state/abi/bin_to_json",
         "POST",
         undefined,
-        { account: "eosio", hex_rows: ["01"], table: "table" }
+        { account: "eosio", hex_rows: ["01"], table: "table" },
+        undefined
       )
     })
 
@@ -418,7 +429,8 @@ describe("DfuseClient", () => {
         "/v0/state/abi/bin_to_json",
         "POST",
         undefined,
-        { account: "eosio", block_num: 10, hex_rows: ["01"], table: "table" }
+        { account: "eosio", block_num: 10, hex_rows: ["01"], table: "table" },
+        undefined
       )
     })
 
@@ -436,6 +448,7 @@ describe("DfuseClient", () => {
         "/v0/state/key_accounts",
         "GET",
         { public_key: "pubKey" },
+        undefined,
         undefined
       )
     })
@@ -456,6 +469,7 @@ describe("DfuseClient", () => {
         "/v0/state/key_accounts",
         "GET",
         { block_num: 10, public_key: "pubKey" },
+        undefined,
         undefined
       )
     })
@@ -474,6 +488,7 @@ describe("DfuseClient", () => {
         "/v0/state/permission_links",
         "GET",
         { account: "eosio" },
+        undefined,
         undefined
       )
     })
@@ -494,6 +509,7 @@ describe("DfuseClient", () => {
         "/v0/state/permission_links",
         "GET",
         { account: "eosio", block_num: 10 },
+        undefined,
         undefined
       )
     })
@@ -512,6 +528,7 @@ describe("DfuseClient", () => {
         "/v0/state/table_scopes",
         "GET",
         { account: "eosio", table: "table" },
+        undefined,
         undefined
       )
     })
@@ -532,6 +549,7 @@ describe("DfuseClient", () => {
         "/v0/state/table_scopes",
         "GET",
         { account: "eosio", table: "table", block_num: 10 },
+        undefined,
         undefined
       )
     })
@@ -550,6 +568,7 @@ describe("DfuseClient", () => {
         "/v0/state/table",
         "GET",
         { account: "eosio", scope: "scope", table: "table", json: true },
+        undefined,
         undefined
       )
     })
@@ -583,6 +602,7 @@ describe("DfuseClient", () => {
           with_abi: true,
           with_block_num: false
         },
+        undefined,
         undefined
       )
     })
@@ -601,6 +621,7 @@ describe("DfuseClient", () => {
         "/v0/state/tables/accounts",
         "GET",
         { accounts: "eosio|second", scope: "scope", table: "table", json: true },
+        undefined,
         undefined
       )
     })
@@ -634,6 +655,7 @@ describe("DfuseClient", () => {
           with_abi: true,
           with_block_num: false
         },
+        undefined,
         undefined
       )
     })
@@ -652,6 +674,7 @@ describe("DfuseClient", () => {
         "/v0/state/tables/scopes",
         "GET",
         { account: "eosio", scopes: "scope|second", table: "table", json: true },
+        undefined,
         undefined
       )
     })
@@ -685,7 +708,29 @@ describe("DfuseClient", () => {
           with_abi: true,
           with_block_num: false
         },
+        undefined,
         undefined
+      )
+    })
+
+    it("correctly forwards apiRequest to underlying http client, all custom", async () => {
+      const data = { field: true }
+
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
+      const result = await client.apiRequest("/", "PUT", { param: 1 }, "body", { Custom: "true" })
+
+      expect(result).toEqual(data)
+
+      expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
+      expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
+        nonExpiredApiTokenInfo.token,
+        "/",
+        "PUT",
+        { param: 1 },
+        "body",
+        {
+          Custom: "true"
+        }
       )
     })
   })

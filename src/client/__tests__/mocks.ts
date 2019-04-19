@@ -4,7 +4,7 @@ import { RefreshScheduler, ScheduleJob } from "../refresh-scheduler"
 import { Socket, SocketMessageListener, WebSocket } from "../../types/socket"
 import { OutboundMessage } from "../../message/outbound"
 import { StreamClient, OnStreamMessage } from "../../types/stream-client"
-import { HttpClient, HttpQueryParameters } from "../../types/http-client"
+import { HttpClient, HttpQueryParameters, HttpHeaders } from "../../types/http-client"
 import { Stream } from "../../types/stream"
 
 export function mock<T>(implementation?: (...args: any) => T): jest.Mock<T, any> {
@@ -23,9 +23,10 @@ export class MockHttpClient implements HttpClient {
     path: string,
     method: string,
     params?: HttpQueryParameters,
-    body?: any
+    body?: any,
+    headers?: HttpHeaders
   ): Promise<T> {
-    return this.authRequestMock(path, method, params, body)
+    return this.authRequestMock(path, method, params, body, headers)
   }
 
   public apiRequest<T>(
@@ -33,9 +34,10 @@ export class MockHttpClient implements HttpClient {
     path: string,
     method: string,
     params?: HttpQueryParameters,
-    body?: any
+    body?: any,
+    headers?: HttpHeaders
   ): Promise<T> {
-    return this.apiRequestMock(apiToken, path, method, params, body)
+    return this.apiRequestMock(apiToken, path, method, params, body, headers)
   }
 }
 

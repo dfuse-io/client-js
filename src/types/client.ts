@@ -19,6 +19,7 @@ import {
   StateTableScopesResponse
 } from "./state"
 import { Stream } from "./stream"
+import { HttpQueryParameters, HttpHeaders } from "./http-client"
 
 export type RequestIdGenerator = () => string
 
@@ -339,4 +340,37 @@ export interface DfuseClient {
       withAbi?: boolean
     }
   ): Promise<MultiStateResponse<T>>
+
+  //
+  /// Helpers
+  //
+
+  /**
+   * An helper method that can be used to perform a generic HTTP
+   * call using the library inner configured [[HttpClient]].
+   *
+   * This can be used to reach other REST API found on the `nodeos`
+   * process for example, those that are not directly included
+   * in the library but are still accesible via our endpoint
+   * like a `/v1/chain/get_info` or `/v1/chain/push_transaction`.
+   *
+   * @param path (required) The HTTP path on the endpoint
+   * @param method (required) The HTTP method to perform the request agaisnt
+   * @param params (defaults `{}`) The HTTP query parameters to append to the url, they will
+   * be url-encoded and included in the final remote url. Has no effect when empty or undefined.
+   * @param body (defaults `undefined`) The HTTP body to include in the request, assumed to be a
+   * JSON object that will be serialized to a string. Not included in the HTTP request when `undefined`.
+   * @param headers (defaults `{}`) The extra HTTP headers to include in the request. Those will be merged
+   * with default ones (`{ Authorization: ... }`) and they override them if same key are specified.
+   * @returns A `Promise` that will resolve to the response body if it passes. Will reject with a
+   * [[DfuseApiError]] if it fits the dfuse Error Format or a generic `DfuseError` is it's something
+   * not fitting our expected format (`nodeos` erorr format for example).
+   */
+  apiRequest<T>(
+    path: string,
+    method: string,
+    params?: HttpQueryParameters,
+    body?: any,
+    headers?: HttpHeaders
+  ): Promise<T>
 }

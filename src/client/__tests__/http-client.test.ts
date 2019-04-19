@@ -101,6 +101,32 @@ describe("HttpClient", () => {
     expect(calledFetchHttpRequest()).toMatchObject({ headers: {} })
   })
 
+  it("adds user headers when using on api request", async () => {
+    await client.apiRequest("", "/", "GET", undefined, undefined, { Test: "empty" })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(calledFetchHttpRequest()).toMatchObject({ headers: { Test: "empty" } })
+  })
+
+  it("adds user headers when using on auth request", async () => {
+    await client.authRequest("/", "GET", undefined, undefined, { Test: "empty" })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(calledFetchHttpRequest()).toMatchObject({ headers: { Test: "empty" } })
+  })
+
+  it("overrides defaults headers when on api request", async () => {
+    await client.apiRequest("token", "/", "GET", undefined, undefined, {
+      Authorization: "custom",
+      More: "true"
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(calledFetchHttpRequest()).toMatchObject({
+      headers: { Authorization: "custom", More: "true" }
+    })
+  })
+
   it("returns body as JSON when response succeed", async () => {
     const expectedBody = { complex: [{ struct: 0 }] }
     fetch.mockReturnValue(Promise.resolve(okResponse(expectedBody)))
@@ -110,7 +136,6 @@ describe("HttpClient", () => {
   })
 
   it("throws DfuseClientError when response succeed but JSON body rejects", async () => {
-    const expectedBody = { complex: [{ struct: 0 }] }
     fetch.mockReturnValue(
       Promise.resolve(
         rawResponse(
