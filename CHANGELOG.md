@@ -2,6 +2,11 @@
 
 ## In Progress (Next)
 
+- Fixed UMD build that was not minified anymore due to an oversight.
+
+- Fixed UMD build that incorrectly had `require(...)` clauses and
+  that could be picked for transformation by some bundler tool.
+
 - The function `isExpiredOrNearExpiration` has been renamed to
   `isApiTokenExpired` to better reflect the intention of the method.
 

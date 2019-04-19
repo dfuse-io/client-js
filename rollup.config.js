@@ -27,8 +27,8 @@ module.exports = {
       resolve: {
         browser: true
       },
-      prePlugins: [ignore(builtinModules)]
-      // postPlugins: [terser()]
+      prePlugins: [ignore(builtinModules)],
+      postPlugins: [terser()]
     })
 }
 
