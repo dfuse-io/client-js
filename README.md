@@ -59,6 +59,10 @@ It's what the examples in this project do using respectively
 [node-fetch](https://www.npmjs.com/package/node-fetch) and
 and [ws](https://www.npmjs.com/package/ws) for `fetch` and `WebSocket` respectively.
 
+Installation instructions using Yarn would be:
+
+    yarn install node-fetch ws
+
 In the bootstrap phase of your application, prior doing any `@dfuse/client` imports/require,
 put the following code:
 
@@ -70,11 +74,70 @@ example for how to avoid polluting the global scope.
 
 ### Sane Defaults
 
+The library make sane default assumptions about some of the dependencies
+the library requires. This section details the choices we think are the
+most important ones.
+
 #### Fetch
+
+The library requires a `Fetch` like interface. In the Browser environment,
+this is the `fetch` function that is used (we check that `window.fetch` is
+a function).
+
+If `window.fetch` is undefined, we fallback to check `global.fetch` variable.
+This can be set in a Node.js environment to point to a compatible implementation
+of `fetch`, like the one provided by the [node-fetch](https://npmjs.com/package/node-fetch)
+package.
+
+If none is provided, the library throw an error. To avoid this error, you should pass
+the `httpClientOptions.fetch` option when creating the dfuse Client.
+
+It possible to provide you own implementation using under the cover any
+HTTP library like [axios](https://npmjs.com/package/axios) or even
+`XMLHttpRequest` if you wish so.
 
 #### WebSocket
 
+The library requires a `WebSocket` client interface having the same semantics
+as the WebSocket API in the Browser environment.
+
+In the Browser environment, this is the standard `WebSocket` variable that is used
+(we check that `window.WebSocket` is present).
+
+If `window.WebSocket` is undefined, we fallback to check `global.WebSocket` variable.
+This can be set in a Node.js environment to point to a compatible implementation
+of `WebSocket` client, like the one provided by the [ws](https://npmjs.com/package/ws)
+package.
+
+If none is provided, the library throw an error. To avoid this error, you should pass
+the `streamClientOptions.socketOptions.webSocketFactory` option when creating the dfuse
+Client. This factory method receives the full url to connect to the remote endpoint
+(this will include the API token to use in query parameters of the url) and should
+return a valid `WebSocket` client object.
+
+We highly suggest to use [ws](https://npmjs.com/package/ws) package straight in a
+Node.js environment.
+
 #### API Token Store
+
+The API token store interface is used by the dfuse Client to perform the
+persistent retrieval and writing of the API token. Indeed, we rate limit
+the API token issuance endpoint and as such, it's **highly** important
+to re-use a valid token instead of generating a new one each time it's
+required to avoid hitting the API token issue rate limiter.
+
+The library, when no `apiTokenStore` options is passed to the client will
+pick a default `ApiTokenStore` implementation based on your environment.
+
+In a Browser environment, the concrete implementation that is used is the
+[LocalStorageApiTokenStore](https://dfuse-io.github.io/client-js/classes/localstorageapitokenstore.html)
+class. This will save and retrieve the token from the browser `localStorage`
+(under a `dfuse:token` key).
+
+In a Node.js environment, the concrete implementation that is used is the
+[OnDiskApiTokenStore](https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html) class.
+This will save and retrieve the token from a local file on the disk
+at `~/.dfuse/<sha256-api-key>/token.info`.
 
 ### API
 
@@ -87,37 +150,33 @@ the various part of the library:
 
 ##### Interfaces
 
-- [DfuseClient](https://dfuse-io.github.io/client-js/interfaces/defaultclient.html)
+- [DfuseClient](https://dfuse-io.github.io/client-js/interfaces/dfuseclient.html)
 - [StreamClient](https://dfuse-io.github.io/client-js/interfaces/streamclient.html)
 - [Stream](https://dfuse-io.github.io/client-js/interfaces/stream.html)
 - [HttpClient](https://dfuse-io.github.io/client-js/interfaces/httpclient.html)
 - [Socket](https://dfuse-io.github.io/client-js/interfaces/socket.html)
 - [ApiTokenStore](https://dfuse-io.github.io/client-js/interfaces/apitokenstore.html)
 - [ApiTokenManager](https://dfuse-io.github.io/client-js/interfaces/apitokenmanager.html)
-- [RefreshScheduler](https://dfuse-io.github.io/client-js/interfaces/apitokenmanager.html)
+- [RefreshScheduler](https://dfuse-io.github.io/client-js/interfaces/refreshscheduler.html)
 
 ##### Options
 
-- [DfuseClientOptions](https://dfuse-io.github.io/interfaces/socketoptions.html)
-- [StreamClientOptions](https://dfuse-io.github.io/interfaces/socketoptions.html)
-- [HttpClientOptions](https://dfuse-io.github.io/interfaces/socketoptions.html)
-- [SocketOptions](https://dfuse-io.github.io/interfaces/socketoptions.html)
+- [DfuseClientOptions](https://dfuse-io.github.io/interfaces/dfuseclientoptions.html)
+- [StreamClientOptions](https://dfuse-io.github.io/interfaces/streamclientoptions.html)
+- [HttpClientOptions](https://dfuse-io.github.io/interfaces/httpclientoptions.html)
+- [SocketOptions](https://dfuse-io.github.io/interfaces/spocketoptions.html)
 
 ##### Factories
 
 - [createDfuseClient](https://dfuse-io.github.io/client-js/globals.html#createdfuseclient)
-- [createStreamClient](https://dfuse-io.github.io/client-js/globals.html#createstreamclient)
-- [createHttpClient](https://dfuse-io.github.io/client-js/globals.html#createhttpclient)
-- [createSocket](https://dfuse-io.github.io/client-js/globals.html#createsocket)
-- [createApiTokenManager](https://dfuse-io.github.io/client-js/globals.html#createrefreshscheduler)
-- [createRefreshScheduler](https://dfuse-io.github.io/client-js/globals.html#createrefreshscheduler)
 
 ##### Implementations
 
 - [DefaultClient](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
-- [InMemoryApiTokenStore](https://dfuse-io.github.io/client-js/classes/InMemoryApiTokenStore.html)
-- [OnDiskApiTokenStore](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
-- [FileApiTokenStore](https://dfuse-io.github.io/client-js/classes/defaultclient.html)
+- [LocalStorageApiTokenStore](https://dfuse-io.github.io/client-js/classes/localstorageapitokenstore.html)
+- [OnDiskApiTokenStore](https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html)
+- [FileApiTokenStore](https://dfuse-io.github.io/client-js/classes/fileapitokenstore.html)
+- [InMemoryApiTokenStore](https://dfuse-io.github.io/client-js/classes/inmemoryapitokenstore.html)
 
 **Note** `DefaultStreamClient`, `DefaultHttpClient`, `DefaultSocket`, `DefaultApiTokenManager`
 are all private implementations not exposed.

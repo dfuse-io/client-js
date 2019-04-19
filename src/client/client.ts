@@ -52,7 +52,7 @@ import {
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
 
-export type DfuseClientOptions = {
+export interface DfuseClientOptions {
   network: "mainnet" | "jungle" | "kylin" | string
   apiKey: string
   secure?: boolean
