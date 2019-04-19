@@ -148,6 +148,10 @@ reference being rather exhaustive, here a quick index pointing to the most
 important entities' documentation section that should be read to understand
 the various part of the library:
 
+##### Factories
+
+- [createDfuseClient](https://dfuse-io.github.io/client-js/globals.html#createdfuseclient)
+
 ##### Interfaces
 
 - [DfuseClient](https://dfuse-io.github.io/client-js/interfaces/dfuseclient.html)
@@ -156,19 +160,13 @@ the various part of the library:
 - [HttpClient](https://dfuse-io.github.io/client-js/interfaces/httpclient.html)
 - [Socket](https://dfuse-io.github.io/client-js/interfaces/socket.html)
 - [ApiTokenStore](https://dfuse-io.github.io/client-js/interfaces/apitokenstore.html)
-- [ApiTokenManager](https://dfuse-io.github.io/client-js/interfaces/apitokenmanager.html)
-- [RefreshScheduler](https://dfuse-io.github.io/client-js/interfaces/refreshscheduler.html)
 
 ##### Options
 
-- [DfuseClientOptions](https://dfuse-io.github.io/interfaces/dfuseclientoptions.html)
-- [StreamClientOptions](https://dfuse-io.github.io/interfaces/streamclientoptions.html)
-- [HttpClientOptions](https://dfuse-io.github.io/interfaces/httpclientoptions.html)
-- [SocketOptions](https://dfuse-io.github.io/interfaces/spocketoptions.html)
-
-##### Factories
-
-- [createDfuseClient](https://dfuse-io.github.io/client-js/globals.html#createdfuseclient)
+- [DfuseClientOptions](https://dfuse-io.github.io/client-js/interfaces/dfuseclientoptions.html)
+- [StreamClientOptions](https://dfuse-io.github.io/client-js/interfaces/streamclientoptions.html)
+- [HttpClientOptions](https://dfuse-io.github.io/client-js/interfaces/httpclientoptions.html)
+- [SocketOptions](https://dfuse-io.github.io/client-js/interfaces/socketoptions.html)
 
 ##### Implementations
 

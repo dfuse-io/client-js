@@ -1,6 +1,12 @@
 import { ApiTokenInfo } from "../types/auth-token"
 import { DfuseClientError } from "../types/error"
 
+// These modules will be replaced by empty modules for an UMD build (Browser), check rollup.config.js `umdBuild`
+import crypto from "crypto"
+import fs from "fs"
+import os from "os"
+import path from "path"
+
 /**
  * A simple API token store interface supporting async operations. This
  * interface is used to store the API token when it has been refreshed
@@ -8,7 +14,7 @@ import { DfuseClientError } from "../types/error"
  *
  * By providing your own [[ApiTokenStore]] implementation, you can for
  * example easily store the token in the `localStorage` ([[LocalStorageApiTokenStore]]),
- * under `~/.dfuse/<sha256-api-key>` folder ([[OnDiskApiTokenStore]]) or
+ * under `~/.dfuse/<sha256-api-key>/token.json` file ([[OnDiskApiTokenStore]]) or
  * more generically at any path ([[FileApiTokenStore]]).
  *
  * **Note** The [[OnDiskApiTokenStore]] and [[FileApiTokenStore]] are available
@@ -118,16 +124,8 @@ export class FileApiTokenStore implements ApiTokenStore {
   private filePath: string
   private apiTokenInfo?: ApiTokenInfo
 
-  private fs: any
-  private path: any
-
   constructor(filePath: string) {
     this.filePath = filePath
-
-    // Let's have the require(s) resolved only when actually used
-    // so they don't clutter the runtime environment when not used.
-    this.fs = require("fs")
-    this.path = require("path")
   }
 
   public async get(): Promise<ApiTokenInfo | undefined> {
@@ -135,7 +133,7 @@ export class FileApiTokenStore implements ApiTokenStore {
       return this.apiTokenInfo
     }
 
-    const data = await readData(this.fs, this.filePath)
+    const data = await readData(this.filePath)
     if (data === undefined) {
       return undefined
     }
@@ -148,7 +146,7 @@ export class FileApiTokenStore implements ApiTokenStore {
   public async set(apiTokenInfo: ApiTokenInfo): Promise<void> {
     this.apiTokenInfo = apiTokenInfo
 
-    await writeData(this.fs, this.path, this.filePath, JSON.stringify(apiTokenInfo))
+    await writeData(this.filePath, JSON.stringify(apiTokenInfo))
   }
 }
 
@@ -163,31 +161,30 @@ export class FileApiTokenStore implements ApiTokenStore {
  */
 export class OnDiskApiTokenStore extends FileApiTokenStore {
   constructor(apiKey: string) {
-    // Resolve `require` only when invoked to not clutter a Browser build
-    const homeDirectory = require("os").homedir()
-    const sha256sum = require("crypto").createHash("sha256")
+    const homeDirectory = os.homedir()
+    const sha256sum = crypto.createHash("sha256")
 
     super(`${homeDirectory}/.dfuse/${sha256sum.update(apiKey).digest("hex")}/token.json`)
   }
 }
 
-async function readData(fs: any, filePath: string): Promise<string | undefined> {
+async function readData(filePath: string): Promise<string | undefined> {
   return new Promise<string | undefined>((resolve, reject) => {
     if (!fs.existsSync(filePath)) {
       resolve(undefined)
       return
     }
 
-    fs.readFile(filePath, (error: any, data: string) => {
+    fs.readFile(filePath, (error: any, data: any) => {
       error ? reject(error) : resolve(data)
     })
   })
 }
 
-async function writeData(fs: any, path: any, filePath: string, data: string): Promise<void> {
+async function writeData(filePath: string, data: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     try {
-      mkdirpSync(fs, path, path.dirname(filePath))
+      mkdirpSync(path.dirname(filePath))
     } catch (error) {
       reject(error)
       return
@@ -199,14 +196,14 @@ async function writeData(fs: any, path: any, filePath: string, data: string): Pr
   })
 }
 
-async function mkdirpSync(fs: any, path: any, directory: string) {
+async function mkdirpSync(directory: string) {
   if (!path.isAbsolute(directory)) {
     return
   }
 
   const parent = path.join(directory, "..")
   if (parent !== path.join("/") && !fs.existsSync(parent)) {
-    mkdirpSync(fs, path, parent)
+    mkdirpSync(parent)
   }
 
   if (!fs.existsSync(directory)) {

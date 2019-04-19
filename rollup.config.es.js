@@ -1,7 +1,3 @@
-const configBuilder = require("./rollup.config")
-const pkg = require("./package.json")
+const { esBuild } = require("./rollup.config")
 
-export default configBuilder(
-  { file: pkg.module, format: "es", sourcemap: true },
-  { external: ["os", "tty", "util"] }
-)
+module.exports = esBuild()
