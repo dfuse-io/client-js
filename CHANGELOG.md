@@ -1,6 +1,6 @@
 # Changelog
 
-## In Progress (Next)
+## 0.2.0 (April 26, 2019)
 
 - Removed `socket` public property from `StreamClient` interface to
   reduce coupling.
