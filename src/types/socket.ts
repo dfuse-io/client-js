@@ -2,14 +2,51 @@ import { InboundMessage } from "../message/inbound"
 import { OutboundMessage } from "../message/outbound"
 
 /**
+ * An abstraction over a WebSocket object to deal more easily with the
+ * WebSocket protocol.
+ *
+ * This interface will usually abstract connection/disconnection as well as
+ * dealing with re-connection and disconnection error and handling all events
+ * of the WebSocket API (baseline is the W3C WebSocket API).
+ *
  * @group Interfaces
  */
 export interface Socket {
+  /**
+   * A property to determine if the current socket implementation is actually
+   * connected with the remote endpoint or not. If the [[Socket]] is actually
+   * connected, consumer can assume messages can be sent through the WebSocket.
+   */
   isConnected: boolean
 
+  /**
+   * Perform an actual connection with the remote WebSocket endoint. This
+   * will usually construct a `WebSocket` instance and initiate the
+   * connection with the remote endpoint.
+   *
+   * The method receives a listener which will receive all messages
+   * sent through the WebSocket by the remote endpoint.
+   *
+   * @param listener The actual callback that will receive all the messages sent by the
+   * remote endpoint through the WebSocket.
+   * @param options The options that can be passed to the connect method for certain functionalities.
+   * @param options.onReconnect An optional callback than can be passed to be notified **after** the
+   * socket has successfully re-connected with the remote endpoint.
+   */
   connect(listener: SocketMessageListener, options?: { onReconnect?: () => void }): Promise<void>
+
+  /**
+   * Disconnects the actual socket. This closes the underlying socket
+   * by closing it and clean up all resources.
+   */
   disconnect(): Promise<void>
 
+  /**
+   * Send an [[OutboundMessage]] through the WebSocket to the dfuse Stream
+   * API endpoint.
+   *
+   * @param message The actual outbound message to send to the remote endpoint.
+   */
   send<T>(message: OutboundMessage<T>): Promise<void>
 
   /**

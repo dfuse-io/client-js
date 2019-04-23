@@ -59,7 +59,7 @@ describe("DfuseClient", () => {
     expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
 
     const refresher = refreshScheduler.scheduleMock.mock.calls[0][1]
-    streamClient.socket.setApiTokenMock.mockImplementation((token: string) => {
+    streamClient.setApiTokenMock.mockImplementation((token: string) => {
       expect(token).toEqual("refreshed-token")
       done()
     })
@@ -80,8 +80,8 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
@@ -132,8 +132,8 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
@@ -185,8 +185,8 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(
@@ -235,8 +235,8 @@ describe("DfuseClient", () => {
 
       expect(result).toEqual(stream)
 
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledTimes(1)
-      expect(streamClient.socket.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledTimes(1)
+      expect(streamClient.setApiTokenMock).toHaveBeenCalledWith(nonExpiredApiTokenInfo.token)
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
       expect(streamClient.registerStreamMock).toHaveBeenCalledWith(

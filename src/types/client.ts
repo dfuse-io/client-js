@@ -47,9 +47,20 @@ export interface DfuseClient {
   /**
    * Retrieve a stream of actions, filtered by receiver(s), account(s) and action name(s).
    *
-   * @param data (required)
-   * @param onMessage (required) The callback that will be invoked for each message received for this specific stream.
-   * @param options (defaults `undefined`) The stream common options that can be used, see [[StreamOptions]] for more details and default values.
+   * @param data (required) Specific stream options used to filter
+   * @param data.accounts (required) List of accounts (contracts) to filter on.
+   * @param data.receivers (defaults to the same value as `accounts`) List of `receiver` to filter on. The `receiver` is the account
+   * on which code is being executed. [More details here](https://developers.eos.io/eosio-cpp/docs/communication-model#section-action-handlers-and-action-apply-context).
+   * If left blank, defaults to the same value as `accounts`.
+   * @param data.action_names (required) List of the action(s) called within the `account` contract(s).
+   * @param data.with_ramops (defaults `false`)  Stream RAM billing changes and reasons for costs of storage produced by each action.
+   * @param data.with_tableops (defaults `false`) Stream table operations produced by each action.
+   * @param data.with_inline_traces (defaults `false`) Stream the inline actions produced by each action.
+   * @param data.with_dtrxops (defaults `false`) Stream the modifications to deferred transactions produced by each action.
+   * @param onMessage (required) The callback that will be invoked for each message
+   * received for this specific stream.
+   * @param options (defaults `undefined`) The stream common options that can be used,
+   * see [[StreamOptions]] for more details and default values.
    *
    * @see https://docs.dfuse.io/#websocket-based-api-get_action_traces
    */
@@ -63,8 +74,14 @@ export interface DfuseClient {
    * Retrieve a stream of changes to the tables, the side effects of transactions/actions being executed.
    *
    * @param data (required)
+   * @param data.code (required) Contract account which wrote to tables.
+   * @param data.scope (required) Table _scope_ where table is stored.
+   * @param data.table (required) Table _name_, shown in the contract ABI.
+   * @param data.json (defaults `true`) When `true`, table rows will be decoded to JSON, using the
+   * ABIs active on the queried block. This endpoint automatically adapts to upgrades to the ABIs on chain.
    * @param onMessage (required) The callback that will be invoked for each message received for this specific stream.
-   * @param options (defaults `undefined`) The stream common options that can be used, see [[StreamOptions]] for more details and default values.
+   * @param options (defaults `undefined`) The stream common options that can be used,
+   * see [[StreamOptions]] for more details and default values.
    *
    * @see https://docs.dfuse.io/#websocket-based-api-get_table_rows
    */
@@ -75,11 +92,15 @@ export interface DfuseClient {
   ): Promise<Stream>
 
   /**
-   * Retrieve a `transaction_lifecycle` (when `fetch` is true) and follow its life-cycle (when `listen` is true).
+   * Retrieve a `transaction_lifecycle` (when `fetch` is true) and follow its life-cycle
+   * (when `listen` is true).
    *
    * @param data (required)
-   * @param onMessage (required) The callback that will be invoked for each message received for this specific stream.
-   * @param options (defaults `undefined`) The stream common options that can be used, see [[StreamOptions]] for more details and default values.
+   * @param data.id (required) The transaction ID you want to keep track of
+   * @param onMessage (required) The callback that will be invoked for each message
+   * received for this specific stream.
+   * @param options (defaults `undefined`) The stream common options that can be used,
+   * see [[StreamOptions]] for more details and default values.
    *
    * @see https://docs.dfuse.io/#websocket-based-api-get_transaction_lifecycle
    */
@@ -92,8 +113,10 @@ export interface DfuseClient {
   /**
    * Retrieve a stream of informations about the chain as it moves forward
    *
-   * @param onMessage (required) The callback that will be invoked for each message received for this specific stream.
-   * @param options (defaults `undefined`) The stream common options that can be used, see [[StreamOptions]] for more details and default values.
+   * @param onMessage (required) The callback that will be invoked for each message
+   * received for this specific stream.
+   * @param options (defaults `undefined`) The stream common options that can be used,
+   * see [[StreamOptions]] for more details and default values.
    *
    * @see https://docs.dfuse.io/#websocket-based-api-get_head_info
    */
@@ -108,7 +131,10 @@ export interface DfuseClient {
    *
    * Issues dfuse API token for the following API key.
    *
-   * @param [apiKey=undefined] The `apiKey` to generate an API token for. If left undefined, the client will provide the one it is configured with, if present.
+   * @param apiKey (defaults `undefined`, uses the one defined on the client) The
+   * `apiKey` to generate an API token for.
+   * If left undefined, the client will provide the one it is configured with, if
+   * present.
    *
    * @see https://docs.dfuse.io/#rest-api-post-https-auth-dfuse-io-v1-auth-issue
    */
@@ -117,16 +143,21 @@ export interface DfuseClient {
   /**
    * GET /v0/search/transactions
    *
-   * Search an EOSIO blockchain for transactions based on free-form criterias, using the simple dfuse Search query language.
+   * Search an EOSIO blockchain for transactions based on free-form criterias, using
+   * the simple dfuse Search query language.
    *
-   * @param q Search query string. See Search language (https://docs.dfuse.io/#ref-search-query-specs) specs for details.
-   * @param [options={}] Optional parameters
-   * @param [options.startBlock=0] Block number to start search (inclusive). Defaults to `0`, which means from beginning of the chain.
-   * @param [options.sort="asc"] Defaults to ascending search (`asc`). Use `desc` to sort descending.
-   * @param [options.blockCount=Number.MAX_SAFE_INTEGER] Number of blocks to search from `startBlock`. Depending on sort order, the `blockCount` will count upwards or downwards.
-   * @param [options.limit=100] Cap the number of returned results to limit. Defaults to 100.
-   * @param [options.cursor] If cursor is passed back (from a previous response)
-   * @param [options.withReversible=false] If `withReversible` is set to true actions included in blocks that are not yet irreversible will be included.
+   * @param q Search query string. See Search language (https://docs.dfuse.io/#ref-search-query-specs)
+   * specs for details.
+   * @param options (optional) Optional parameters
+   * @param options.startBlock (defaults `0`) Block number to start search (inclusive). Defaults to `0`,
+   * which means from beginning of the chain.
+   * @param options.sort (defaults `"asc"`) Defaults to ascending search (`asc`). Use `desc` to sort descending.
+   * @param options.blockCount (defaults `Number.MAX_SAFE_INTEGER`) Number of blocks to search from `startBlock`.
+   * Depending on sort order, the `blockCount` will count upwards or downwards.
+   * @param options.limit (defaults `100`) Cap the number of returned results to limit.
+   * @param options.cursor (defaults `undefined`) If cursor is passed back (from a previous response)
+   * @param options.withReversible (defaults `false`) If `withReversible` is set to true actions included
+   * in blocks that are not yet irreversible will be included.
    *
    * @see https://docs.dfuse.io/#rest-api-get-v0-search-transactions
    */
@@ -148,9 +179,12 @@ export interface DfuseClient {
    * Fetches the ABI for a given contract account, at any block height.
    *
    * @param account Contract account targeted by the action.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum=0] The block number for which you want to retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
-   * @param [options.json=false] Decode each row from its binary form into JSON. If json: false, then hexadecimal representation of its binary data is returned instead.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to
+   * retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param options.json (defaults `false`) Decode each row from its binary form
+   * into JSON. If json: false, then hexadecimal representation of its binary data
+   * is returned instead.
    *
    * @see https://docs.dfuse.io/#rest-api-get-v0-state-abi
    */
@@ -168,10 +202,14 @@ export interface DfuseClient {
    * Fetches the ABI for a given contract account, at any block height.
    *
    * @param account Contract account targeted by the action.
-   * @param table The name-encoded table name you want to retrieve. For example, user balances for tokens live in the accounts table. Refer to the contract's ABI for a list of available tables. This is contract dependent.
-   * @param hexRows An array of hexadecimal rows to decode. Each row must be a valid hexadecimal string representation of the row to decode against the ABI.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum0] The block number for which you want to retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param table The name-encoded table name you want to retrieve. For example, user
+   * balances for tokens live in the accounts table. Refer to the contract's ABI for
+   * a list of available tables. This is contract dependent.
+   * @param hexRows An array of hexadecimal rows to decode. Each row must be a valid
+   * hexadecimal string representation of the row to decode against the ABI.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `undefined`) The block number for which you want
+   * to retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
    *
    * @see https://docs.dfuse.io/#rest-api-post-v0-state-abi-bin_to_json
    */
@@ -190,8 +228,9 @@ export interface DfuseClient {
    * Fetches the accounts controlled by the given public key, at any block height.
    *
    * @param publicKey The public key to fetch controlled accounts for.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum=0] The block number for which you want to retrieve the list of accounts. Defaults to `0` which means `Last Head Block`.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the
+   * list of accounts. Defaults to `0` which means `Last Head Block`.
    *
    * @see https://docs.dfuse.io/#rest-api-get-v0-state-key_accounts
    */
@@ -208,8 +247,9 @@ export interface DfuseClient {
    * Fetches snapshots of any account's linked authorizations on the blockchain, at any block height.
    *
    * @param account Contract account targeted by the action.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum=0] The block number for which you want to retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the consistent
+   * table snapshot. Defaults to `0` which means `Last Head Block`.
    *
    * @see https://docs.dfuse.io/#rest-api-get-v0-state-permission_links
    */
@@ -226,9 +266,11 @@ export interface DfuseClient {
    * Fetches a list of scopes, for a given table on a contract account, at any block height.
    *
    * @param account Contract account holding the requested table.
-   * @param table The name-encoded table name you want to retrieve scopes from. Refer to the contract's ABI for a list of available tables. This is contract dependent.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum=0] The block number for which you want to retrieve the consistent table scopes snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param table The name-encoded table name you want to retrieve scopes from. Refer to the
+   * contract's ABI for a list of available tables. This is contract dependent.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the
+   * consistent table scopes snapshot. Defaults to `0` which means `Last Head Block`.
    *
    * @see https://docs.dfuse.io/#rest-api-get-v0-state-table_scopes
    */
@@ -253,12 +295,15 @@ export interface DfuseClient {
    * For example, user balances for tokens live in the accounts table.
    * Refer to the contract's ABI for a list of available tables.
    * This is contract dependent.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum=0] The block number for which you want to retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
-   * @param [options.json=false] Decode each row from its binary form into JSON. If json: false, then hexadecimal representation of its binary data is returned instead.
-   * @param [options.keyType="name"] How to represent the row keys in the returned table.
-   * @param [options.withBlockNum=false] Will return one `blockNum` with each row. Represents the block at which that row was last changed.
-   * @param [options.withAbi=false] Will return the ABI in effect at block block_num.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the
+   * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
+   * `json: false`, then hexadecimal representation of its binary data is returned instead.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table.
+   * @param options.withBlockNum (defaults `false`) Will return one `blockNum` with each row.
+   * Represents the block at which that row was last changed.
+   * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
    *
    * @see  https://docs.dfuse.io/#rest-api-get-v0-state-table
    */
@@ -286,12 +331,16 @@ export interface DfuseClient {
    * For example, user balances for tokens live in the accounts table.
    * Refer to the contract's ABI for a list of available tables.
    * This is contract dependent.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum=0] The block number for which you want to retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
-   * @param [options.json=false] Decode each row from its binary form into JSON. If json: false, then hexadecimal representation of its binary data is returned instead.
-   * @param [options.keyType="name"] How to represent the row keys in the returned table.
-   * @param [options.withBlockNum=false] Will return one block_num with each row. Represents the block at which that row was last changed.
-   * @param [options.withAbi=false] Will return the ABI in effect at block block_num.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the
+   * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
+   * `json: false`, then hexadecimal representation of its binary data is returned instead.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned
+   * table.
+   * @param options.withBlockNum (defaults `false`) Will return one block_num with each row.
+   * Represents the block at which that row was last changed.
+   * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
    *
    * @see https://docs.dfuse.io/#rest-api-get-v0-state-tables-accounts
    */
@@ -319,12 +368,16 @@ export interface DfuseClient {
    * For example, user balances for tokens live in the accounts table.
    * Refer to the contract's ABI for a list of available tables.
    * This is contract dependent.
-   * @param [options={}] Optional parameters
-   * @param [options.blockNum=0] The block number for which you want to retrieve the consistent table snapshot. Defaults to `0` which means `Last Head Block`.
-   * @param [options.json=false] Decode each row from its binary form into JSON. If json: false, then hexadecimal representation of its binary data is returned instead.
-   * @param [options.keyType="name"] How to represent the row keys in the returned table.
-   * @param [options.withBlockNum=false] Will return one block_num with each row. Represents the block at which that row was last changed.
-   * @param [options.withAbi=false] Will return the ABI in effect at block block_num.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the
+   * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
+   * `json: false`, then hexadecimal representation of its binary data is returned instead.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned
+   * table.
+   * @param options.withBlockNum (defaults `false`) Will return one block_num with each row.
+   * Represents the block at which that row was last changed.
+   * @param options.withAbi (defaults `false`) Will return the ABI in effect at block `block_num`.
    *
    * @see https://docs.dfuse.io/#rest-api-get-v0-state-tables-scopes
    */

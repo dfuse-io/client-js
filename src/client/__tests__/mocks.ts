@@ -42,10 +42,16 @@ export class MockHttpClient implements HttpClient {
 }
 
 export class MockStreamClient implements StreamClient {
+  public setApiTokenMock = jest.fn<void, [string]>((_apiToken: string) => {
+    return
+  })
+
   public registerStreamMock = mock<Promise<Stream>>()
   public unregisterStreamMock = mock<Promise<void>>(() => Promise.resolve())
 
-  public socket: MockSocket = new MockSocket()
+  public setApiToken(apiToken: string) {
+    this.setApiTokenMock(apiToken)
+  }
 
   public registerStream(message: OutboundMessage, onMessage: OnStreamMessage): Promise<Stream> {
     return this.registerStreamMock(message, onMessage)

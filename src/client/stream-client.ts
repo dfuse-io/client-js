@@ -7,6 +7,11 @@ import { StreamClient, OnStreamMessage, OnStreamRestart } from "../types/stream-
 import { Socket } from "../types/socket"
 import { Stream, StreamMarker } from "../types/stream"
 
+/**
+ * The set of options that can be used when constructing a the default
+ * [[StreamClient]] instance through the [[createStreamClient]] factory
+ * method.
+ */
 export interface StreamClientOptions {
   /**
    * The [[Socket]] instance to use, inferred based on the environment when not provided.
@@ -33,6 +38,15 @@ export interface StreamClientOptions {
   autoRestartStreamsOnReconnect?: boolean
 }
 
+/**
+ * Create the default [[StreamClient]] concrete implementation.
+ *
+ * @param wsUrl The url used to reach the dfuse Stream API, should **not** contain the `token` query parameter. Passed as
+ * is to created [[Socket]] interface through the [[createSocket]] factory method. This parameter has no effect
+ * if [[StreamClientOptions.socket]] options is used.
+ * @param options The set of options used to construct the default [[StreamClient]] instance. See
+ * [[StreamClientOptions]] for documentation of the options and default values for each of them.
+ */
 export function createStreamClient(wsUrl: string, options: StreamClientOptions = {}): StreamClient {
   return new DefaultStreamClient(
     options.socket || createSocket(wsUrl, options.socketOptions),
@@ -43,16 +57,20 @@ export function createStreamClient(wsUrl: string, options: StreamClientOptions =
 }
 
 class DefaultStreamClient {
-  public socket: Socket
-
   // Public only for tighly coupled Stream to be able to query current state of Streams
   public streams: { [id: string]: DefaultStream } = {}
+
+  private socket: Socket
   private autoRestartStreamsOnReconnect: boolean
   private debug: IDebugger = debugFactory("dfuse:stream")
 
   constructor(socket: Socket, autoRestartStreamsOnReconnect: boolean) {
     this.socket = socket
     this.autoRestartStreamsOnReconnect = autoRestartStreamsOnReconnect
+  }
+
+  public setApiToken(apiToken: string) {
+    this.socket.setApiToken(apiToken)
   }
 
   public async registerStream(
@@ -72,7 +90,16 @@ class DefaultStreamClient {
     }
 
     this.debug("Registering stream [%s] with message %o.", id, message)
-    const stream = new DefaultStream(id, message, onMessage, this)
+    const streamExists = (streamId: string) => this.streams[streamId] !== undefined
+    const unregisterStream = (streamId: string) => this.unregisterStream(streamId)
+    const stream = new DefaultStream(
+      id,
+      message,
+      onMessage,
+      streamExists,
+      unregisterStream,
+      this.socket
+    )
 
     // Let's first register stream to ensure that if messages arrives before we got back
     // execution flow after `send` call, the listener is already present to handle message
@@ -145,19 +172,24 @@ class DefaultStream implements Stream {
   private activeMarker?: StreamMarker
   private registrationMessage: OutboundMessage
   private onMessageHandler: OnStreamMessage
-
-  private client: DefaultStreamClient
+  private unregisterStream: (id: string) => Promise<void>
+  private streamExists: (id: string) => boolean
+  private socket: Socket
 
   constructor(
     id: string,
     registrationMessage: OutboundMessage,
     onMessage: OnStreamMessage,
-    client: DefaultStreamClient
+    streamExists: (id: string) => boolean,
+    unregisterStream: (id: string) => Promise<void>,
+    socket: Socket
   ) {
     this.id = id
     this.registrationMessage = registrationMessage
     this.onMessageHandler = onMessage
-    this.client = client
+    this.streamExists = streamExists
+    this.unregisterStream = unregisterStream
+    this.socket = socket
   }
 
   public get onMessage(): OnStreamMessage {
@@ -169,11 +201,11 @@ class DefaultStream implements Stream {
   }
 
   public async start(): Promise<void> {
-    return this.client.socket.send(this.registrationMessage)
+    return this.socket.send(this.registrationMessage)
   }
 
   public async restart(marker?: StreamMarker): Promise<void> {
-    if (this.client.streams[this.id] === undefined) {
+    if (!this.streamExists(this.id)) {
       throw new DfuseClientError(
         `Trying to restart a stream '${
           this.id
@@ -188,7 +220,7 @@ class DefaultStream implements Stream {
       restartMessage.start_block = this.activeMarker.atBlockNum
     }
 
-    await this.client.socket.send(restartMessage)
+    await this.socket.send(restartMessage)
 
     if (this.onPostRestart) {
       this.onPostRestart()
@@ -200,8 +232,8 @@ class DefaultStream implements Stream {
   }
 
   public async close(): Promise<void> {
-    if (this.client.socket.isConnected) {
-      return this.client.unregisterStream(this.id)
+    if (this.socket.isConnected) {
+      return this.unregisterStream(this.id)
     }
   }
 }

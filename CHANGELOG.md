@@ -2,6 +2,9 @@
 
 ## In Progress (Next)
 
+- Removed `socket` public property from `StreamClient` interface to
+  reduce coupling.
+
 - It's now possible to add custom headers when using
   `DfuseClient.apiRequest` method (same on underlying `HttpClient`
   interface).

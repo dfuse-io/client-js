@@ -53,22 +53,128 @@ import {
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
 
+/**
+ * All the options that can be pass to dfuse Client factory
+ * [[createDfuseClient]].
+ */
 export interface DfuseClientOptions {
+  /**
+   * The network to connect to. Can be a plain string in the set
+   * `mainnet | jungle | kylin`. If it's not a string in this
+   * set, the value is assumed to be an hostname pointing to the
+   * the service, for example, your internal dfuse endpoint.
+   *
+   * When it's a known network name, the hostname that is used
+   * will be the known hostname for this network name.
+   *
+   * The final urls are constructed using
+   * the [[DfuseClientOptions.secure]] option to determine which
+   * protocol to use for HTTP (`https` or `http`) and WebSocket
+   * (`wss` or `ws`).
+   *
+   * @see https://docs.dfuse.io/#endpoints
+   */
   network: "mainnet" | "jungle" | "kylin" | string
+
+  /**
+   * You dfuse API key to interact with the dfuse API service. You
+   * can obtain and manage your API keys at `https://app.dfuse.io`.
+   * This is the self-management portal where all information
+   * about your account can be found.
+   */
   apiKey: string
+
+  /**
+   * Whether to use secure protocols or unsecure ones. This will
+   * control final URL constructed using this parameter value and
+   * the actual hostname as defined by the [[DfuseClientOptions.network]]
+   * value.
+   */
   secure?: boolean
+
+  /**
+   * This is the authentication URL that will be reach to issue
+   * new API token.
+   *
+   * @default `https://auth.dfuse.io`
+   */
   authUrl?: string
 
-  // Advanced options
+  /**
+   * A function that generates a random request ID. This request ID
+   * is used when using the dfuse Stream API when no specific
+   * ID is passed at registration time.
+   *
+   * @default A generator that generates random id of the form `dc-<13-hex-chars>`.
+   */
   requestIdGenerator?: RequestIdGenerator
 
+  /**
+   * The [[HttpClient]] instance that [[DfuseClient]] should use to interact
+   * with dfuse REST API. When `undefined` (the default), an instance is
+   * created using [[createHttpClient]] factory method and used. If
+   * [[DfuseClientOptions.httpClientOptions]] is set, it used when creating
+   * the default instanve.
+   *
+   * @default A default [[HttpClient]] instance (via [[createHttpClient]]) using [[DfuseClientOptions.httpClientOptions]].
+   */
   httpClient?: HttpClient
+
+  /**
+   * The [[HttpClientOptions]] that should be used when creating the default
+   * instance of [[HttpClient]].
+   *
+   * This parameter has no effect at all if the [[DfuseClientOptions.httpClient]] is
+   * provided.
+   *
+   * @default `{}` See [[HttpClientOptions]] for default values
+   */
   httpClientOptions?: HttpClientOptions
 
+  /**
+   * The [[StreamClient]] instance that [[DfuseClient]] should use to interact
+   * with dfuse Stream API. When `undefined` (the default), an instance is
+   * created using [[createStreamClient]] factory method and used. If
+   * [[DfuseClientOptions.streamClientOptions]] is set, it used when creating
+   * the default instanve.
+   *
+   * @default A default [[StreamClient]] instance (via [[createStreamClient]]) using [[DfuseClientOptions.httpClientOptions]].
+   */
   streamClient?: StreamClient
+
+  /**
+   * The [[StreamClientOptions]] that should be used when creating the default
+   * instance of [[StreamClient]].
+   *
+   * This parameter has no effect at all if the [[DfuseClientOptions.streamClient]] is
+   * provided.
+   *
+   * @default `{}` See [[StreamClientOptions]] for default values
+   */
   streamClientOptions?: StreamClientOptions
 
+  /**
+   * The API token store instance that should be use by the [[DfuseClient]]
+   * to retrieve and store the API token from. It's via this interface the
+   * API token is persisted and also retrieved from persistence storage
+   * when required.
+   *
+   * When `undefined` (the default), a [[LocalStorageApiTokenStore]] is
+   * used when a Browser environment is detected, a [[OnDiskApiTokenStore]] is
+   * used when a Node.js environment is detected and the [[InMemoryApiTokenStore]]
+   * is used as a fallback if niether detection worked.
+   *
+   * @default Inferred based on the environment (Browser [[LocalStorageApiTokenStore]], Node.js [[OnDiskApiTokenStore]], [[InMemoryApiTokenStore]] otherwise).
+   */
   apiTokenStore?: ApiTokenStore
+
+  /**
+   * The refresh scheduler instance that should be used to schedule a token
+   * refresh. This is more an internal details of the [[DfuseClient]] should
+   * most likely `undefined` for most user to pick a default refresh scheduler.
+   *
+   * @default A default [[RefreshScheduler]] instance (via [[createRefreshScheduler]])
+   */
   refreshScheduler?: RefreshScheduler
 }
 
@@ -81,7 +187,8 @@ export interface DfuseClientOptions {
  *
  * This will create the default
  *
- * @param options The options that can be passed to customize [[DfuseClient]] instance, refer to the [[DfuseClientOptions]] for further details.
+ * @param options The options that can be passed to customize [[DfuseClient]] instance,
+ * refer to the [[DfuseClientOptions]] for further details.
  *
  * @kind Factories
  */
@@ -147,13 +254,18 @@ export function networkToEndpoint(network: string): string {
 }
 
 /**
- * The `DefaultClient` roles is to perform the API key management
+ * The standard implementation of a [[DfuseClient]].
+ *
+ * The [[DefaultClient]] role is to perform the API key management
  * functionalities of the client. It retrieves an API token using the
  * API key and ensures it stays valid throughout the lifecycle of the
  * client, refreshing the token when necessary.
  *
  * It also responsible of keep and up-to-date list of streams and managing
  * the re-connection to those stream when the websocket disconnects.
+ *
+ * It is supported to override the client to provide some other
+ * methods on it (other EOS endpoints).
  */
 export class DefaultClient implements DfuseClient {
   protected apiKey: string
@@ -427,7 +539,7 @@ export class DefaultClient implements DfuseClient {
     onMessage: OnStreamMessage
   ): Promise<Stream> {
     return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
-      this.streamClient.socket.setApiToken(apiTokenInfo.token)
+      this.streamClient.setApiToken(apiTokenInfo.token)
 
       return this.streamClient.registerStream(message, onMessage)
     })
@@ -447,7 +559,7 @@ export class DefaultClient implements DfuseClient {
 
   private onTokenRefresh = (apiToken: string) => {
     // Ensure we update the API token to have it at its latest value
-    this.streamClient.socket.setApiToken(apiToken)
+    this.streamClient.setApiToken(apiToken)
   }
 }
 

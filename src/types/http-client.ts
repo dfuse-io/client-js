@@ -15,9 +15,33 @@ export const V0_STATE_TABLE_SCOPES = "/v0/state/table_scopes"
 export const V0_SEARCH_TRANSACTIONS = "/v0/search/transactions"
 
 /**
+ * An interface used to interact with dfuse REST API.
+ *
+ * Created mainly to abstract implementation details of dealing
+ * with HTTP request/response, enable consumer of the library to
+ * provide their own implementation of an HTTP client (think about
+ * providing `Fetch` interface instead).
+ *
  * @group Interfaces
  */
 export interface HttpClient {
+  /**
+   * Make an anonymous request (unauthenticated) to the dfuse Authentication endpoint.
+   * Usually used only for issuing an API token from an API key.
+   *
+   * @param path (required) The HTTP path on the endpoint
+   * @param method (required) The HTTP method to perform the request agaisnt
+   * @param params (defaults `{}`) The HTTP query parameters to append to the url, they will
+   * be url-encoded and included in the final remote url. Has no effect when empty or undefined.
+   * @param body (defaults `undefined`) The HTTP body to include in the request, assumed to be a
+   * JSON object that will be serialized to a string. Not included in the HTTP request when `undefined`.
+   * @param headers (defaults `{}`) The extra HTTP headers to include in the request. Those will be merged
+   * with default ones (`{ Authorization: ... }`) and they override them if same key are specified.
+   *
+   * @returns A `Promise` that will resolve to the response body if it passes. Will reject with a
+   * [[DfuseApiError]] if it fits the dfuse Error Format or a generic `DfuseError` is it's something
+   * not fitting our expected format.
+   */
   authRequest<T>(
     path: string,
     method: string,
@@ -26,6 +50,30 @@ export interface HttpClient {
     headers?: HttpHeaders
   ): Promise<T>
 
+  /**
+   * Make an authenticated request (unauthenticated) to the dfuse REST endpoint.
+   *
+   * Upon a succesfull call, the actual response body (expected to be a valid JSON) will
+   * be returned to the caller.
+   *
+   * Upon an error, a [[DfuseError]] is returned, will be a [[DfuseApiError]] if the response's
+   * body exist, it's a valid JSON string and it fits the dfuse error format.
+   *
+   * @param apiToken The API token used to to interact with the API endpoint. The token will be turned
+   * into a proper HTTP header `Authorization: Bearer ...`.
+   * @param path (required) The HTTP path on the endpoint
+   * @param method (required) The HTTP method to perform the request agaisnt
+   * @param params (defaults `{}`) The HTTP query parameters to append to the url, they will
+   * be url-encoded and included in the final remote url. Has no effect when empty or undefined.
+   * @param body (defaults `undefined`) The HTTP body to include in the request, assumed to be a
+   * JSON object that will be serialized to a string. Not included in the HTTP request when `undefined`.
+   * @param headers (defaults `{}`) The extra HTTP headers to include in the request. Those will be merged
+   * with default ones (`{ Authorization: ... }`) and they override them if same key are specified.
+   *
+   * @returns A `Promise` that will resolve to the response body if it passes. Will reject with a
+   * [[DfuseApiError]] if it fits the dfuse Error Format or a generic `DfuseError` is it's something
+   * not fitting our expected format.
+   */
   apiRequest<T>(
     apiToken: string,
     path: string,

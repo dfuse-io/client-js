@@ -8,10 +8,44 @@ import {
 } from "../types/http-client"
 import debugFactory, { IDebugger } from "debug"
 
+/**
+ * The set of options that can be used when constructing a the default
+ * [[HttpClient]] instance through the [[createHttpClient]] factory
+ * method.
+ */
 export interface HttpClientOptions {
+  /**
+   * The `fetch` function to use to make the actual low-level HTTP
+   * request.
+   *
+   * **Inferrence**<br><br>
+   * When not provided (default), the `fetch` to use is actually inferred
+   * based on the runtime environment.
+   *
+   * If a `window.fetch` function exists, which should be the case on a Browser
+   * environment, it will be used.
+   *
+   * If a `global.fetch` function exists, which can be the case upon a
+   * `global.fetch = ...` call at the bootstrap phase in a Node.js environment,
+   * it will be used
+   *
+   * Finally, if no `fetch` function could be determined, a [[DfuseError]] is
+   * thrown with a message explaining the situtation and a link to the documentation
+   * on how to solve the problem.
+   *
+   * @default `undefined` (Inferred based on environment, see `Inferrence` note above)
+   */
   fetch?: Fetch
 }
 
+/**
+ * Create the default [[HttpClient]] concrete implementation.
+ *
+ * @param authUrl The full dfuse Authentication url to use to perform the `authRequest` calls.
+ * @param apiUrl The full dfuse REST API url to use to perform the `apiRequest` calls.
+ * @param options The set of options used to construct the default [[HttpClient]] instance. See
+ * [[HttpClientOptions]] for documentation of the options and default values for each of them.
+ */
 export function createHttpClient(
   authUrl: string,
   apiUrl: string,
