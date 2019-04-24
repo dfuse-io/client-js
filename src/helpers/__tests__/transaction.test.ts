@@ -3,6 +3,13 @@ import { ActionTrace } from "../../types/action-trace"
 import { flattenActionTraces, matchingActionTraces } from "../transaction"
 
 describe("flattenActions", () => {
+  it("flattens action traces when no execution traces correctly", () => {
+    const transaction = createTransaction([])
+    transaction.execution_trace = undefined
+
+    expect(flattenActionTraces(transaction)).toEqual([])
+  })
+
   it("flattens action traces correctly", () => {
     const transaction = createTransaction([
       createActionTrace("eosio.token/eosio.token:transfer", [
@@ -29,6 +36,13 @@ describe("flattenActions", () => {
 })
 
 describe("matchingActions", () => {
+  it("matching action traces when no execution traces correctly", () => {
+    const transaction = createTransaction([])
+    transaction.execution_trace = undefined
+
+    expect(matchingActionTraces({ lifecycle: transaction, action_idx: [] })).toEqual([])
+  })
+
   it("extracts matching action traces correctly", () => {
     const transaction = createTransaction([
       createActionTrace("eosio.token/eosio.token:transfer", [

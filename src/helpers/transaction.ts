@@ -60,6 +60,10 @@ type WalkActionsState = {
  * index of the list represents the action's index concept of dfuse API.
  */
 export function flattenActionTraces(transaction: TransactionLifecycle): ActionTrace<any>[] {
+  if (!transaction.execution_trace) {
+    return []
+  }
+
   const state = {
     index: -1,
     actions: []
@@ -103,6 +107,10 @@ function walkFlattenedActionTraces(rootActionTrace: ActionTrace<any>, state: Wal
  * the query term(s).
  */
 export function matchingActionTraces(searchRow: SearchTransactionRow): ActionTrace<any>[] {
+  if (!searchRow.lifecycle.execution_trace) {
+    return []
+  }
+
   const matchingActionIndexes = searchRow.action_idx
   const state = {
     index: -1,

@@ -149,3 +149,16 @@ documentation. Those changes only affect typings and not the actual runtime.
 The [dfuse/client-react-example](https://github.com/dfuse-io/client-react-example)
 was converted from the old library to the new one. Check [this commit](https://github.com/dfuse-io/client-react-example/commit/46d8df75a3ab03b28f016e429762b75a3249e62f) to see the
 changes that was required to pass from `@dfuse/eosws-js` to `@dfuse/client-js`.
+
+## From `@dfuse/client@0.2.0` to `@dfuse/client@0.2.1`
+
+Might break compilations on some projects but occurs in bugfix version
+bump considered bug against `nodeos` and dfuse API real typings.
+
+You will now get compilations errors around some models, mainly around
+optional fields that were flagged as required before and handling
+of number serialization JSON (`number > uint32` get serialized as a `string`
+instead of a `number` by `nodeos`).
+
+Simply update by fixing the compilations errors, re-working your logic
+to handle those corner cases that were ignored before.

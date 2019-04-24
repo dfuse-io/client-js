@@ -17,9 +17,11 @@
   for action index used by dfuse API).
 
 - Fixed a bunch of typing errors between actual `nodeos` JSON output
-  and our own type definitions. **Warning** Might break compilations
-  on some projects but not flagged as breaking change since it's more
-  a bug against `nodeos` real typings.
+  and our own type definitions as well against dfuse API directly.
+  **Warning** Requires some modification steps (resolving new compilation
+  errors for some usage of the library's types). See
+  `From '@dfuse/client@0.2.0' to '@dfuse/client@0.2.1'` in [MIGRATION.md](./MIGRATION.md)
+  guide.
 
 ## 0.2.0 (April 26, 2019)
 
