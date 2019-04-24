@@ -5,13 +5,12 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = await client.stateTablesForAccounts(
-      ["eosio.token", "trybenetwork", "parslseed123", "zkstokensr4u"],
-      "eoscanadacom",
-      "accounts"
+    // This example will work on EOS Mainnet only, change transaction id accordingly to test it out
+    const response = await client.fetchTransaction(
+      "1d5f57e9392d045ef4d1d19e6976803f06741e11089855b94efcdb42a1a41253"
     )
 
-    console.log("State tables for accounts response", prettifyJson(response))
+    console.log("Transaction lifecycle response", prettifyJson(response))
   } catch (error) {
     console.log("An error occurred", error)
   }

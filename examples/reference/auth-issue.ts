@@ -9,7 +9,7 @@ async function main() {
 
     console.log("Auth issue response", prettifyJson(response))
   } catch (error) {
-    console.log("An error occurred", prettifyJson(error))
+    console.log("An error occurred", error)
   }
 }
 

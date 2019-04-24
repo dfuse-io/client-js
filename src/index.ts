@@ -8,6 +8,7 @@ export * from "./client/stream-client"
 
 export * from "./helpers/message"
 export * from "./helpers/time"
+export * from "./helpers/transaction"
 
 export * from "./message/inbound"
 export * from "./message/outbound"

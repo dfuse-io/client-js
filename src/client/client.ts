@@ -39,7 +39,8 @@ import {
   V0_STATE_TABLES_ACCOUNTS,
   V0_STATE_TABLES_SCOPES,
   HttpClient,
-  HttpHeaders
+  HttpHeaders,
+  V0_FETCH_TRANSACTION
 } from "../types/http-client"
 import { DfuseClientError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
@@ -52,6 +53,9 @@ import {
 } from "./api-token-store"
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
+import { TransactionLifecycle } from "../types/transaction"
+
+const MAX_UINT32_INTEGER = 2147483647
 
 /**
  * All the options that can be pass to dfuse Client factory
@@ -371,6 +375,11 @@ export class DefaultClient implements DfuseClient {
     })
   }
 
+  public fetchTransaction(id: string): Promise<TransactionLifecycle> {
+    // TODO: Should we properly URL encode the transaction id?
+    return this.apiRequest<TransactionLifecycle>(V0_FETCH_TRANSACTION.replace(":id", id), "GET")
+  }
+
   public async searchTransactions(
     q: string,
     options: {
@@ -386,7 +395,7 @@ export class DefaultClient implements DfuseClient {
       q,
       start_block: options.startBlock,
       sort: options.sort,
-      block_count: options.blockCount === undefined ? Number.MAX_SAFE_INTEGER : options.blockCount,
+      block_count: options.blockCount === undefined ? MAX_UINT32_INTEGER : options.blockCount,
       limit: options.limit,
       cursor: options.cursor,
       with_reversible: options.withReversible

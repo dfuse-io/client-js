@@ -26,11 +26,11 @@ export type TransactionLifecycle = {
   transaction_status: string
   execution_trace: TransactionTrace
   execution_block_header: BlockHeader
-  dtrxops: DTrxOp[]
-  dbops: DBOp[]
+  dtrxops?: DTrxOp[]
+  dbops?: DBOp[]
   ramops?: RAMOp[]
   tableops?: TableOp[]
-  pub_keys: string[]
+  pub_keys?: string[]
   creation_tree?: CreationNode[]
   created_by?: ExtDTrxOp
   canceled_by?: ExtDTrxOp
@@ -102,14 +102,14 @@ export type TransactionTrace = {
   id: string
   block_num: number
   block_time: string
-  producer_block_id: string
-  receipt: TransactionReceipt
+  producer_block_id?: string
+  receipt?: TransactionReceipt
   elapsed: number
   net_usage: number
   scheduled: boolean
-  action_traces: Array<ActionTrace<any>>
-  failed_dtrx_trace: TransactionTrace
-  except: any
+  action_traces: ActionTrace<any>[]
+  failed_dtrx_trace?: TransactionTrace
+  except?: any
 }
 
 export type BlockHeader = {

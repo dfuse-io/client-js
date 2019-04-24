@@ -9,7 +9,7 @@ async function main() {
 
     console.log("State permission links response", prettifyJson(response))
   } catch (error) {
-    console.log("An error occurred", prettifyJson(error))
+    console.log("An error occurred", error)
   }
 }
 

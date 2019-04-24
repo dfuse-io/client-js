@@ -1,5 +1,26 @@
 # Changelog
 
+## In progress
+
+- Fixed dfuse Search API `blockCount` default value to be larger
+  than a Uint32 value being the biggest value accepted by the remote
+  endpoint.
+
+- Added support for `GET /v0/transactions/<id>` endpoint.
+
+- Added `matchingActionTraces` helper to easily extract a
+  the matching action traces out of a `SearchTransactionRow` when performing
+  a search query through dfuse REST API search endpoint.
+
+- Added `flattenActionTraces` helper to easily extract action traces
+  from a `TransactionLifecycle` object (useful to find matching action
+  for action index used by dfuse API).
+
+- Fixed a bunch of typing errors between actual `nodeos` JSON output
+  and our own type definitions. **Warning** Might break compilations
+  on some projects but not flagged as breaking change since it's more
+  a bug against `nodeos` real typings.
+
 ## 0.2.0 (April 26, 2019)
 
 - Removed `socket` public property from `StreamClient` interface to

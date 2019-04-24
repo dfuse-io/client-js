@@ -4,7 +4,7 @@ export type SearchSortType = "asc" | "desc"
 
 export type SearchTransactionsResponse = {
   cursor: string
-  transactions: SearchTransactionRow[]
+  transactions?: SearchTransactionRow[]
   forked_head_warning: boolean
 }
 

@@ -20,6 +20,7 @@ import {
 } from "./state"
 import { Stream } from "./stream"
 import { HttpQueryParameters, HttpHeaders } from "./http-client"
+import { TransactionLifecycle } from "./transaction"
 
 export type RequestIdGenerator = () => string
 
@@ -141,6 +142,19 @@ export interface DfuseClient {
   authIssue(apiKey?: string): Promise<AuthTokenResponse>
 
   /**
+   * GET /v0/transactions/<id>
+   *
+   * Retrieves a [[TransactionLifecycle]] object representing the transaction that
+   * has for id `<id>`.
+   *
+   * @param id The transaction id to search for.
+   * @returns A promise resolving to a [[TransactionLifecycle]] object if the request was
+   * correct, or rejects with a [[DfuseApiError]] when it failed (or a more [[DfuseError]]
+   * when an unexpected error occurs).
+   */
+  fetchTransaction(id: string): Promise<TransactionLifecycle>
+
+  /**
    * GET /v0/search/transactions
    *
    * Search an EOSIO blockchain for transactions based on free-form criterias, using
@@ -152,7 +166,7 @@ export interface DfuseClient {
    * @param options.startBlock (defaults `0`) Block number to start search (inclusive). Defaults to `0`,
    * which means from beginning of the chain.
    * @param options.sort (defaults `"asc"`) Defaults to ascending search (`asc`). Use `desc` to sort descending.
-   * @param options.blockCount (defaults `Number.MAX_SAFE_INTEGER`) Number of blocks to search from `startBlock`.
+   * @param options.blockCount (defaults `MAX_UINT32_INTEGER`) Number of blocks to search from `startBlock`.
    * Depending on sort order, the `blockCount` will count upwards or downwards.
    * @param options.limit (defaults `100`) Cap the number of returned results to limit.
    * @param options.cursor (defaults `undefined`) If cursor is passed back (from a previous response)

@@ -236,6 +236,7 @@ in each dfuse Stream and full configuration options for the library itself and a
 - HTTP
 
   - [auth-issue.ts](./examples/reference/auth-issue.ts)
+  - [fetch-transaction.ts](./examples/reference/fetch-transactions.ts)
   - [search-transactions.ts](./examples/reference/search-transactions.ts)
   - [state-abi-bin-to-json.ts](./examples/reference/state-abi-bin-to-json.ts)
   - [state-abi.ts](./examples/reference/state-abi.ts)

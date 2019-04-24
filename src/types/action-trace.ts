@@ -18,20 +18,24 @@ export type ActionTraceData<T = Record<string, any>, D = Record<string, any>> = 
 export type ActionTrace<T> = {
   receipt: ActionReceipt
   act: Action<T>
+  context_free: boolean
   elapsed: number
-  cpu_usage: number
   console: string
-  total_cpu_usage: number
   trx_id: string
-  inline_traces: Array<ActionTrace<any>>
+  block_num: number
+  block_time: string
+  producer_block_id?: string
+  account_ram_deltas?: AccountRamDelta[]
+  except?: any
+  inline_traces?: ActionTrace<any>[]
 }
 
 export type Action<T> = {
   account: string
   name: string
-  authorization: Authorization[]
+  authorization?: Authorization[]
   data: T
-  hex_data: string
+  hex_data?: string
 }
 
 export type Authorization = {
@@ -42,9 +46,34 @@ export type Authorization = {
 export type ActionReceipt = {
   receiver: string
   act_digest: string
-  global_sequence: number
-  recv_sequence: number
-  auth_sequence: Array<Array<number | string>>
+  global_sequence: Uint64
+  recv_sequence: Uint64
+  auth_sequence: [string, number][]
   code_sequence: number
   abi_sequence: number
 }
+
+export type AccountRamDelta = {
+  account: string
+  delta: Int64
+}
+
+/**
+ * A `int64_t` natively in `nodeos` but can become a string when > 32 bits number
+ * due to how `nodeos` serialize number to JSON.
+ *
+ * This is like because JavaScript largest number possible is 53 bits large which
+ * make it impossible to hold a full `int64_t` type. To overcome that, `nodeos`
+ * will output a string when number is too large to preserve precision.
+ */
+export type Int64 = number | string
+
+/**
+ * A `uint64_t` natively in `nodeos` but can become a string when > 32 bits number
+ * due to how `nodeos` serialize number to JSON.
+ *
+ * This is like because JavaScript largest number possible is 53 bits large which
+ * make it impossible to hold a full `uint64_t` type. To overcome that, `nodeos`
+ * will output a string when number is too large to preserve precision.
+ */
+export type Uint64 = number | string

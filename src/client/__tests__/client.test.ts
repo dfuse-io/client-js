@@ -297,6 +297,25 @@ describe("DfuseClient", () => {
       )
     })
 
+    it("correctly forwards fetchTransaction to underlying http client", async () => {
+      const data = { field: true }
+
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
+      const result = await client.fetchTransaction("123")
+
+      expect(result).toEqual(data)
+
+      expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
+      expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
+        nonExpiredApiTokenInfo.token,
+        "/v0/transactions/123",
+        "GET",
+        undefined,
+        undefined,
+        undefined
+      )
+    })
+
     it("correctly forwards searchTransactions to underlying http client, all defaults", async () => {
       const data = { field: true }
 
@@ -311,7 +330,7 @@ describe("DfuseClient", () => {
         "/v0/search/transactions",
         "GET",
         {
-          block_count: 9007199254740991,
+          block_count: 2147483647,
           q: "123"
         },
         undefined,

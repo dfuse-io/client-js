@@ -29,7 +29,7 @@ async function main() {
       console.log("Cursor: " + response.cursor)
     }
   } catch (error) {
-    console.log("An error occurred", prettifyJson(error))
+    console.log("An error occurred", error)
   }
 }
 

@@ -13,7 +13,7 @@ async function main() {
 
     console.log("State tables for scopes response", prettifyJson(response))
   } catch (error) {
-    console.log("An error occurred", prettifyJson(error))
+    console.log("An error occurred", error)
   }
 }
 
