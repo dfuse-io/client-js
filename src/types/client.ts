@@ -128,7 +128,7 @@ export interface DfuseClient {
   //
 
   /**
-   * POST /v1/auth/issue
+   * `POST /v1/auth/issue` (on `https://auth.dfuse.io` by default, see [[DfuseClientOptions.authUrl]])
    *
    * Issues dfuse API token for the following API key.
    *
@@ -142,7 +142,7 @@ export interface DfuseClient {
   authIssue(apiKey?: string): Promise<AuthTokenResponse>
 
   /**
-   * GET /v0/transactions/<id>
+   * `GET /v0/transactions/:id`
    *
    * Retrieves a [[TransactionLifecycle]] object representing the transaction that
    * has for id `<id>`.
@@ -155,7 +155,7 @@ export interface DfuseClient {
   fetchTransaction(id: string): Promise<TransactionLifecycle>
 
   /**
-   * GET /v0/search/transactions
+   * `GET /v0/search/transactions`
    *
    * Search an EOSIO blockchain for transactions based on free-form criterias, using
    * the simple dfuse Search query language.
@@ -188,7 +188,7 @@ export interface DfuseClient {
   ): Promise<SearchTransactionsResponse>
 
   /**
-   * GET /v0/state/abi
+   * `GET /v0/state/abi`
    *
    * Fetches the ABI for a given contract account, at any block height.
    *
@@ -211,7 +211,7 @@ export interface DfuseClient {
   ): Promise<StateAbiResponse>
 
   /**
-   * GET /v0/state/abi/bin_to_json
+   * `GET /v0/state/abi/bin_to_json`
    *
    * Fetches the ABI for a given contract account, at any block height.
    *
@@ -237,7 +237,7 @@ export interface DfuseClient {
   ): Promise<StateAbiToJsonResponse<T>>
 
   /**
-   * GET /v0/state/key_accounts
+   * `GET /v0/state/key_accounts`
    *
    * Fetches the accounts controlled by the given public key, at any block height.
    *
@@ -256,7 +256,7 @@ export interface DfuseClient {
   ): Promise<StateKeyAccountsResponse>
 
   /**
-   * GET /v0/state/permission_links
+   * `GET /v0/state/permission_links`
    *
    * Fetches snapshots of any account's linked authorizations on the blockchain, at any block height.
    *
@@ -275,7 +275,7 @@ export interface DfuseClient {
   ): Promise<StatePermissionLinksResponse>
 
   /**
-   * GET /v0/state/table_scopes
+   * `GET /v0/state/table_scopes`
    *
    * Fetches a list of scopes, for a given table on a contract account, at any block height.
    *
@@ -297,7 +297,7 @@ export interface DfuseClient {
   ): Promise<StateTableScopesResponse>
 
   /**
-   * GET /v0/state/table
+   * `GET /v0/state/table`
    *
    * Fetches the state of any table, at any block height.
    *
@@ -335,7 +335,7 @@ export interface DfuseClient {
   ): Promise<StateResponse<T>>
 
   /**
-   * GET /v0/state/tables/accounts
+   * `GET /v0/state/tables/accounts`
    *
    * Fetches a table for a given contract account for a group of scopes, at any block height.
    *
@@ -372,7 +372,7 @@ export interface DfuseClient {
   ): Promise<MultiStateResponse<T>>
 
   /**
-   * GET /v0/state/tables/scopes
+   * `GET /v0/state/tables/scopes`
    *
    * Fetches a table for a given contract account for a group of scopes, at any block height.
    *
