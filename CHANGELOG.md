@@ -1,12 +1,11 @@
 # Changelog
 
-## In progress
+## 0.2.1 (April 24, 2019)
 
-- Fixed dfuse Search API `blockCount` default value to be larger
-  than a Uint32 value being the biggest value accepted by the remote
-  endpoint.
+- Fixed dfuse Search API `blockCount` default value that was larger
+  than a Uint32 value being the biggest value accepted by dfuse API.
 
-- Added support for `GET /v0/transactions/<id>` endpoint.
+- Added support for `GET /v0/transactions/:id` endpoint.
 
 - Added `matchingActionTraces` helper to easily extract a
   the matching action traces out of a `SearchTransactionRow` when performing
@@ -23,7 +22,7 @@
   `From '@dfuse/client@0.2.0' to '@dfuse/client@0.2.1'` in [MIGRATION.md](./MIGRATION.md)
   guide.
 
-## 0.2.0 (April 26, 2019)
+## 0.2.0 (April 23, 2019)
 
 - Removed `socket` public property from `StreamClient` interface to
   reduce coupling.
