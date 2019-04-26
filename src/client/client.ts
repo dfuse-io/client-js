@@ -543,6 +543,10 @@ export class DefaultClient implements DfuseClient {
     })
   }
 
+  public async getTokenInfo(): Promise<ApiTokenInfo> {
+    return this.apiTokenManager.getTokenInfo()
+  }
+
   protected async registerStream(
     message: OutboundMessage,
     onMessage: OnStreamMessage
