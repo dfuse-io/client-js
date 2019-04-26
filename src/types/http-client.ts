@@ -1,5 +1,6 @@
 export const V1_AUTH_ISSUE = "/v1/auth/issue"
 
+export const V0_FETCH_BLOCK_ID_BY_TIME = "/v0/block_id/by_time"
 export const V0_FETCH_TRANSACTION = "/v0/transactions/:id"
 
 export const V0_STATE_ABI = "/v0/state/abi"

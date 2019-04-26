@@ -316,6 +316,48 @@ describe("DfuseClient", () => {
       )
     })
 
+    it("correctly forwards fetchBlockIdByTime to underlying http client, string time", async () => {
+      const data = { field: true }
+
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
+      const result = await client.fetchBlockIdByTime("2015-01-01T01:01:01.6Z", "gte")
+
+      expect(result).toEqual(data)
+
+      expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
+      expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
+        nonExpiredApiTokenInfo.token,
+        "/v0/block_id/by_time",
+        "GET",
+        { time: "2015-01-01T01:01:01.6Z", comparator: "gte" },
+        undefined,
+        undefined
+      )
+    })
+
+    const values = ["2015-01-01T05:01:01.6Z", "2015-01-01T01:01:01.6-04:00"]
+    values.forEach((input) => {
+      it(`correctly forwards fetchBlockIdByTime to underlying http client, Date [${input}] time`, async () => {
+        const data = { field: true }
+        const date = new Date(input)
+
+        httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
+        const result = await client.fetchBlockIdByTime(date, "gte")
+
+        expect(result).toEqual(data)
+
+        expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
+        expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
+          nonExpiredApiTokenInfo.token,
+          "/v0/block_id/by_time",
+          "GET",
+          { time: "2015-01-01T05:01:01.600Z", comparator: "gte" },
+          undefined,
+          undefined
+        )
+      })
+    })
+
     it("correctly forwards searchTransactions to underlying http client, all defaults", async () => {
       const data = { field: true }
 

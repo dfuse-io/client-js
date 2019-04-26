@@ -15,6 +15,7 @@ export * from "./message/outbound"
 
 export * from "./types/action-trace"
 export * from "./types/auth-token"
+export * from "./types/block-id"
 export * from "./types/client"
 export * from "./types/error"
 export * from "./types/head-info"

@@ -40,7 +40,8 @@ import {
   V0_STATE_TABLES_SCOPES,
   HttpClient,
   HttpHeaders,
-  V0_FETCH_TRANSACTION
+  V0_FETCH_TRANSACTION,
+  V0_FETCH_BLOCK_ID_BY_TIME
 } from "../types/http-client"
 import { DfuseClientError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
@@ -54,6 +55,7 @@ import {
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
 import { TransactionLifecycle } from "../types/transaction"
+import { ComparisonOperator, BlockIdByTimeResponse } from "../types/block-id"
 
 const MAX_UINT32_INTEGER = 2147483647
 
@@ -372,6 +374,21 @@ export class DefaultClient implements DfuseClient {
   public async authIssue(apiKey: string): Promise<AuthTokenResponse> {
     return this.httpClient.authRequest<AuthTokenResponse>(V1_AUTH_ISSUE, "POST", undefined, {
       api_key: apiKey
+    })
+  }
+
+  public async fetchBlockIdByTime(
+    time: string | Date,
+    comparator: ComparisonOperator
+  ): Promise<BlockIdByTimeResponse> {
+    let timeString = time
+    if (time instanceof Date) {
+      timeString = time.toISOString()
+    }
+
+    return this.apiRequest<BlockIdByTimeResponse>(V0_FETCH_BLOCK_ID_BY_TIME, "GET", {
+      time: timeString,
+      comparator
     })
   }
 

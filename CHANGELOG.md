@@ -1,5 +1,13 @@
 # Changelog
 
+## In progress
+
+- Added support for `GET /v0/block_id/by_time` endpoint.
+
+- Added possibility to get a valid API token straight from the dfuse Client
+  instance. This enables consumer of our GraphQL API to delegate API key
+  management logic to `@dfuse/client` library.
+
 ## 0.2.1 (April 24, 2019)
 
 - Fixed dfuse Search API `blockCount` default value that was larger

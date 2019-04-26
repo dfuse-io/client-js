@@ -21,6 +21,7 @@ import {
 import { Stream } from "./stream"
 import { HttpQueryParameters, HttpHeaders } from "./http-client"
 import { TransactionLifecycle } from "./transaction"
+import { BlockIdByTimeResponse, ComparisonOperator } from "./block-id"
 
 export type RequestIdGenerator = () => string
 
@@ -140,6 +141,29 @@ export interface DfuseClient {
    * @see https://docs.dfuse.io/#rest-api-post-https-auth-dfuse-io-v1-auth-issue
    */
   authIssue(apiKey?: string): Promise<AuthTokenResponse>
+
+  /**
+   * `GET /v0/block_id/by_time`
+   *
+   * Fetches the block ID, block time and block number for the given timestamp.
+   *
+   * @param time The reference timestamp to query for. If it's a string, assumed to be
+   * in ISO8601 extended format, i.e. `2019-03-04T10:36:14.5Z`. If it's a date, it's
+   * going to be turned into an ISO8601 extended format relative to `UTC`.
+   * @param comparator Comparison operator for the block time. Should be one of:
+   * - `gt` (Greater Than `time`)
+   * - `gte` (Greater Than or Equal to `time`)
+   * - `lt` (Lower Than `time`)
+   * - `lte` (Lower Than or Equal to`time`)
+   * - `eq` (Strictly equal to `time`)
+   * @returns A promise resolving to a [[BlockIdByTimeResponse]] object if the request was
+   * correct, or rejects with a [[DfuseApiError]] when it failed (or a more [[DfuseError]]
+   * when an unexpected error occurs).
+   */
+  fetchBlockIdByTime(
+    time: string | Date,
+    comparator: ComparisonOperator
+  ): Promise<BlockIdByTimeResponse>
 
   /**
    * `GET /v0/transactions/:id`
