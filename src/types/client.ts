@@ -442,10 +442,10 @@ export interface DfuseClient {
   ): Promise<T>
 
   /**
-   * Call this method each time you need a API token. The token return is always
-   * valid. The expiration and the refresh of the token handle automatically
+   * Call this method each time you need an API token. Th returned API token is always
+   * valid. The expiration and the refresh of the token is handled automatically when using this method.
    *
-   * @returns A `Promise` that will resolve to ApiTokenInfo.
+   * @returns A `Promise` that will resolve to a valid [[ApiTokenInfo]] instance, or will reject if an error occurs retrieving the API token.
    */
   getTokenInfo: () => Promise<ApiTokenInfo>
 }
