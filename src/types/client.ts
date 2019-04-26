@@ -4,7 +4,7 @@ import {
   StreamOptions,
   GetTransactionLifecycleMessageData
 } from "../message/outbound"
-import { AuthTokenResponse } from "./auth-token"
+import { ApiTokenInfo, AuthTokenResponse } from "./auth-token"
 import { SearchTransactionsResponse, SearchSortType } from "./search"
 import { OnStreamMessage } from "./stream-client"
 
@@ -418,7 +418,7 @@ export interface DfuseClient {
    *
    * This can be used to reach other REST API found on the `nodeos`
    * process for example, those that are not directly included
-   * in the library but are still accesible via our endpoint
+   * in the library but are still accessible via our endpoint
    * like a `/v1/chain/get_info` or `/v1/chain/push_transaction`.
    *
    * @param path (required) The HTTP path on the endpoint
@@ -440,4 +440,12 @@ export interface DfuseClient {
     body?: any,
     headers?: HttpHeaders
   ): Promise<T>
+
+  /**
+   * Call this method each time you need an API token. Th returned API token is always
+   * valid. The expiration and the refresh of the token is handled automatically when using this method.
+   *
+   * @returns A `Promise` that will resolve to a valid [[ApiTokenInfo]] instance, or will reject if an error occurs retrieving the API token.
+   */
+  getTokenInfo: () => Promise<ApiTokenInfo>
 }
