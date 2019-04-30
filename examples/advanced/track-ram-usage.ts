@@ -2,7 +2,7 @@ import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
 import {
   createDfuseClient,
   SearchTransactionRow,
-  RAMOp,
+  RamOp,
   DfuseClient,
   flattenActionTraces,
   waitFor
@@ -76,7 +76,7 @@ async function main() {
         //  */
         // const actionTraces = matchingActionTraces(result)
 
-        result.lifecycle.ramops!.forEach((ramOp: RAMOp) => {
+        result.lifecycle.ramops!.forEach((ramOp: RamOp) => {
           // FIXME: Right logic for RAM op!
 
           runningTotal += ramOp.delta

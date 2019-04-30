@@ -6,6 +6,12 @@ Table of contents:
 - [From `@dfuse/client@0.2.0` to `@dfuse/client@0.2.1`](#from-dfuseclient020-to-dfuseclient021)
 - [From `@dfuse/client@0.2.2` to `@dfuse/client@0.2.3`](#from-dfuseclient022-to-dfuseclient023)
 
+The on-going list of breaking changes from current major to next one
+can be consulted at the end of the document. You are encourage to fix
+deprecation notices right now (when available).
+
+- [From `@dfuse/client@0.2.x` to `@dfuse/client@next`](#from-dfuseclient022-to-dfuseclientnext)
+
 ### From `@dfuse/eosws-js` to `@dfuse/client`
 
 The first step is to remove the old library from your package and
@@ -184,4 +190,28 @@ Renames:
 - `dtrxOps => dtrxops`
 - `tableOps => tableops`
 
+There is a also a some string fields, all `op` fields that are now
+restricted to only their valid set of strings.
+
 Simply update by fixing the compilations errors, which is a plain rename.
+
+### From `@dfuse/client@0.2.3` to `@dfuse/client@0.2.4`
+
+Might break compilations on some projects but occurs in bug fix version
+bump considered bug against dfuse API real typings.
+
+You will now get compilations errors around some models, mainly around
+action trace fields. Also, the `ActionTraceData` now takes only one
+generic parameter versus 2 before, the second one can be removed, was
+used to type `ActionTraceDbOp` row's data but it's always an hexadecimal
+encoded string.
+
+Simply update by fixing the compilations errors, re-working your logic
+to handle those corner cases that were ignored before.
+
+### From `@dfuse/client@0.2.x` to `@dfuse/client@next`
+
+Some types were rename, here the massive rename that can be done:
+
+- Rename any occurrences of `RAMPOp` type to `RamOp`.
+- Rename any occurrences of `DBOp` type to `DbOp`.

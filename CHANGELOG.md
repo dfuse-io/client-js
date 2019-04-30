@@ -2,6 +2,27 @@
 
 ## In progress
 
+- Renamed `ActionTraceData` `DbOp` to `ActionTraceDbOp`. This fixes
+  a problem where `DbOp` type from library was always the `TableDeltaData`
+  one since they were conflicting having the same name. This rename is **not**
+  a breaking change since it was impossible to import the type.
+
+- Fix `ActionTraceData` `dbops` field definition which was incorrectly
+  using `TableDeltaData` `DbOp` definition while not being the same at all.
+
+  **Warning** Requires some modification steps (resolving new compilation
+  errors for some usage of the library's types). See
+  [From '@dfuse/client@0.2.3' to '@dfuse/client@0.2.4'](./MIGRATION.md#from-dfuseclient023-to-dfuseclient024)
+  section in migration guide.
+
+- Removed duplicated `DbOp` definition which was wrong anyway.
+
+- Deprecated `RAMOP` (renamed to `RamOp`).
+
+- Deprecated `DBOp` (renamed to `DbOp`).
+
+## 0.2.3 (April 30, 2019)
+
 - Fixed typing mismatch between dfuse WebSocket API JSON output
   and our own type definitions.
 

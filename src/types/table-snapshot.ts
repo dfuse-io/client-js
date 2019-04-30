@@ -1,5 +1,5 @@
-import { DbRow } from "./table-delta"
+import { DbRow } from "./common"
 
 export type TableSnapshotData<T = Record<string, any>> = {
-  rows: Array<DbRow<T>>
+  rows: DbRow<T>[]
 }

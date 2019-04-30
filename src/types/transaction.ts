@@ -1,5 +1,5 @@
 import { ActionTrace, Action } from "./action-trace"
-import { DbRow } from "./table-delta"
+import { ExtDTrxOp, DTrxOp, DbOp, RamOp, TableOp, CreationNode } from "./common"
 
 export type TransactionLifecycleData = {
   lifecycle: TransactionLifecycle
@@ -26,8 +26,8 @@ export type TransactionLifecycle = {
   creation_irreversible: boolean
   cancelation_irreversible: boolean
   dtrxops?: DTrxOp[]
-  dbops?: DBOp[]
-  ramops?: RAMOp[]
+  dbops?: DbOp[]
+  ramops?: RamOp[]
   tableops?: TableOp[]
   pub_keys?: string[]
   creation_tree?: CreationNode[]
@@ -59,60 +59,6 @@ export type TransactionTrace = {
   action_traces: ActionTrace<any>[]
   failed_dtrx_trace?: TransactionTrace
   except?: any
-}
-
-/**
- * Represents a node in the creation tree.
- * first number represents the creation node index
- * second number represents the parent node index (-1 for root)
- * third number represents the action index
- */
-export type CreationNode = [number, number, number]
-
-export type ExtDTrxOp = {
-  src_trx_id: string
-  block_num: number
-  block_id: string
-  block_time: string
-} & DTrxOp
-
-export type DTrxOp = {
-  op: "CREATE" | "PUSH_CREATE" | "MODIFY_CREATE" | "MODIFY_CANCEL" | "CANCEL"
-  action_idx: number
-  sender: string
-  sender_id: string
-  payer: string
-  published_at: string
-  delay_until: string
-  expiration_at: string
-  trx_id: string
-  trx?: Transaction
-}
-
-export type DBOp<T = unknown> = {
-  op: "INS" | "UPD" | "REM"
-  action_idx: number
-  account: string
-  table: string
-  scope: string
-  old: DbRow<T>
-  new: DbRow<T>
-  key: string
-}
-
-export type RAMOp = {
-  op: string
-  action_idx: number
-  payer: string
-  delta: number
-  usage: number
-}
-
-export type TableOp = {
-  op: "INS" | "REM"
-  action_idx: number
-  payer: string
-  path: string
 }
 
 export type TransactionReceipt = {

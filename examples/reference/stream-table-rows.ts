@@ -18,7 +18,7 @@ async function main() {
     }
   )
 
-  await waitFor(5000)
+  await waitFor(15000)
   await stream.close()
 }
 

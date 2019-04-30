@@ -1,4 +1,4 @@
-import { DbRow } from "./table-delta"
+import { DbRow } from "./common"
 
 export type StateKeyType = "name" | "hex" | "hex_be" | "uint64"
 
@@ -9,11 +9,10 @@ export type StateAbiResponse = {
 }
 
 /**
- * The actual ABI JSON representation as returned by EOSIO platform.
+ * The actual ABI JSON representation as returned by EOSIO platform. Extracted
+ * from [EOSIO/eosjs](https://github.com/EOSIO/eosjs) library.
  *
- * Extracted from `github.com/EOSIO/eosjs`.
- *
- * See https://github.com/EOSIO/eosjs/blob/develop/src/eosjs-rpc-interfaces.ts#L4
+ * @see https://github.com/EOSIO/eosjs/blob/develop/src/eosjs-rpc-interfaces.ts#L4
  */
 export type Abi = {
   version: string
@@ -70,7 +69,7 @@ export type StateResponse<T = unknown> = {
   last_irreversible_block_id: string
   last_irreversible_block_num: number
   abi?: Abi
-  rows: Array<DbRow<T>>
+  rows: DbRow<T>[]
 }
 
 export type MultiStateResponse<T = unknown> = {
@@ -79,11 +78,11 @@ export type MultiStateResponse<T = unknown> = {
   last_irreversible_block_id: string
   last_irreversible_block_num: number
   abi?: Abi
-  rows: Array<TableRows<T>>
+  rows: TableRows<T>[]
 }
 
 export type TableRows<R = unknown> = {
   account: string
   scope: string
-  rows: Array<DbRow<R>>
+  rows: DbRow<R>[]
 }

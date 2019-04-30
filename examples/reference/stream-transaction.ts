@@ -8,7 +8,7 @@ async function main() {
   })
 
   const stream = await client.streamTransaction(
-    { id: "d9e98cec9fcb5604da38ca250eb22246520bfeee2c35298032c2fbb825eb406d" },
+    { id: "d2233029848840cc67c32a617b7339664a5866bf229a1833afccc3b4653f594a" },
     (message: InboundMessage) => {
       if (message.type !== InboundMessageType.TRANSACTION_LIFECYCLE) {
         return
