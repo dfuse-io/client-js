@@ -1,6 +1,6 @@
 # Changelog
 
-## In progress
+## 0.2.4 (April 30, 2019)
 
 - Renamed `ActionTraceData` `DbOp` to `ActionTraceDbOp`. This fixes
   a problem where `DbOp` type from library was always the `TableDeltaData`

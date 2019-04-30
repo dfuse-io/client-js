@@ -5,6 +5,7 @@ Table of contents:
 - [From `@dfuse/eosws-js` to `@dfuse/client`](#from-dfuseeosws-js-to-dfuseclient)
 - [From `@dfuse/client@0.2.0` to `@dfuse/client@0.2.1`](#from-dfuseclient020-to-dfuseclient021)
 - [From `@dfuse/client@0.2.2` to `@dfuse/client@0.2.3`](#from-dfuseclient022-to-dfuseclient023)
+- [From `@dfuse/client@0.2.3` to `@dfuse/client@0.2.4`](#from-dfuseclient023-to-dfuseclient024)
 
 The on-going list of breaking changes from current major to next one
 can be consulted at the end of the document. You are encourage to fix
