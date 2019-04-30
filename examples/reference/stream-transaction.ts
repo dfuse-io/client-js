@@ -1,11 +1,5 @@
-import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import {
-  createDfuseClient,
-  InboundMessage,
-  InboundMessageType,
-  waitFor,
-  TransactionLifecycleData
-} from "@dfuse/client"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK, prettifyJson } from "../config"
+import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
 
 async function main() {
   const client = createDfuseClient({
@@ -20,18 +14,7 @@ async function main() {
         return
       }
 
-      const lifecycle = (message.data as TransactionLifecycleData).lifecycle
-      const { creation_irreversible, execution_irreversible, cancelation_irreversible } = lifecycle
-
-      console.log(
-        [
-          "Received transaction lifecycle",
-          `- Receipt: ${JSON.stringify(lifecycle.execution_trace.receipt)}`,
-          `- Produced by: ${lifecycle.execution_block_header.producer}`,
-          `- Irreversibility: Creation ${creation_irreversible}, Execution ${execution_irreversible}, Cancellation ${cancelation_irreversible}`,
-          ""
-        ].join("\n")
-      )
+      console.log(prettifyJson(message.data))
     }
   )
 

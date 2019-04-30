@@ -1,6 +1,12 @@
 ## Migration Guide
 
-## From `@dfuse/eosws-js` to `@dfuse/client`
+Table of contents:
+
+- [From `@dfuse/eosws-js` to `@dfuse/client`](#from-dfuseeosws-js-to-dfuseclient)
+- [From `@dfuse/client@0.2.0` to `@dfuse/client@0.2.1`](#from-dfuseclient020-to-dfuseclient021)
+- [From `@dfuse/client@0.2.2` to `@dfuse/client@0.2.3`](#from-dfuseclient022-to-dfuseclient023)
+
+### From `@dfuse/eosws-js` to `@dfuse/client`
 
 The first step is to remove the old library from your package and
 install the new version. Examples below are using Yarn, NPM is similar.
@@ -150,9 +156,9 @@ The [dfuse/client-react-example](https://github.com/dfuse-io/client-react-exampl
 was converted from the old library to the new one. Check [this commit](https://github.com/dfuse-io/client-react-example/commit/46d8df75a3ab03b28f016e429762b75a3249e62f) to see the
 changes that was required to pass from `@dfuse/eosws-js` to `@dfuse/client-js`.
 
-## From `@dfuse/client@0.2.0` to `@dfuse/client@0.2.1`
+### From `@dfuse/client@0.2.0` to `@dfuse/client@0.2.1`
 
-Might break compilations on some projects but occurs in bugfix version
+Might break compilations on some projects but occurs in bug fix version
 bump considered bug against `nodeos` and dfuse API real typings.
 
 You will now get compilations errors around some models, mainly around
@@ -162,3 +168,20 @@ instead of a `number` by `nodeos`).
 
 Simply update by fixing the compilations errors, re-working your logic
 to handle those corner cases that were ignored before.
+
+### From `@dfuse/client@0.2.2` to `@dfuse/client@0.2.3`
+
+Might break compilations on some projects but occurs in bug fix version
+bump considered bug against dfuse API real typings.
+
+You will now get compilations errors around `ActionTraceData` object, mainly
+around ops fields.
+
+Renames:
+
+- `dbOps => dbops`
+- `ramOps => ramops`
+- `dtrxOps => dtrxops`
+- `tableOps => tableops`
+
+Simply update by fixing the compilations errors, which is a plain rename.

@@ -1,11 +1,5 @@
-import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import {
-  createDfuseClient,
-  InboundMessage,
-  InboundMessageType,
-  waitFor,
-  TableDeltaData
-} from "@dfuse/client"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK, prettifyJson } from "../config"
+import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
 
 async function main() {
   const client = createDfuseClient({
@@ -20,10 +14,7 @@ async function main() {
         return
       }
 
-      const { dbop, block_num, step } = message.data as TableDeltaData
-      console.log(
-        `Table eosio/eosio#global delta operation ${dbop.op}, step: ${step} (Block #${block_num})`
-      )
+      console.log(prettifyJson(message.data))
     }
   )
 

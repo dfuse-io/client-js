@@ -9,10 +9,10 @@ export type ActionTraceData<T = Record<string, any>, D = Record<string, any>> = 
   idx: number
   depth: number
   trace: ActionTrace<T>
-  dbOps?: Array<DbOp<D>>
-  ramOps?: RAMOp[]
-  dtrxOps?: DTrxOp[]
-  tableOps?: TableOp[]
+  dbops?: DbOp<D>[]
+  ramops?: RAMOp[]
+  dtrxops?: DTrxOp[]
+  tableops?: TableOp[]
 }
 
 export type ActionTrace<T> = {

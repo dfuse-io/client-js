@@ -1,4 +1,4 @@
-import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK, prettifyJson } from "../config"
 import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
 
 async function main() {
@@ -8,18 +8,23 @@ async function main() {
   })
 
   const stream = await client.streamActionTraces(
-    { accounts: "eosio.token", action_names: "transfer" },
+    {
+      accounts: "eosio.token|thekarmadapp|trustdicewin",
+      with_inline_traces: true,
+      with_dbops: true,
+      with_dtrxops: true,
+      with_ramops: true
+    },
     (message: InboundMessage<any>) => {
       if (message.type !== InboundMessageType.ACTION_TRACE) {
         return
       }
 
-      const { from, to, quantity, memo } = message.data.trace.act.data
-      console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
+      console.log(prettifyJson(message.data))
     }
   )
 
-  await waitFor(5000)
+  await waitFor(15000)
   await stream.close()
 }
 

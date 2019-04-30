@@ -2,6 +2,16 @@
 
 ## In progress
 
+- Fixed typing mismatch between dfuse WebSocket API JSON output
+  and our own type definitions.
+
+  **Warning** Requires some modification steps (resolving new compilation
+  errors for some usage of the library's types). See
+  [From '@dfuse/client@0.2.2' to '@dfuse/client@0.2.3'](./MIGRATION.md#from-dfuseclient022-to-dfuseclient023)
+  section in migration guide.
+
+## 0.2.2 (April 26, 2019)
+
 - Added support for `GET /v0/block_id/by_time` endpoint.
 
 - Added possibility to get a valid API token straight from the dfuse Client
@@ -26,9 +36,7 @@
 - Fixed a bunch of typing errors between actual `nodeos` JSON output
   and our own type definitions as well against dfuse API directly.
   **Warning** Requires some modification steps (resolving new compilation
-  errors for some usage of the library's types). See
-  `From '@dfuse/client@0.2.0' to '@dfuse/client@0.2.1'` in [MIGRATION.md](./MIGRATION.md)
-  guide.
+  errors for some usage of the library's types). See [From '@dfuse/client@0.2.0' to '@dfuse/client@0.2.1'](./MIGRATION.md#from-dfuseclient020-to-dfuseclient021) section in migration guide.
 
 ## 0.2.0 (April 23, 2019)
 

@@ -1,11 +1,5 @@
-import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import {
-  createDfuseClient,
-  InboundMessage,
-  InboundMessageType,
-  HeadInfoData,
-  waitFor
-} from "@dfuse/client"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK, prettifyJson } from "../config"
+import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
 
 async function main() {
   const client = createDfuseClient({
@@ -18,21 +12,7 @@ async function main() {
       return
     }
 
-    const {
-      head_block_id,
-      head_block_num,
-      last_irreversible_block_id,
-      last_irreversible_block_num
-    } = message.data as HeadInfoData
-
-    console.log(
-      [
-        "Block Info",
-        ` Head: #${head_block_num} (${head_block_id})`,
-        ` Irreversible: #${last_irreversible_block_num} (${last_irreversible_block_id})`,
-        ""
-      ].join("\n")
-    )
+    console.log(prettifyJson(message.data))
   })
 
   await waitFor(15000)

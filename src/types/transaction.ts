@@ -5,21 +5,6 @@ export type TransactionLifecycleData = {
   lifecycle: TransactionLifecycle
 }
 
-/**
- * Represents a node in the creation tree.
- * first number represents the creation node index
- * second number represents the parent node index (-1 for root)
- * third number represents the action index
- */
-export type CreationNode = [number, number, number]
-
-export type TableOp = {
-  op: string
-  action_idx: number
-  payer: string
-  path: string
-}
-
 export type TransactionStatus =
   | "pending"
   | "delayed"
@@ -59,7 +44,7 @@ export type Transaction = {
   actions: Action<any>[]
   transaction_extensions: any[]
   signatures?: string[]
-  context_free_data?: Array<Action<any>>
+  context_free_data?: Action<any>[]
 }
 
 export type TransactionTrace = {
@@ -76,6 +61,14 @@ export type TransactionTrace = {
   except?: any
 }
 
+/**
+ * Represents a node in the creation tree.
+ * first number represents the creation node index
+ * second number represents the parent node index (-1 for root)
+ * third number represents the action index
+ */
+export type CreationNode = [number, number, number]
+
 export type ExtDTrxOp = {
   src_trx_id: string
   block_num: number
@@ -84,7 +77,7 @@ export type ExtDTrxOp = {
 } & DTrxOp
 
 export type DTrxOp = {
-  op: string
+  op: "CREATE" | "PUSH_CREATE" | "MODIFY_CREATE" | "MODIFY_CANCEL" | "CANCEL"
   action_idx: number
   sender: string
   sender_id: string
@@ -97,7 +90,7 @@ export type DTrxOp = {
 }
 
 export type DBOp<T = unknown> = {
-  op: string
+  op: "INS" | "UPD" | "REM"
   action_idx: number
   account: string
   table: string
@@ -113,6 +106,13 @@ export type RAMOp = {
   payer: string
   delta: number
   usage: number
+}
+
+export type TableOp = {
+  op: "INS" | "REM"
+  action_idx: number
+  payer: string
+  path: string
 }
 
 export type TransactionReceipt = {
