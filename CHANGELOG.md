@@ -1,6 +1,6 @@
 # Changelog
 
-## In progress
+## 0.2.5 (May 2, 2019)
 
 - Added a check to ensure the API key provided to `createDfuseClient`
   is actually a valid API key. A specialized message being displayed to
