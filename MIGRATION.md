@@ -50,12 +50,12 @@ Convert that to the following:
 
 ```js
 const client = createDfuseClient({
-  apiKey: "Paste you API key here",
+  apiKey: "Paste your API key here",
   network: "mainnet" // Valid values are: `mainnet`, `jungle`, `kylin` or an host name
 })
 ```
 
-_Notice_ You should replace the sequence of characters `Paste you API key here`
+_Notice_ You should replace the sequence of characters `Paste your API key here`
 in the script above with your actual API key obtain from https://app.dfuse.io. A
 valid API key starts with either `mobile_`, `server_` or `web_` followed by a series of
 hexadecimal character (i.e.) `web_0123456789abcdef`).
