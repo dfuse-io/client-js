@@ -33,7 +33,7 @@ When targeting a browser (you will need a bundler like WebPack since we only shi
 ```js
 const { createDfuseClient, InboundMessageType } = require("@dfuse/client")
 
-const client = createDfuseClient({ apiKey: "<Your dfuse API key here>", network: "mainnet" })
+const client = createDfuseClient({ apiKey: "Paste you API key here", network: "mainnet" })
 
 client.streamActionTraces({ accounts: "eosio.token", action_names: "transfer" }, (message) => {
   if (message.type === InboundMessageType.ACTION_TRACE) {
@@ -44,6 +44,11 @@ client.streamActionTraces({ accounts: "eosio.token", action_names: "transfer" },
   console.log("An error occurred.", error)
 })
 ```
+
+_Notice_ You should replace the sequence of characters `Paste you API key here`
+in the script above with your actual API key obtain from https://app.dfuse.io. A
+valid API key starts with either `mobile_`, `server_` or `web_` followed by a series of
+hexadecimal character (i.e.) `web_0123456789abcdef`).
 
 ### Node.js
 

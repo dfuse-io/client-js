@@ -232,8 +232,8 @@ function checkApiKey(apiKey: string) {
   if (!apiKey.match(/^(mobile|server|web)_[0-9a-f]{2,}/i)) {
     const messages = [
       "The provided API key is not in the right format expecting it",
-      "to be start with either `mobile_`, `server_` or `web_` followed",
-      "by a series of hexadecimal character, like `web_0123456789abcdef`",
+      "to start with either `mobile_`, `server_` or `web_` followed",
+      "by a series of hexadecimal character (i.e.) `web_0123456789abcdef`)",
       ""
     ]
 
