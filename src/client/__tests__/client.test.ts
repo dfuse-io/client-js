@@ -7,7 +7,6 @@ import {
   MockRefreshScheduler,
   mock
 } from "./mocks"
-import { InboundMessageType } from "../../message/inbound"
 import { OutboundMessageType } from "../../message/outbound"
 import { Stream } from "../../types/stream"
 import { DfuseError } from "../../types/error"
@@ -50,7 +49,21 @@ describe("DfuseClient", () => {
     })
   })
 
-  it("correctly validate API key (in createDfuseClient)", () => {
+  it("accepts valid API key in upper case (in createDfuseClient)", () => {
+    expect(() => {
+      createDfuseClient({
+        apiKey: "WEB_0123456789ABCDEF",
+        network: "mainnet",
+        httpClient,
+        streamClient,
+        apiTokenStore,
+        refreshScheduler,
+        requestIdGenerator
+      })
+    }).not.toThrow()
+  })
+
+  it("correctly checks API key (in createDfuseClient)", () => {
     try {
       createDfuseClient({ apiKey: "web_!!!!!!", network: "mainnet" })
       fail("Should have thrown a DfuseError")
@@ -58,11 +71,11 @@ describe("DfuseClient", () => {
       expect(error).toBeInstanceOf(DfuseError)
 
       // Let's just check how many lines there is an not the actual message
-      expect(error.message.split("\n").length).toEqual(5)
+      expect(error.message.split("\n").length, error.message).toEqual(5)
     }
   })
 
-  it("correctly validate API key, handling invalid API token (in createDfuseClient)", () => {
+  it("correctly checks API key, handling invalid API token (in createDfuseClient)", () => {
     try {
       createDfuseClient({ apiKey: "eye.1hash17.values", network: "mainnet" })
       fail("Should have thrown a DfuseError")
@@ -70,7 +83,7 @@ describe("DfuseClient", () => {
       expect(error).toBeInstanceOf(DfuseError)
 
       // Let's just check how many lines there is an not the actual message
-      expect(error.message.split("\n").length).toEqual(13)
+      expect(error.message.split("\n").length, error.message).toEqual(13)
     }
   })
 

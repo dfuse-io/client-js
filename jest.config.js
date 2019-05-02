@@ -8,7 +8,8 @@ module.exports = {
     "^.+\\.tsx?$": "ts-jest"
   },
   testEnvironment: "jsdom",
-  testRegex: "((\\.|/)(test|spec))\\.(jsx?|tsx?)$"
+  testRegex: "((\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+  setupFilesAfterEnv: ["jest-expect-message"]
 
   // coverageThreshold: {
   //   global: {
