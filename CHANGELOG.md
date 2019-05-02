@@ -1,5 +1,11 @@
 # Changelog
 
+## In progress
+
+- Added a check to ensure the API key provided to `createDfuseClient`
+  is actually a valid API key. A specialized message being displayed to
+  those using an API token instead.
+
 ## 0.2.4 (April 30, 2019)
 
 - Renamed `ActionTraceData` `DbOp` to `ActionTraceDbOp`. This fixes

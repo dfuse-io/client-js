@@ -10,6 +10,7 @@ import {
 import { InboundMessageType } from "../../message/inbound"
 import { OutboundMessageType } from "../../message/outbound"
 import { Stream } from "../../types/stream"
+import { DfuseError } from "../../types/error"
 
 const defaultRequestId = "dc-123"
 
@@ -39,7 +40,7 @@ describe("DfuseClient", () => {
     apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
 
     client = createDfuseClient({
-      apiKey: "key",
+      apiKey: "web_0123456789abcdef",
       network: "mainnet",
       httpClient,
       streamClient,
@@ -47,6 +48,30 @@ describe("DfuseClient", () => {
       refreshScheduler,
       requestIdGenerator
     })
+  })
+
+  it("correctly validate API key (in createDfuseClient)", () => {
+    try {
+      createDfuseClient({ apiKey: "web_!!!!!!", network: "mainnet" })
+      fail("Should have thrown a DfuseError")
+    } catch (error) {
+      expect(error).toBeInstanceOf(DfuseError)
+
+      // Let's just check how many lines there is an not the actual message
+      expect(error.message.split("\n").length).toEqual(5)
+    }
+  })
+
+  it("correctly validate API key, handling invalid API token (in createDfuseClient)", () => {
+    try {
+      createDfuseClient({ apiKey: "eye.1hash17.values", network: "mainnet" })
+      fail("Should have thrown a DfuseError")
+    } catch (error) {
+      expect(error).toBeInstanceOf(DfuseError)
+
+      // Let's just check how many lines there is an not the actual message
+      expect(error.message.split("\n").length).toEqual(13)
+    }
   })
 
   it("refresh stream token on token refresh", async (done) => {

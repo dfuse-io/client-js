@@ -43,7 +43,7 @@ import {
   V0_FETCH_TRANSACTION,
   V0_FETCH_BLOCK_ID_BY_TIME
 } from "../types/http-client"
-import { DfuseClientError } from "../types/error"
+import { DfuseClientError, DfuseError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
 import { StreamClient, OnStreamMessage } from "../types/stream-client"
 import {
@@ -199,6 +199,8 @@ export interface DfuseClientOptions {
  * @kind Factories
  */
 export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
+  checkApiKey(options.apiKey)
+
   const endpoint = networkToEndpoint(options.network)
   const secureEndpoint = options.secure === undefined ? true : options.secure
 
@@ -224,6 +226,35 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
     refreshScheduler,
     requestIdGenerator
   )
+}
+
+function checkApiKey(apiKey: string) {
+  if (!apiKey.match(/^(mobile|server|web)_[0-9a-f]{2,}/i)) {
+    const messages = [
+      "The provided API key is not in the right format expecting it",
+      "to be start with either `mobile_`, `server_` or `web_` followed",
+      "by a series of hexadecimal character, like `web_0123456789abcdef`",
+      ""
+    ]
+
+    // Assume it's an API token if looks (roughly) like a JWT token
+    if (apiKey.split(".").length === 3) {
+      messages.push(
+        "It seems your providing directly a API token (JWT) instead",
+        "of an API key and are using your previous authentication protocol.",
+        "Please refer to http://docs.dfuse.io/#authentication for",
+        "all the details about API key and how to generate an API token",
+        "from it.",
+        "",
+        "And you can visit https://app.dfuse.io to obtain your free API key",
+        ""
+      )
+    }
+
+    messages.push(`Input received: ${apiKey}`)
+
+    throw new DfuseError(messages.join("\n"))
+  }
 }
 
 function inferApiTokenStore(apiKey: string) {
