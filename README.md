@@ -66,7 +66,7 @@ and [ws](https://www.npmjs.com/package/ws) for `fetch` and `WebSocket` respectiv
 
 Installation instructions using Yarn would be:
 
-    yarn install node-fetch ws
+    yarn add node-fetch ws
 
 In the bootstrap phase of your application, prior doing any `@dfuse/client` imports/require,
 put the following code:
