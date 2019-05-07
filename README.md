@@ -144,6 +144,26 @@ In a Node.js environment, the concrete implementation that is used is the
 This will save and retrieve the token from a local file on the disk
 at `~/.dfuse/<sha256-api-key>/token.info`.
 
+**Note** Depending on your deployment target (`Docker`, VM, etc.), it's possible
+that the home directory (`~`) is not writable, causing the default 
+[OnDiskApiTokenStore](https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html) 
+instance on Node.js environment to not work correctly. In those cases, simply define
+yourself the `apiTokenStore` instance to use and pick the location where the token 
+should be saved. Instantiate a 
+[FileApiTokenStore](https://dfuse-io.github.io/client-js/classes/fileapitokenstore.html) 
+instance and use it as the `apiTokenStore` configuration value when instantiating the 
+dfuse Client:
+
+```
+import { createDfuseClient, FileApiTokenStore } from "@dfuse/client";
+
+const client = createDfuseClient({
+  ...,
+  apiTokenStore: new FileApiTokenStore("/tmp/dfuse-token.json"),
+  ...,
+});
+```
+
 ### API
 
 The full API reference can be found at https://dfuse-io.github.io/client-js/.
