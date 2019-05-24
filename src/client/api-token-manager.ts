@@ -6,6 +6,7 @@ import { ApiTokenInfo } from "../types/auth-token"
 export const DEFAULT_DELAY_BUFFER_PERCENT = 0.95
 
 export interface ApiTokenManager {
+  release(): void
   getTokenInfo: () => Promise<ApiTokenInfo>
 }
 
@@ -53,7 +54,7 @@ class DefaultApiTokenManager implements ApiTokenManager {
   private fetchTokenInfo: () => Promise<ApiTokenInfo>
   private onTokenRefresh: (apiToken: string) => void
   private delayBuffer: number
-  private tokenStore: ApiTokenStore
+  private apiTokenStore: ApiTokenStore
   private refreshScheduler: RefreshScheduler
 
   private fetchTokenPromise?: Promise<ApiTokenInfo>
@@ -63,20 +64,26 @@ class DefaultApiTokenManager implements ApiTokenManager {
     fetchTokenInfo: () => Promise<ApiTokenInfo>,
     onTokenRefresh: (apiToken: string) => void,
     delayBuffer: number,
-    tokenStore: ApiTokenStore,
+    apiTokenStore: ApiTokenStore,
     refreshScheduler: RefreshScheduler
   ) {
     this.fetchTokenInfo = fetchTokenInfo
     this.onTokenRefresh = onTokenRefresh
     this.delayBuffer = delayBuffer
-    this.tokenStore = tokenStore
+    this.apiTokenStore = apiTokenStore
     this.refreshScheduler = refreshScheduler
 
     this.debug = debugFactory("dfuse:token-manager")
   }
 
+  public release(): void {
+    this.debug("Releasing default API token manager")
+    this.refreshScheduler.release()
+    this.apiTokenStore.release()
+  }
+
   public async getTokenInfo(): Promise<ApiTokenInfo> {
-    const tokenInfo = await this.tokenStore.get()
+    const tokenInfo = await this.apiTokenStore.get()
     if (tokenInfo && !isApiTokenExpired(tokenInfo)) {
       this.maybeScheduleNextRefresh(tokenInfo, { forceRefresh: false })
 
@@ -100,7 +107,7 @@ class DefaultApiTokenManager implements ApiTokenManager {
 
     try {
       this.debug("Storing API token into token storage")
-      await this.tokenStore.set(tokenInfo)
+      await this.apiTokenStore.set(tokenInfo)
     } catch (error) {
       this.debug("Storing token into storage failed %s (%o)", error, error)
     }

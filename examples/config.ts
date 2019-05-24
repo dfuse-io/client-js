@@ -2,6 +2,16 @@
 import * as path from "path"
 import dotenv from "dotenv"
 
+// Only used to ensure client library and examples free all handles, you
+// do not need this in your own project (but don't hesitate to use it if you
+// find it useful though).
+if (process.env.DEBUG_LEAKED_HANDLES) {
+  require("leaked-handles").set({
+    fullStack: true,
+    debugSockets: true
+  })
+}
+
 // The two instructions below are there to alter the global scope of Node.js
 // adding to it the `fetch` and `WebSocket` variables. The library by default
 // will pick these variables when present on the global scope, reducing the

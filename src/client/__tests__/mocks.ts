@@ -16,8 +16,13 @@ export function mock<T>(implementation?: (...args: any) => T): jest.Mock<T, any>
 }
 
 export class MockHttpClient implements HttpClient {
+  public releaseMock = mock<void>()
   public authRequestMock = mock<Promise<any>>(() => Promise.resolve())
   public apiRequestMock = mock<Promise<any>>(() => Promise.resolve())
+
+  public release(): void {
+    this.releaseMock()
+  }
 
   public authRequest<T>(
     path: string,
@@ -42,12 +47,17 @@ export class MockHttpClient implements HttpClient {
 }
 
 export class MockStreamClient implements StreamClient {
+  public releaseMock = mock<void>()
   public setApiTokenMock = jest.fn<void, [string]>((_apiToken: string) => {
     return
   })
 
   public registerStreamMock = mock<Promise<Stream>>()
   public unregisterStreamMock = mock<Promise<void>>(() => Promise.resolve())
+
+  public release(): void {
+    this.releaseMock()
+  }
 
   public setApiToken(apiToken: string) {
     this.setApiTokenMock(apiToken)
@@ -130,8 +140,13 @@ export class MockWebSocket implements WebSocket {
 }
 
 export class MockApiTokenStore implements ApiTokenStore {
+  public releaseMock = mock<void>()
   public setMock = mock<Promise<void>>()
   public getMock = mock<Promise<ApiTokenInfo | undefined>>()
+
+  public release(): void {
+    this.releaseMock()
+  }
 
   public set(apiTokenInfo: ApiTokenInfo): Promise<void> {
     return this.setMock(apiTokenInfo)
@@ -143,8 +158,13 @@ export class MockApiTokenStore implements ApiTokenStore {
 }
 
 export class MockRefreshScheduler implements RefreshScheduler {
+  public releaseMock = mock<void>()
   public hasScheduledJobMock = mock<boolean>()
   public scheduleMock = mock<void>()
+
+  public release(): void {
+    this.releaseMock()
+  }
 
   public hasScheduledJob(): boolean {
     return this.hasScheduledJobMock()

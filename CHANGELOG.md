@@ -2,6 +2,16 @@
 
 ## In Progress
 
+- Improves WebSocket streaming reference examples to better
+  show the message flow.
+
+- Fixed basic streaming examples that were not behaving as
+  expected due to a bug.
+
+- Added a `release` method on all interfaces used by the
+  `DfuseClient` so a release of some hold handles can be
+  performed.
+
 - Added `endpoints` getter on `DfuseClient` to reduce code
   required when using Apollo Link.
 

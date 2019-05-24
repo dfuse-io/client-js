@@ -80,6 +80,8 @@ async function main() {
 
   await waitFor(35000)
   await stream.close()
+
+  client.release()
 }
 
 function onMessage(message: InboundMessage) {

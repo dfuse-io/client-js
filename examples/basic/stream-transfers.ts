@@ -16,7 +16,7 @@ async function main() {
   const stream = await client.streamActionTraces(
     { accounts: "eosio.token", action_names: "transfer" },
     (message: InboundMessage<any>) => {
-      if (message.type !== InboundMessageType.ACTION_TRACE) {
+      if (message.type === InboundMessageType.ACTION_TRACE) {
         const { from, to, quantity, memo } = (message.data as ActionTraceData<any>).trace.act.data
         console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
       }
@@ -25,6 +25,8 @@ async function main() {
 
   await waitFor(5000)
   await stream.close()
+
+  client.release()
 }
 
 runMain(main)

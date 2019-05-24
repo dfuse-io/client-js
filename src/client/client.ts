@@ -349,6 +349,13 @@ export class DefaultClient implements DfuseClient {
     )
   }
 
+  public release(): void {
+    this.debug("Releasing default dfuse client")
+    this.httpClient.release()
+    this.streamClient.release()
+    this.apiTokenManager.release()
+  }
+
   //
   /// WebSocket API
   //

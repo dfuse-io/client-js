@@ -70,6 +70,7 @@
     "husky": "^1.1.2",
     "jest": "^24.1.0",
     "jest-expect-message": "^1.0.2",
+    "leaked-handles": "^5.2.0",
     "lint-staged": "^7.3.0",
     "node-fetch": "^2.3.0",
     "patch-package": "^6.0.7",

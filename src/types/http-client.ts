@@ -28,6 +28,15 @@ export const V0_SEARCH_TRANSACTIONS = "/v0/search/transactions"
  */
 export interface HttpClient {
   /**
+   * Release any resources hold by this [[HttpClient]] instance. Must
+   * be tolerant to being called multiple times.
+   *
+   * Once called, the instance is assumed unsuable and should never
+   * be invoked anymore.
+   */
+  release(): void
+
+  /**
    * Make an anonymous request (unauthenticated) to the dfuse Authentication endpoint.
    * Usually used only for issuing an API token from an API key.
    *

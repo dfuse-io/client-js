@@ -48,6 +48,8 @@ async function main() {
 
   await waitFor(50000)
   await engine.stop()
+
+  client.release()
 }
 
 // Only the actual fields we need, the full row is bigger than that

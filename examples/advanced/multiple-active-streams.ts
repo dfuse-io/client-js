@@ -92,7 +92,7 @@ async function main() {
   await waitFor(60000)
   await mergedStream.close()
 
-  console.log("Completed")
+  client.release()
 }
 
 function onListeningFactory(tag: string): OnStreamMessage {

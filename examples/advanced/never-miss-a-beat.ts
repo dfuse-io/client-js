@@ -45,6 +45,8 @@ async function main() {
 
   await waitFor(50000)
   await engine.stop()
+
+  client.release()
 }
 
 type KarmaTransfer = {

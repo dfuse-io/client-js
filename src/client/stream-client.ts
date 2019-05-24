@@ -69,6 +69,16 @@ class DefaultStreamClient {
     this.autoRestartStreamsOnReconnect = autoRestartStreamsOnReconnect
   }
 
+  public release(): void {
+    this.debug("Releasing default stream client")
+    this.socket.disconnect().catch((error) => {
+      this.debug(
+        "An error occurred while disconnecting from socket while releasing instance",
+        error
+      )
+    })
+  }
+
   public setApiToken(apiToken: string) {
     this.socket.setApiToken(apiToken)
   }

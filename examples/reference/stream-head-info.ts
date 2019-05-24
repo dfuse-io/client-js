@@ -8,15 +8,21 @@ async function main() {
   })
 
   const stream = await client.streamHeadInfo((message: InboundMessage) => {
-    if (message.type !== InboundMessageType.HEAD_INFO) {
+    if (message.type === InboundMessageType.LISTENING) {
+      console.log(prettifyJson(message.data))
       return
     }
 
-    console.log(prettifyJson(message.data))
+    if (message.type === InboundMessageType.HEAD_INFO) {
+      console.log(prettifyJson(message.data))
+      return
+    }
   })
 
   await waitFor(15000)
   await stream.close()
+
+  client.release()
 }
 
 runMain(main)

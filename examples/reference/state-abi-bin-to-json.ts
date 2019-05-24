@@ -17,6 +17,8 @@ async function main() {
   } catch (error) {
     console.log("An error occurred", error)
   }
+
+  client.release()
 }
 
 runMain(main)

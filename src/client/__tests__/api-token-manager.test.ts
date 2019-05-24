@@ -150,6 +150,12 @@ describe("ApiTokenManager", () => {
 
     refreshCallBack()
   })
+
+  it("releases scheduler and api token store on release", () => {
+    manager.release()
+    expect(apiTokenStore.releaseMock).toHaveBeenCalledTimes(1)
+    expect(refreshScheduler.releaseMock).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe("isApiTokenExpired", () => {

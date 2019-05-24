@@ -10,16 +10,27 @@ async function main() {
   const stream = await client.streamTableRows(
     { code: "eosio", scope: "eosio", table: "global" },
     (message: InboundMessage) => {
-      if (message.type !== InboundMessageType.TABLE_DELTA) {
+      if (message.type === InboundMessageType.LISTENING) {
+        console.log(prettifyJson(message.data))
         return
       }
 
-      console.log(prettifyJson(message.data))
+      if (message.type === InboundMessageType.TABLE_DELTA) {
+        console.log(prettifyJson(message.data))
+        return
+      }
+
+      if (message.type === InboundMessageType.ERROR) {
+        console.log(prettifyJson(message.data))
+        return
+      }
     }
   )
 
   await waitFor(15000)
   await stream.close()
+
+  client.release()
 }
 
 runMain(main)

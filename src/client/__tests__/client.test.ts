@@ -49,6 +49,14 @@ describe("DfuseClient", () => {
     })
   })
 
+  it("releases http and stream clients on release", () => {
+    client.release()
+    expect(httpClient.releaseMock).toHaveBeenCalledTimes(1)
+    expect(streamClient.releaseMock).toHaveBeenCalledTimes(1)
+    expect(apiTokenStore.releaseMock).toHaveBeenCalledTimes(1)
+    expect(refreshScheduler.releaseMock).toHaveBeenCalledTimes(1)
+  })
+
   it("accepts valid API key in upper case (in createDfuseClient)", () => {
     expect(() => {
       createDfuseClient({

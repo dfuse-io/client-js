@@ -66,6 +66,15 @@ export interface DfuseClient {
    */
   readonly endpoints: DfuseClientEndpoints
 
+  /**
+   * Release any resources hold by this [[DfuseClient]] instance. Must
+   * be tolerant to being called multiple times.
+   *
+   * Once called, the instance is assumed unsuable and should never
+   * be invoked anymore.
+   */
+  release(): void
+
   //
   /// WebSocket API
   //

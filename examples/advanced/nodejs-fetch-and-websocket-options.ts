@@ -95,6 +95,8 @@ async function main() {
   console.log("Socket is now connected.")
   await waitFor(35000)
   await stream.close()
+
+  client.release()
 }
 
 main()

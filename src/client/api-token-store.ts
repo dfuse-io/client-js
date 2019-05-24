@@ -23,6 +23,15 @@ import path from "path"
  * @kind Interfaces
  */
 export interface ApiTokenStore {
+  /**
+   * Release any resources hold by this [[ApiTokenStore]] instance. Must
+   * be tolerant to being called multiple times.
+   *
+   * Once called, the instance is assumed unsuable and should never
+   * be invoked anymore.
+   */
+  release(): void
+
   set: (apiTokenInfo: ApiTokenInfo) => Promise<void>
   get: () => Promise<ApiTokenInfo | undefined>
 }
@@ -40,6 +49,10 @@ export interface ApiTokenStore {
  */
 export class InMemoryApiTokenStore {
   private apiTokenInfo?: ApiTokenInfo
+
+  public release(): void {
+    return
+  }
 
   public async get(): Promise<ApiTokenInfo | undefined> {
     return this.apiTokenInfo
@@ -91,6 +104,10 @@ export class LocalStorageApiTokenStore implements ApiTokenStore {
     }
   }
 
+  public release(): void {
+    return
+  }
+
   public async get(): Promise<ApiTokenInfo | undefined> {
     if (this.apiTokenInfo !== undefined) {
       return this.apiTokenInfo
@@ -126,6 +143,10 @@ export class FileApiTokenStore implements ApiTokenStore {
 
   constructor(filePath: string) {
     this.filePath = filePath
+  }
+
+  public release(): void {
+    return
   }
 
   public async get(): Promise<ApiTokenInfo | undefined> {

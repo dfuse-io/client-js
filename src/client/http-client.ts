@@ -122,6 +122,10 @@ class DefaultHttpClient {
     this.fetch = fetch
   }
 
+  public release(): void {
+    return
+  }
+
   public async authRequest<T>(
     path: string,
     method: string,

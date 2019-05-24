@@ -4,6 +4,7 @@ import debugFactory from "debug"
 export type ScheduleJob = () => void
 
 export interface RefreshScheduler {
+  release(): void
   hasScheduledJob(): boolean
   schedule(delayInSeconds: number, job: ScheduleJob): void
 }
@@ -18,6 +19,14 @@ class DefaultRefreshScheduler {
 
   constructor() {
     this.debug = debugFactory("dfuse:refresh-scheduler")
+  }
+
+  public release(): void {
+    this.debug("Releasing default refresh scheduler")
+    if (this.renewalTimeout !== undefined) {
+      this.debug("Clearing refresh timeout interval")
+      this.clearRefreshTimeout()
+    }
   }
 
   public hasScheduledJob(): boolean {

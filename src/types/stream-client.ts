@@ -13,6 +13,15 @@ import { Stream } from "./stream"
  */
 export interface StreamClient {
   /**
+   * Release any resources hold by this [[StreamClient]] instance. Must
+   * be tolerant to being called multiple times.
+   *
+   * Once called, the instance is assumed unsuable and should never
+   * be invoked anymore.
+   */
+  release(): void
+
+  /**
    * Update the API token that should be used to communicate with the dfuse Stream
    * API. This token is assumed to be fresh and valid.
    *
