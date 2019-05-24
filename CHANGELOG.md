@@ -1,6 +1,6 @@
 # Changelog
 
-## In Progress
+## 0.2.6 (May 24, 2019)
 
 - Improves WebSocket streaming reference examples to better
   show the message flow.
