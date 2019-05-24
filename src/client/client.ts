@@ -11,7 +11,7 @@ import {
   getHeadInfoMessage
 } from "../message/outbound"
 import { InboundMessage } from "../message/inbound"
-import { DfuseClient, RequestIdGenerator } from "../types/client"
+import { DfuseClient, RequestIdGenerator, DfuseClientEndpoints } from "../types/client"
 import { SearchSortType, SearchTransactionsResponse } from "../types/search"
 import { AuthTokenResponse, ApiTokenInfo } from "../types/auth-token"
 import {
@@ -205,13 +205,22 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const secureEndpoint = options.secure === undefined ? true : options.secure
 
   const authUrl = options.authUrl || "https://auth.dfuse.io"
-  const httpUrl = secureEndpoint ? `https://${endpoint}` : `http://${endpoint}`
-  const wsUrl = secureEndpoint ? `wss://${endpoint}` : `ws://${endpoint}`
+  const restUrl = secureEndpoint ? `https://${endpoint}` : `http://${endpoint}`
+  const websocketUrl = secureEndpoint ? `wss://${endpoint}` : `ws://${endpoint}`
+
+  const endpoints: DfuseClientEndpoints = {
+    authUrl,
+    graphqlQueryUrl: `${restUrl}/graphql`,
+    graphqlStreamUrl: `${websocketUrl}/graphql`,
+    restUrl,
+    websocketUrl
+  }
 
   const httpClient =
-    options.httpClient || createHttpClient(authUrl, httpUrl, options.httpClientOptions)
+    options.httpClient || createHttpClient(authUrl, restUrl, options.httpClientOptions)
   const streamClient =
-    options.streamClient || createStreamClient(wsUrl + "/v1/stream", options.streamClientOptions)
+    options.streamClient ||
+    createStreamClient(websocketUrl + "/v1/stream", options.streamClientOptions)
 
   const apiTokenStore = options.apiTokenStore || inferApiTokenStore(options.apiKey)
   const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
@@ -220,6 +229,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 
   return new DefaultClient(
     options.apiKey,
+    endpoints,
     httpClient,
     streamClient,
     apiTokenStore,
@@ -305,6 +315,8 @@ export function networkToEndpoint(network: string): string {
  * methods on it (other EOS endpoints).
  */
 export class DefaultClient implements DfuseClient {
+  public readonly endpoints: DfuseClientEndpoints
+
   protected apiKey: string
   protected apiTokenManager: ApiTokenManager
   protected httpClient: HttpClient
@@ -315,6 +327,7 @@ export class DefaultClient implements DfuseClient {
 
   constructor(
     apiKey: string,
+    endpoints: DfuseClientEndpoints,
     httpClient: HttpClient,
     streamClient: StreamClient,
     apiTokenStore: ApiTokenStore,
@@ -322,6 +335,7 @@ export class DefaultClient implements DfuseClient {
     requestIdGenerator: RequestIdGenerator
   ) {
     this.apiKey = apiKey
+    this.endpoints = endpoints
     this.httpClient = httpClient
     this.streamClient = streamClient
     this.requestIdGenerator = requestIdGenerator

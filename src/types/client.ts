@@ -25,6 +25,14 @@ import { BlockIdByTimeResponse, ComparisonOperator } from "./block-id"
 
 export type RequestIdGenerator = () => string
 
+export type DfuseClientEndpoints = {
+  authUrl: string
+  graphqlQueryUrl: string
+  graphqlStreamUrl: string
+  restUrl: string
+  websocketUrl: string
+}
+
 /**
  * The `DfuseClient` interface is the back-bone of the library. Based on the Facade
  * pattern, this client is your single go to point for interacting with dfuse Stream
@@ -42,6 +50,22 @@ export type RequestIdGenerator = () => string
  * @group Interfaces
  */
 export interface DfuseClient {
+  /**
+   * Returns the final resolved endpoints urls currenctly in used
+   * by the client to reach dfuse services.
+   *
+   * This is useful when using Apollo Client passing it the computed
+   * url without effort.
+   *
+   * ```
+   *  const wsLink = new WebSocketLink({
+   *    uri: dfuseClient.endpoints.graphqlStreamUrl,
+   *    ...,
+   *  });
+   * ```
+   */
+  readonly endpoints: DfuseClientEndpoints
+
   //
   /// WebSocket API
   //
