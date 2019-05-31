@@ -7,7 +7,7 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = await client.searchTransactions(`auth:${account}`, {
+    const response = await client.searchTransactions(`auth:${account} status:executed`, {
       limit: 10,
       sort: "desc"
     })
@@ -20,8 +20,13 @@ async function main() {
       return
     }
 
-    response.transactions.forEach((result: SearchTransactionRow) => {
-      console.log("- " + buildEosqLink(result.lifecycle.id))
+    const transactions = response.transactions || []
+    transactions.forEach((result: SearchTransactionRow) => {
+      console.log(
+        `- ${buildEosqLink(result.lifecycle.id)} (Block #${
+          result.lifecycle.execution_trace!.block_num
+        })`
+      )
     })
     console.log()
   } catch (error) {
