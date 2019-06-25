@@ -96,7 +96,7 @@
     "typedoc-default-themes-extension": "^0.0.3",
     "typedoc-plugin-toc-group": "^0.0.4",
     "typescript": "^3.1.3",
-    "ws": "^6.1.0"
+    "ws": "^7.0.1"
   },
   "dependencies": {
     "debug": "^4.1.0"
