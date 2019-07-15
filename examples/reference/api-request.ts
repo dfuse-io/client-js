@@ -17,7 +17,7 @@ async function main() {
   try {
     const response = await client.apiRequest("/v1/chain/get_info", "GET")
 
-    console.log("Auth issue response", prettifyJson(response))
+    console.log("Chain info response", prettifyJson(response))
   } catch (error) {
     console.log("An error occurred", error)
   }
