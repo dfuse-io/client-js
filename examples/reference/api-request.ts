@@ -12,7 +12,10 @@ import { createDfuseClient } from "@dfuse/client"
  * with types and al.
  */
 async function main() {
-  const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
+  const client = createDfuseClient({
+    apiKey: DFUSE_API_KEY,
+    network: "worbli"
+  })
 
   try {
     const response = await client.apiRequest("/v1/chain/get_info", "GET")

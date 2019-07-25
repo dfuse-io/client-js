@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.7 (July 26, 2019)
+
+- Added support for `Worbli` network straight in the library.
+
 ## 0.2.6 (May 24, 2019)
 
 - Improves WebSocket streaming reference examples to better

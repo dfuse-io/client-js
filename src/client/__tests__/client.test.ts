@@ -848,6 +848,7 @@ describe("networkToEndpoint", () => {
     { network: "mainnet", endpoint: "mainnet.eos.dfuse.io" },
     { network: "jungle", endpoint: "jungle.eos.dfuse.io" },
     { network: "kylin", endpoint: "kylin.eos.dfuse.io" },
+    { network: "worbli", endpoint: "worbli.eos.dfuse.io" },
     { network: "other", endpoint: "other" },
     { network: "something.eos.dfuse.io", endpoint: "something.eos.dfuse.io" }
   ]

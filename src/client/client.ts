@@ -66,7 +66,7 @@ const MAX_UINT32_INTEGER = 2147483647
 export interface DfuseClientOptions {
   /**
    * The network to connect to. Can be a plain string in the set
-   * `mainnet | jungle | kylin`. If it's not a string in this
+   * `mainnet | jungle | kylin | worbli`. If it's not a string in this
    * set, the value is assumed to be an hostname pointing to the
    * the service, for example, your internal dfuse endpoint.
    *
@@ -80,7 +80,7 @@ export interface DfuseClientOptions {
    *
    * @see https://docs.dfuse.io/#endpoints
    */
-  network: "mainnet" | "jungle" | "kylin" | string
+  network: "mainnet" | "jungle" | "kylin" | "worbli" | string
 
   /**
    * You dfuse API key to interact with the dfuse API service. You
@@ -292,7 +292,12 @@ function inferApiTokenStore(apiKey: string) {
 }
 
 export function networkToEndpoint(network: string): string {
-  if (network === "mainnet" || network === "jungle" || network === "kylin") {
+  if (
+    network === "mainnet" ||
+    network === "jungle" ||
+    network === "kylin" ||
+    network === "worbli"
+  ) {
     return `${network}.eos.dfuse.io`
   }
 

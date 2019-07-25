@@ -38,7 +38,7 @@ async function main() {
 
 function buildEosqLink(transactionId: string) {
   let suffix = ""
-  if (DFUSE_API_NETWORK === "jungle" || DFUSE_API_NETWORK === "kylin") {
+  if (["jungle", "kylin", "worbli"].includes(DFUSE_API_NETWORK)) {
     suffix = `.${DFUSE_API_NETWORK}`
   }
 

@@ -153,7 +153,7 @@ function inferEosqHost() {
     return "eosq.app"
   }
 
-  if (["jungle", "kylin"].includes(DFUSE_API_NETWORK)) {
+  if (["jungle", "kylin", "worbli"].includes(DFUSE_API_NETWORK)) {
     return `${DFUSE_API_NETWORK}.eosq.app`
   }
 
