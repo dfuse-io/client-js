@@ -37,7 +37,7 @@ type TransferData = {
  *
  * You will also see how to workaround this problem in some circumstances
  * by creating a merged stream filtering required messages from
- * a pool of possibilities. Having a single stream will alwyas guaranteed
+ * a pool of possibilities. Having a single stream will always guaranteed
  * ordering of messages.
  */
 async function main() {
