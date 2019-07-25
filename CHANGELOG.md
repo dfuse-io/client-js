@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.8 (July 26, 2019)
+
+- Bumped development dependencies.
+- Typo in example file (thanks @marcuswin).
+
 ## 0.2.7 (July 26, 2019)
 
 - Added support for `Worbli` network straight in the library.
