@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.9 @ Next (In progress)
+
+- Added support for `GET /v0/state/table/row` (`stateTableRow`) endpoint.
+- Added support for `symbol` and `symbol_code` as valid `key_type` for easier conversion of values.
+- Now using `POST` version for `stateTablesForScopes` and `stateTableForAccounts`.
+
 ## 0.2.8 (July 26, 2019)
 
 - Bumped development dependencies.
