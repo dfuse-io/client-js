@@ -22,7 +22,8 @@ import {
   StateKeyType,
   StateResponse,
   MultiStateResponse,
-  StatePermissionLinksResponse
+  StatePermissionLinksResponse,
+  StateTableRowResponse
 } from "../types/state"
 import { ApiTokenManager, createApiTokenManager } from "./api-token-manager"
 import { createHttpClient, HttpClientOptions } from "./http-client"
@@ -41,7 +42,8 @@ import {
   HttpClient,
   HttpHeaders,
   V0_FETCH_TRANSACTION,
-  V0_FETCH_BLOCK_ID_BY_TIME
+  V0_FETCH_BLOCK_ID_BY_TIME,
+  V0_STATE_TABLE_ROW
 } from "../types/http-client"
 import { DfuseClientError, DfuseError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
@@ -557,6 +559,32 @@ export class DefaultClient implements DfuseClient {
     })
   }
 
+  public async stateTableRow<T = unknown>(
+    account: string,
+    scope: string,
+    table: string,
+    primaryKey: string,
+    options: {
+      blockNum?: number
+      json?: boolean
+      keyType?: StateKeyType
+      withBlockNum?: boolean
+      withAbi?: boolean
+    } = {}
+  ): Promise<StateTableRowResponse<T>> {
+    return this.apiRequest<StateTableRowResponse<T>>(V0_STATE_TABLE_ROW, "GET", {
+      account,
+      scope,
+      table,
+      primary_key: primaryKey,
+      block_num: options.blockNum,
+      json: options.json === undefined ? true : options.json,
+      key_type: options.keyType,
+      with_block_num: options.withBlockNum,
+      with_abi: options.withAbi
+    })
+  }
+
   public async stateTablesForAccounts<T = unknown>(
     accounts: string[],
     scope: string,
@@ -569,16 +597,24 @@ export class DefaultClient implements DfuseClient {
       withAbi?: boolean
     } = {}
   ): Promise<MultiStateResponse<T>> {
-    return this.apiRequest<MultiStateResponse<T>>(V0_STATE_TABLES_ACCOUNTS, "GET", {
-      accounts: accounts.join("|"),
-      scope,
-      table,
-      block_num: options.blockNum,
-      json: options.json === undefined ? true : options.json,
-      key_type: options.keyType,
-      with_block_num: options.withBlockNum,
-      with_abi: options.withAbi
-    })
+    return this.apiRequest<MultiStateResponse<T>>(
+      V0_STATE_TABLES_ACCOUNTS,
+      "POST",
+      undefined,
+      {
+        accounts: accounts.join("|"),
+        scope,
+        table,
+        block_num: options.blockNum,
+        json: options.json === undefined ? true : options.json,
+        key_type: options.keyType,
+        with_block_num: options.withBlockNum,
+        with_abi: options.withAbi
+      },
+      {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    )
   }
 
   public async stateTablesForScopes<T = unknown>(
@@ -593,16 +629,24 @@ export class DefaultClient implements DfuseClient {
       withAbi?: boolean
     } = {}
   ): Promise<MultiStateResponse<T>> {
-    return this.apiRequest<MultiStateResponse<T>>(V0_STATE_TABLES_SCOPES, "GET", {
-      account,
-      scopes: scopes.join("|"),
-      table,
-      block_num: options.blockNum,
-      json: options.json === undefined ? true : options.json,
-      key_type: options.keyType,
-      with_block_num: options.withBlockNum,
-      with_abi: options.withAbi
-    })
+    return this.apiRequest<MultiStateResponse<T>>(
+      V0_STATE_TABLES_SCOPES,
+      "POST",
+      undefined,
+      {
+        account,
+        scopes: scopes.join("|"),
+        table,
+        block_num: options.blockNum,
+        json: options.json === undefined ? true : options.json,
+        key_type: options.keyType,
+        with_block_num: options.withBlockNum,
+        with_abi: options.withAbi
+      },
+      {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    )
   }
 
   public async apiRequest<T>(

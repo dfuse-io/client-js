@@ -16,7 +16,8 @@ import {
   StateResponse,
   MultiStateResponse,
   StateKeyType,
-  StateTableScopesResponse
+  StateTableScopesResponse,
+  StateTableRowResponse
 } from "./state"
 import { Stream } from "./stream"
 import { HttpQueryParameters, HttpHeaders } from "./http-client"
@@ -372,6 +373,7 @@ export interface DfuseClient {
    * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
    * `json: false`, then hexadecimal representation of its binary data is returned instead.
    * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table.
+   * Can be one of `uint64`, `name`, `hex`, `hex_be`, `symbol` or `symbol_code`.
    * @param options.withBlockNum (defaults `false`) Will return one `blockNum` with each row.
    * Represents the block at which that row was last changed.
    * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
@@ -392,6 +394,54 @@ export interface DfuseClient {
   ): Promise<StateResponse<T>>
 
   /**
+   * `GET /v0/state/table/row`
+   *
+   * Fetches a single row from the state of any table, at any block height.
+   *
+   * @param account Contract account targeted by the action.
+   * @param scope The name-encoded scope of the table you are requesting.
+   * For example, user balances for tokens live in their account name's scope.
+   * This is contract dependent, so inspect the ABI for the contract you are interested in.
+   * @param table The name-encoded table name you want to retrieve.
+   * For example, user balances for tokens live in the accounts table.
+   * Refer to the contract's ABI for a list of available tables.
+   * This is contract dependent.
+   * @param primaryKey The string representation of the primary key that you want to retrieve. The
+   * `primaryKey` is always a string, but can be encoded differently, for example `name` encoded
+   * like an account. The `keyType` is used to know how to transform the value in the string to the
+   * correct type.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the
+   * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
+   * `json: false`, then hexadecimal representation of its binary data is returned instead.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table
+   * as well as how to interpret the `primary_key` received in string. Can be one of `uint64`, `name`,
+   * `hex`, `hex_be`, `symbol` or `symbol_code`.
+   * @param options.withBlockNum (defaults `false`) Will return one `blockNum` with each row.
+   * Represents the block at which that row was last changed.
+   * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
+   *
+   * @preview This endpoint is preview mode. This means it might be changed or removed and
+   * is not covered by breaking compatiblity policy of the project until it's out of preview.
+   *
+   * @see  https://docs.dfuse.io/#rest-api-get-v0-state-table-row
+   */
+  stateTableRow<T = unknown>(
+    account: string,
+    scope: string,
+    table: string,
+    primaryKey: string,
+    options?: {
+      blockNum?: number
+      json?: boolean
+      keyType?: StateKeyType
+      withBlockNum?: boolean
+      withAbi?: boolean
+    }
+  ): Promise<StateTableRowResponse<T>>
+
+  /**
    * `GET /v0/state/tables/accounts`
    *
    * Fetches a table for a given contract account for a group of scopes, at any block height.
@@ -407,8 +457,8 @@ export interface DfuseClient {
    * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
    * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
    * `json: false`, then hexadecimal representation of its binary data is returned instead.
-   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned
-   * table.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table.
+   * Can be one of `uint64`, `name`, `hex`, `hex_be`, `symbol` or `symbol_code`.
    * @param options.withBlockNum (defaults `false`) Will return one block_num with each row.
    * Represents the block at which that row was last changed.
    * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
@@ -444,8 +494,8 @@ export interface DfuseClient {
    * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
    * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
    * `json: false`, then hexadecimal representation of its binary data is returned instead.
-   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned
-   * table.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table.
+   * Can be one of `uint64`, `name`, `hex`, `hex_be`, `symbol` or `symbol_code`.
    * @param options.withBlockNum (defaults `false`) Will return one block_num with each row.
    * Represents the block at which that row was last changed.
    * @param options.withAbi (defaults `false`) Will return the ABI in effect at block `block_num`.

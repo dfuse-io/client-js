@@ -169,9 +169,16 @@ class DefaultHttpClient {
     const userHeaders = headers || {}
     const mergedHeaders = { ...defaultHeaders, ...userHeaders }
 
-    let jsonBody: string | undefined
+    let transformedBody: string | undefined
     if (body !== undefined) {
-      jsonBody = JSON.stringify(body)
+      const contentType = this.getHeaderValue(mergedHeaders, "content-type")
+      if (contentType === undefined || contentType === "application/json") {
+        transformedBody = JSON.stringify(body)
+      } else if (contentType === "application/x-www-form-urlencoded") {
+        transformedBody = this.formEncodedBody(body)
+      } else {
+        transformedBody = body
+      }
     }
 
     try {
@@ -180,10 +187,14 @@ class DefaultHttpClient {
         method,
         url,
         mergedHeaders,
-        (jsonBody || "").length
+        (transformedBody || "").length
       )
 
-      const response = await this.fetch(url, { headers: mergedHeaders, method, body: jsonBody })
+      const response = await this.fetch(url, {
+        headers: mergedHeaders,
+        method,
+        body: transformedBody
+      })
 
       this.debug(
         "Received response [%s %s %s](headers: %o)",
@@ -240,5 +251,33 @@ class DefaultHttpClient {
     }
 
     return entries.join("&")
+  }
+
+  private formEncodedBody(fields: HttpQueryParameters): string {
+    const entries = []
+    for (const key of Object.keys(fields)) {
+      const value = fields[key]
+      if (value !== undefined) {
+        entries.push(key + "=" + value)
+      }
+    }
+
+    return entries.join("&")
+  }
+
+  // FIXME: In real world scenario, an HTTP header can appear more than onced, but we do not
+  //        deal with this case here yet.
+  private getHeaderValue(headers: HttpHeaders, key: string): string | undefined {
+    for (const candidateKey in headers) {
+      if (candidateKey.toLowerCase() === key.toLowerCase()) {
+        return headers[candidateKey]
+      }
+    }
+
+    return undefined
+  }
+
+  private hasHeaderKey(headers: HttpHeaders, key: string): boolean {
+    return this.getHeaderValue(headers, key) !== undefined
   }
 }

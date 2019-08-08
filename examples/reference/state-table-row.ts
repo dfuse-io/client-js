@@ -5,11 +5,13 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = await client.stateTableScopes("eosio.token", "stat")
+    const response = await client.stateTableRow("eosio.token", "eoscanadacom", "accounts", "EOS", {
+      keyType: "symbol_code"
+    })
 
-    console.log("State table response", prettifyJson(response))
+    console.log("State table row response", prettifyJson(response))
   } catch (error) {
-    console.log("An error occurred", error)
+    console.log("An error occurred", prettifyJson(error))
   }
 
   client.release()
