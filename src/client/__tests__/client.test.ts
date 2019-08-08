@@ -726,10 +726,10 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/accounts",
-        "GET",
-        { accounts: "eosio|second", scope: "scope", table: "table", json: true },
+        "POST",
         undefined,
-        undefined
+        { accounts: "eosio|second", scope: "scope", table: "table", json: true },
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 
@@ -751,7 +751,8 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/accounts",
-        "GET",
+        "POST",
+        undefined,
         {
           accounts: "eosio|second",
           block_num: 10,
@@ -762,8 +763,7 @@ describe("DfuseClient", () => {
           with_abi: true,
           with_block_num: false
         },
-        undefined,
-        undefined
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 
@@ -779,10 +779,10 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/scopes",
-        "GET",
-        { account: "eosio", scopes: "scope|second", table: "table", json: true },
+        "POST",
         undefined,
-        undefined
+        { account: "eosio", scopes: "scope|second", table: "table", json: true },
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 
@@ -804,7 +804,8 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/scopes",
-        "GET",
+        "POST",
+        undefined,
         {
           account: "eosio",
           block_num: 10,
@@ -815,8 +816,7 @@ describe("DfuseClient", () => {
           with_abi: true,
           with_block_num: false
         },
-        undefined,
-        undefined
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 
