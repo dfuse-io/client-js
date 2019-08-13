@@ -1,10 +1,20 @@
 # Changelog
 
-## 0.2.9 @ Next (In progress)
+## 0.2.11 @ Next (In progress)
 
 - Added support for `GET /v0/state/table/row` (`stateTableRow`) endpoint.
 - Added support for `symbol` and `symbol_code` as valid `key_type` for easier conversion of values.
 - Now using `POST` version for `stateTablesForScopes` and `stateTableForAccounts`.
+
+## 0.2.10 (August 12, 2019)
+
+- Fixed typings for `stateTableForScopes` and `stateTableForAccounts` that was not correct
+  according to dfuse REST API.
+
+## 0.2.9 (August 12, 2019)
+
+- Fixed typings for `StateTableScopesResponse` that was not correct
+  according to dfuse REST API.
 
 ## 0.2.8 (July 26, 2019)
 

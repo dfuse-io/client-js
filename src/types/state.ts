@@ -60,7 +60,7 @@ export type LinkedPermission = {
 
 export type StateTableScopesResponse = {
   block_num: number
-  accounts: string[]
+  scopes: string[]
 }
 
 export type StateResponse<T = unknown> = {
@@ -78,7 +78,7 @@ export type MultiStateResponse<T = unknown> = {
   last_irreversible_block_id: string
   last_irreversible_block_num: number
   abi?: Abi
-  rows: TableRows<T>[]
+  tables: TableRows<T>[]
 }
 
 export type TableRows<R = unknown> = {
