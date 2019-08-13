@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.9 (August 12, 2019)
+## 0.2.10 (August 12, 2019)
 
 - Fixed typings for `stateTableForScopes` and `stateTableForAccounts` that was not correct
   according to dfuse REST API.
