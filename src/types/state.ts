@@ -60,7 +60,7 @@ export type LinkedPermission = {
 
 export type StateTableScopesResponse = {
   block_num: number
-  accounts: string[]
+  scopes: string[]
 }
 
 export type StateResponse<T = unknown> = {
