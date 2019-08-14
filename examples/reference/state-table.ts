@@ -5,7 +5,7 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = await client.stateTable("moneymarket1", "moneymarket1", "sbalances4")
+    const response = await client.stateTable("eosio.token", "EOS", "stat")
 
     console.log("State table response", prettifyJson(response))
   } catch (error) {
