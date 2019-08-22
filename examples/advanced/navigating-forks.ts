@@ -10,32 +10,31 @@ import {
 } from "@dfuse/client"
 
 /**
- * In this example, we will showcase how to navigate micro-forks
- * by correclty processing the new/undo/redo steps ensuring to have
- * up-to-date data against the current longuest active chain on
+ * In this example, we will showcase how to navigate microforks
+ * by correclty processing the new/undo/redo steps, ensuring that you have
+ * up-to-date data against the current longest active chain on
  * the network.
  *
- * Micro-forks can happen when multitudes of scenarios and need
+ * Microforks can happen in many different scenarios and need
  * to be handled correctly to ensure up-to-date information is
  * available.
  *
- * To know more about micro-forks, check out
+ * To learn more about microforks, check out
  * https://www.eoscanada.com/en/microforks-everything-you-need-to-know-about-microforks-on-an-eos-blockchain
  * for global base knowledge about them.
  *
  * The dfuse Stream API is able to send you undo/redo steps when
- * some blocks are not part of the longuest chain anymore (`undo`) or
- * in the opposite, re-become part of the longuest chain (`redo`).
+ * some blocks are not part of the longest chain anymore (`undo`) or
+ * in the opposite, become part of the longust chain again (`redo`).
  *
- * In the examples, we keep a list of the 5 last updates to the
- * `eosio/global/eosio` table. Upon `new` step, the update is pushed
- * on the stack (last item being popped first if stack at max capacity
+ * In this example, we keep a list of the 5 last updates to the
+ * `eosio/global/eosio` table. Upon each `new` step, the update is pushed
+ * on the stack (last item being popped first if the stack is at max capacity
  * of 5 elements). On an `undo` step, we pop the top element from the
- * top of the stack. On a `redo` step, we push it back on top applying
+ * top of the stack. On a `redo` step, we push it back the top applying
  * the same rule as with a `new` step.
  *
  * @see https://docs.dfuse.io/#websocket-based-api-navigating-forks
- * @see https://www.eoscanada.com/en/microforks-everything-you-need-to-know-about-microforks-on-an-eos-blockchain
  */
 async function main() {
   const client = createDfuseClient({
@@ -52,7 +51,7 @@ async function main() {
   client.release()
 }
 
-// Only the actual fields we need, the full row is bigger than that
+// Only retrieve the actual fields we need, the full row is bigger than that
 type EosioGlobalRow = {
   total_ram_stake: number
   total_unpaid_blocks: number
@@ -85,7 +84,7 @@ class Engine {
       {
         listen: true,
         fetch: true,
-        // We use progress to display current state of table at regular interval
+        // We use progress to display the current state of the table at a regular interval
         with_progress: 50
       }
     )
