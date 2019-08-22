@@ -22,22 +22,22 @@ type TransferData = {
 }
 
 /**
- * In this example, we showcase how to have multiple streams active
- * at the same time. We will listen for `eosio` `buyrambytes` action
- * on one stream on `eosio.token` `transfer` notification performed
+ * In this example, we showcase how to have multiple active streams
+ * at the same time. We will listen for `eosio::buyrambytes` action
+ * on one stream, and for `eosio.token::transfer` notifications performed
  * on receiver `eosio.ram`.
  *
  * We will also show the differences and impacts of having two separate
- * streams instead of a single one by implementing a sinle stream that
- * listens for both actions one pass.
+ * streams, instead of a single one by implementing a signle stream that
+ * listens for both actions in one pass.
  *
  * You will learn how to have multiple active streams, that multiple
- * active streams are independent from each other and ordering of messages
+ * active streams are independent from each other and that the ordering of messages
  * across streams is not guaranteed.
  *
  * You will also see how to workaround this problem in some circumstances
- * by creating a merged stream filtering required messages from
- * a pool of possibilities. Having a single stream will always guaranteed
+ * by creating a merged stream, filtering required messages from
+ * a pool of possibilities. Having a single stream will always guarantee the
  * ordering of messages.
  */
 async function main() {
@@ -87,7 +87,7 @@ async function main() {
   )
 
   console.log(
-    "Notice how `Buy RAM` is always before `RAM cost` thanks to strict ordering of a single stream."
+    "Notice how `Buy RAM` is always before `RAM cost` thanks to the strict ordering of a single stream."
   )
   await waitFor(60000)
   await mergedStream.close()
@@ -116,9 +116,9 @@ function onTransferToEosioRamAction(message: ActionTraceInboundMessage<TransferD
  * logic is that you will receive any action matching one of the various
  * combination of forming the three parameters `account/action/receiver`.
  *
- * In most use cases, you are caring really about a subset of the
- * combinations, like in our example here where we are caring about
- * only two possibility.
+ * In most use cases, you only care about a subset of the
+ * combinations, as in our example here where we only care about
+ * two possibilities.
  *
  * When using a merged stream, you have a strict ordering of the
  * action as they appear on the chain, in the correct order. So
