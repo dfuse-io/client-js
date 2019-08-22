@@ -8,19 +8,19 @@ import {
   waitFor
 } from "@dfuse/client"
 
-const account = "joshkauffman"
+const account = "eoscanadacom"
 const resultPerPage = 50
 const maxResults = 500
 
 /**
- * In this example, we showcase how to search cursor to paginate through
- * the multiple page of search results.
+ * In this example, we showcase how to use a cursor to paginate through
+ * multiple pages of search results.
  *
- * We also show at the same time how to work with the search result rows
- * to obtain only the matching actions of the transaction instead of dealing
+ * At the same time, we go over how to work with the search result rows
+ * to obtain only the matching actions of the transaction, instead of dealing
  * with all the actions in the transaction.
  *
- * This is usually what most people expects to have from the API (the
+ * This is usually what most people expect to have from the API (the
  * actions of the transaction that matched the search criteria).
  */
 async function main() {
@@ -47,17 +47,17 @@ async function main() {
          * A transaction is composed of a deep trace of action traces
          * representing the execution of the various transaction's actions.
          *
-         * In dfuse API, there is sometimes the needs to assiocate some data
-         * with a particular action trace, a database operation for example
+         * In dfuse API, there is sometimes the need to assiocate some data
+         * with a particular action trace. For example, a database operation
          * backlink through an `action_idx` property to the actual action
          * trace that generates this operation.
          *
-         * The `action_idx` is not easily to work with at the transaction
-         * level since the dfuse API consumer needs to perform a deep-first
+         * The `action_idx` is not easy to work with at the transaction
+         * level since the dfuse API consumer needs to perform a depth-first
          * traversal of the execution tree to determine the actual action.
          *
          * To ease that process, the helper `flattenActionTraces` can be used
-         * to get a flatten list of action traces where each index of the list
+         * to get a flattened list of action traces, where each index of the list
          * map to the correct `action_idx` value.
          *
          * This can than later be used to easily find the action representing
@@ -66,9 +66,9 @@ async function main() {
         const flattenedActionTraces = flattenActionTraces(result.lifecycle)
 
         // /**
-        //  * Using dfuse Search API, you received the full transaction as a result,
-        //  * however, in this transaction, while there can be 10 different actions,
-        //  * maybe only 2 out of the 10 actually matches the query.
+        //  * Using dfuse Search API, you received the full transaction as a result.
+        //  * However a transaction may contain 10 different actions,
+        //  * while only 2 out of the 10 actually matches the query.
         //  *
         //  * The `matchingActionTraces` helper can easily be used to extract
         //  * only the matching action traces out of a `SearchTransactionRow`
@@ -92,20 +92,20 @@ async function main() {
       })
 
       /**
-       * To determine end of current pages through dfuse Search API one
-       * must conditionally check either if the cursor is empty or
+       * To determine the end of current pages through dfuse Search API, you
+       * must conditionally check either if the cursor returns empty or
        * if the search result count of this request is lower than our
        * expected results per page.
        *
        * **Caveat** In an ascending search, the dfuse Search stops at
-       * at current time Irreversible Block or Head Block but more blocks
-       * might come in the future. This means that event if there is less
+       * at current time Irreversible Block or Head Block, but more blocks
+       * might come in the future. This means that even if there is less
        * results than expected per page, future blocks might add more
-       * results hence the `cursor` being non empty.
+       * results, hence the `cursor` not returning as empty.
        *
-       * **Note** Doing a descending search however will yield an empty
+       * **Note** Doing a descending search will yield an empty
        * string cursor at some point because you will reach the Genesis
-       * Block of the chain (Block #1) at some point.
+       * Block of the chain (Block #1).
        */
       if (page.cursor === "" || page.transactions.length < resultPerPage) {
         // No more pages, stop page fetch
