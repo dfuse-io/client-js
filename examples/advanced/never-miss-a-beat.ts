@@ -11,20 +11,20 @@ import {
 } from "@dfuse/client"
 
 /**
- * In this example, we will showcase how to implement bullet proof
- * data integrity when using the dfuse Stream by ensuring you never
+ * In this example, we will showcase how to implement bulletproof
+ * data integrity while using the dfuse Stream by ensuring you never
  * miss a single beat.
  *
- * This pattern can be used when you need to process messages only
- * once while still ensuring you correctly get all your blocks,
+ * This pattern can be used when you want to process messages only
+ * once, while still ensuring you correctly receive all the blocks,
  * transactions and actions you want to process.
  *
- * We will show and example how to easily mark the stream progress
- * and how the marker is then used when the socket re-connects to
+ * We go through an example of how to easily mark the stream progress
+ * and how the marker is then used when the socket reconnects to
  * restart the stream at the exact location you need.
  *
- * In the example. we will implement an action persistence storer
- * showing our to restart at the exact correct place a commit had
+ * In the example we will implement an action persistence storer,
+ * having our code restart at the exact correct place a commit had
  * occurred.
  *
  * @see https://docs.dfuse.io/#websocket-based-api-never-missing-a-beat
@@ -86,7 +86,7 @@ class Engine {
       {
         // You can use the `with_progress` to be sure to commit
         // actions at least each 10 blocks. This is useful if your stream
-        // is low traffic so you don't need to wait until next
+        // is low traffic so you don't need to wait until the next
         // action to commit all changes.
         with_progress: 10
       }
@@ -95,11 +95,11 @@ class Engine {
     this.stream.onPostRestart = () => {
       console.log()
       console.log(
-        "<============= Stream has re-connected to socket correctly (at latest `mark()`) =============>"
+        "<============= Stream has reconnected to the socket correctly (at latest `mark()`) =============>"
       )
       console.log()
 
-      // Upon a re-connection, we need to clear previously accumulated actions
+      // Upon a reconnection, we need to clear previously accumulated actions
       this.flushPending()
     }
 
@@ -115,7 +115,7 @@ class Engine {
 
     /**
      * Once a progress message is seen, it means we've seen all messages for
-     * block prior it, so le'ts commit until this point.
+     * blocks prior it, so let's commit until this point.
      */
     console.log()
     console.log("Committing changes due to seeing a message from a progress message")
@@ -124,7 +124,7 @@ class Engine {
 
   private onAction = (message: ActionTraceInboundMessage<KarmaTransfer>) => {
     /**
-     * Once a message from a block ahead of last committed block is seen,
+     * Once a message from a block ahead of the last committed block is seen,
      * commit all changes up to this point.
      */
     const { block_id, block_num } = message.data
@@ -158,9 +158,9 @@ class Engine {
     this.lastCommittedBlockNum = blockNum
 
     /**
-     * This is one of the most important call of the example. By marking the stream
-     * at the right block, upon restart, the stream will automatically starts back
-     * at this block ensuring to never miss a single action.
+     * This is one of the most important calls of the example. By marking the stream
+     * at the right block, upon restarting, the stream will automatically start back
+     * at this block ensuring you never miss a single action.
      */
     console.log(`Marking stream up to block ${printBlock(blockId, blockNum)}`)
     this.ensureStream().mark({ atBlockNum: blockNum })
@@ -175,11 +175,11 @@ class Engine {
   }
 
   /**
-   * When the stream re-connects, we must flush all our current pending transactions
-   * as the stream re-starts at our last marked block, inclusive.
+   * When the stream reconnects, we must flush all of the current pending transactions
+   * as the stream restarts at our last marked block, inclusively.
    *
-   * Since we mark after commit, anything currently in pending was not committed,
-   * hence let's flush all pending actions, dfuse Stream will stream them back.
+   * Since we mark after commit, anything currently in pending was not committed.
+   * As such, let's flush all pending actions. The dfuse Stream API will stream them back.
    */
   public async flushPending() {
     console.log("Flushing pending action(s) due to refresh")

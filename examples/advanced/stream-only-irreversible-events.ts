@@ -8,13 +8,13 @@ import {
 } from "@dfuse/client"
 
 /**
- * In this example, you will use the `irreversible_only` option on some
- * stream to receives only a notification when data is now deemed
+ * In this example, you will use the `irreversible_only` option on your
+ * stream so that you only receive a notification once the data has been deemed
  * irreversible by the chain.
  *
  * **Note** Only `streamActionTraces` will correctly support the common
  * `irreversible_only` flag for now. If you try on anything else, you
- * will still receives reversible notifications, be aware!
+ * will still receive reversible notifications, be aware!
  */
 async function main() {
   const client = createDfuseClient({
@@ -27,8 +27,8 @@ async function main() {
     onMessage,
     {
       /**
-       * We request to only obtain irreversible notifications by specifying this
-       * common flag and setting to true.
+       * Request to only obtain irreversible notifications by specifying this
+       * common flag and setting its value to true.
        */
       irreversible_only: true
     }
