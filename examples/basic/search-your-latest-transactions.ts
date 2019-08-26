@@ -7,7 +7,7 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = await client.searchTransactions(`auth:${account} status:executed`, {
+    const response = await client.searchTransactions(`auth:${account}`, {
       limit: 10,
       sort: "desc"
     })
