@@ -4,8 +4,8 @@ import { createDfuseClient, DfuseClient, DfuseError, DfuseApiError } from "@dfus
 async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
-  console.log("Does 'eoscanadacom' exists?", await hasAccount(client, "eoscanadacom"))
-  console.log("Does 'eosblahblah' exists?", await hasAccount(client, "bhalbalaseos"))
+  console.log("Does 'eoscanadacom' exist?", await hasAccount(client, "eoscanadacom"))
+  console.log("Does 'eosblahblah' exist?", await hasAccount(client, "eosblahblah"))
 
   client.release()
 }
@@ -13,7 +13,7 @@ async function main() {
 async function hasAccount(client: DfuseClient, account: string): Promise<boolean> {
   const response = await client.stateTable("eosio", account, "userres")
 
-  // If we get at least one row, the account exists, otherwise, it doesn't
+  // If we get at least one row, the account exists. Otherwise, it doesn't.
   return response.rows.length > 0
 }
 

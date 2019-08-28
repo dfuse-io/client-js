@@ -9,19 +9,19 @@ import {
 } from "@dfuse/client"
 
 /**
- * In this example, we will show case how to be get notifications when certain
+ * In this example, we will showcase how to be get notifications when certain
  * events happen in the client and underlying socket.
  *
- * You will probably don't see that much here, unless you are able to
- * generation a closing of the connection and then letting it come
+ * You probably won't see that much here, unless you are able to
+ * generate a closing of the connection and then allow it to come
  * back. Restarting the network interface while the script is running
- * might work.
+ * might achieve this.
  *
- * In this example, you will registering listener for the following events:
- * - Socket `onError`: when an error occurs with the connection, you will still receive an `onClose` right aftet this one.
+ * In this example, you will register a listener for the following events:
+ * - Socket `onError`: when an error occurs with the connection. You will still receive an `onClose` right aftet this one.
  * - Socket `onClose`: when the connection of the `Socket` was closed.
  * - Socket `onReconnect`: when the socket has automatically reconnected.
- * - Socket `onInvalidMessage`: when the socket receives a message of type it's not aware of (i.e. it's no in the enum `InbountMessageType`).
+ * - Socket `onInvalidMessage`: when the socket receives a message type it's not aware of (i.e. it's not in the enum `InboundMessageType`).
  *
  * We will also register an `onPostRestart` listener on the `Stream`, which is called after
  * a `listen` has been sent back to the remote endpoint due to a socket `onReconnect`
@@ -37,7 +37,7 @@ async function main() {
     },
 
     onClose(event: any) {
-      console.log("Socket has closed its onnection.", { reason: event.reason, code: event.code })
+      console.log("Socket has closed its connection.", { reason: event.reason, code: event.code })
     },
 
     onReconnect() {
@@ -50,7 +50,7 @@ async function main() {
     },
 
     onInvalidMessage(message: any) {
-      console.log("Socket has received a message of type it does not handle.", message.type)
+      console.log("Socket has received a message type it does not handle.", message.type)
     }
   }
 
@@ -74,7 +74,7 @@ async function main() {
   stream.onPostRestart = () => {
     console.log()
     console.log(
-      "<============= Stream has restart to its previous point (or HEAD if never `mark()`) =============>"
+      "<============= Stream has restarted to its previous point (or HEAD if never `mark()`) =============>"
     )
   }
 

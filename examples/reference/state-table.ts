@@ -5,7 +5,7 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = await client.stateTableScopes("eosio.token", "stat")
+    const response = await client.stateTable("eosio.token", "EOS", "stat")
 
     console.log("State table response", prettifyJson(response))
   } catch (error) {

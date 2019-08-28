@@ -1,11 +1,11 @@
 import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
 import { IncomingMessage } from "http"
 /**
- * In this example, we will show case how to avoid polluting the global
+ * In this example, we will showcase how to avoid polluting the global
  * scope to configure the `fetch` and `WebSocket` values.
  *
- * Indeed, polluting the global scope is not a recommended practicte
- * specially when alternatives are present to handle those cases.
+ * Indeed, polluting the global scope is not a recommended practicte,
+ * especially when alternatives are present to handle those cases.
  *
  * We will configure the `DfuseClient` instance when creating it via
  * the factory to pass the `fetch` and `WebSocket options directly.
@@ -33,24 +33,24 @@ async function main() {
          * The factory receives the full resolved URL, API token included,
          * of the remote endpoint to connect to.
          *
-         * It's here also, when using the Node.js enviroment, in your own
-         * factory, that you can customize the WebSocket client instance.
+         * When using the Node.js enviroment in your own
+         * factory, it is here that you can customize the WebSocket client instance.
          * In the factory below, we jump the `maxPayload` size to 200M,
-         * this can be useful when streaming really big tables like the
+         * which can be useful when streaming really big tables like the
          * `voters` table on EOS.
          *
-         * We also add an error logging of errors occurring at the HTTP Upgrade
+         * We also add error logging for errors occurring at the HTTP Upgrade
          * level before turning the connection into a WebSocket connection. This
-         * can happens when authorization happens with your API token.
+         * can happen when authorization happens with your API token.
          *
-         * **Note** Don't try to override the `onopen`, `onclose`, `onerror`
-         * and `onmessage` handler, they are overwritten by the `Socket` instance
+         * **Note** Don't try to override the `onOpen`, `onClose`, `onError`
+         * and `onMessage` handler, they are overwritten by the `Socket` instance
          * for its own usage.
          *
          * **Important Web Browser Usage Notice**
          * We are in a Node.js context here, the `WebSocketClient` is a
          * Node.js implementation of WebSocket Protocol. It does not have
-         * quite the same API interface, the configuration done below
+         * quite the same API interface. The configuration done below
          * will not work in a Browser environment! Check W3C Browser
          * WebSocket API to see what is accepted as it's second argument.
          *
@@ -66,7 +66,7 @@ async function main() {
             console.log("Socket upgrade response status code.", response.statusCode)
 
             // You need to remove the listener at some point since this factory
-            // is called at each re-connection with the remote endpoint!
+            // is called at each reconnection with the remote endpoint!
             webSocket.removeListener("upgrade", onUpgrade)
           }
 
