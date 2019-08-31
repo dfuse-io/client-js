@@ -1,9 +1,12 @@
 import debugFactory, { IDebugger } from "debug"
-
-import { OutboundMessage } from "../message/outbound"
-import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { DfuseClientError, DfuseSocketError } from "../types/error"
-import { WebSocket, Socket, SocketMessageListener, WebSocketFactory } from "../types/socket"
+import {
+  WebSocket,
+  Socket,
+  SocketMessageListener,
+  WebSocketFactory,
+  SocketConnectOptions
+} from "../types/socket"
 
 export interface SocketOptions {
   /**
@@ -54,6 +57,8 @@ export interface SocketOptions {
    */
   keepAliveIntervalInMs?: number
 
+  webSocketProtocols?: string | string[]
+
   /**
    * A factory method used to create the `WebSocket` instance that should be
    * used by the [[Socket]] instance.
@@ -78,15 +83,6 @@ export interface SocketOptions {
    * @default `undefined` (Inferred based on environment, see `Inferrence` note above)
    */
   webSocketFactory?: WebSocketFactory
-
-  /**
-   * A callback that can be provided to be notified when the [[Socket]] receives a
-   * message in which the `type` field is not part of the list on known inbound
-   * message types (see [[InboundMessageType]]).
-   *
-   * @default `() => {}` (noop)
-   */
-  onInvalidMessage?: (message: object) => void
 
   /**
    * A callback that can be provided to be notified when the [[Socket]] just performed
@@ -138,9 +134,8 @@ export interface SocketOptions {
   onClose?: (event: object) => void
 }
 
-export type ConnectOptions = {
-  onReconnect?: () => void
-}
+// @deprecated Please use SocketConnectOptions instead, will be removed eventually
+export type ConnectOptions = SocketConnectOptions
 
 /**
  * Create an actual [[Socket]] instance that will be used as the interface to wrap all
@@ -156,13 +151,21 @@ export function createSocket(url: string, options: SocketOptions = {}): Socket {
     reconnectDelayInMs: DEFAULT_RECONNECT_DELAY_IN_MS,
     keepAlive: true,
     keepAliveIntervalInMs: DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS,
-    webSocketFactory: inferWebSocketFactory(options.webSocketFactory),
+    webSocketFactory: inferWebSocketFactory(
+      options.id,
+      options.webSocketProtocols,
+      options.webSocketFactory
+    ),
     ...options
   })
 }
 
-function inferWebSocketFactory(webSocketFactory?: WebSocketFactory): WebSocketFactory {
-  const debug = debugFactory("dfuse:socket")
+function inferWebSocketFactory(
+  id: string | undefined,
+  webSocketProtocols?: string | string[],
+  webSocketFactory?: WebSocketFactory
+): WebSocketFactory {
+  const debug = debugFactory("dfuse:socket" + (id ? `:${id}` : ""))
 
   if (webSocketFactory !== undefined) {
     debug("Using user provided `webSocketFactory` option.")
@@ -172,13 +175,13 @@ function inferWebSocketFactory(webSocketFactory?: WebSocketFactory): WebSocketFa
   // If we are in a Browser environment and `WebSocket` is available, use it
   if (typeof window !== "undefined" && (window as any).WebSocket != null) {
     debug("Using `WebSocket` global value found on 'window' variable (Browser environment).")
-    return (url: string) => Promise.resolve(new (window as any).WebSocket(url))
+    return async (url: string) => new (window as any).WebSocket(url, webSocketProtocols)
   }
 
   // If we are in a Node.js like environment and `WebSocket` is available, use it
   if (typeof global !== "undefined" && (global as any).WebSocket != null) {
     debug("Using `WebSocket` global value found on 'global' variable (Node.js environment).")
-    return (url: string) => Promise.resolve(new (global as any).WebSocket(url))
+    return async (url: string) => new (global as any).WebSocket(url, webSocketProtocols, {})
   }
 
   // Otherwise, throw an exception
@@ -219,6 +222,7 @@ class DefaultSocket implements Socket {
   private debug: IDebugger
   private listener?: SocketMessageListener
   private onReconnectListener?: () => void
+  private onTerminationListener?: () => void
   private intervalHandler?: any
 
   private connectionPromise?: Promise<void>
@@ -239,22 +243,23 @@ class DefaultSocket implements Socket {
 
   public async connect(
     listener: SocketMessageListener,
-    options: ConnectOptions = {}
+    options: SocketConnectOptions = {}
   ): Promise<void> {
     this.debug("About to connect to remote endpoint.")
     if (this.connectionPromise !== undefined) {
       return this.connectionPromise
     }
 
+    if (this.isConnected) {
+      return
+    }
+
     this.listener = listener
     this.onReconnectListener = options.onReconnect
+    this.onTerminationListener = options.onTermination
 
     this.connectionPromise = new Promise<void>((resolve, reject) => {
       this.debug("Connection promise started, creating and opening socket.")
-      if (this.isConnected) {
-        return
-      }
-
       this.createAnOpenSocket(
         this.onSocketConnectOpenFactory(resolve),
         this.onSocketErrorFactory(reject),
@@ -303,7 +308,7 @@ class DefaultSocket implements Socket {
     return this.closePromise
   }
 
-  public async send<T>(message: OutboundMessage<T>): Promise<void> {
+  public async send<T = unknown>(message: T): Promise<void> {
     if (!this.isConnected) {
       this.debug("Not connected, re-connecting prior sending message.")
       await this.reconnect()
@@ -314,7 +319,7 @@ class DefaultSocket implements Socket {
       throw new DfuseSocketError("Socket not connected, unable to send message correctly.")
     }
 
-    this.debug("Sending message %O through socket.", message)
+    this.debug("Sending message %o through socket.", message)
     this.socket!.send(JSON.stringify(message))
   }
 
@@ -407,7 +412,7 @@ class DefaultSocket implements Socket {
   }
 
   private onSocketCloseFactory = () => {
-    return this.commonOnSocketCloseFactory("reconnect", () => {
+    return this.commonOnSocketCloseFactory("connect", () => {
       this.reconnect().catch((error) => {
         this.debug("The re-connection never succeed, will not retry anymore.", error)
       })
@@ -420,9 +425,10 @@ class DefaultSocket implements Socket {
     })
   }
 
-  private commonOnSocketCloseFactory = (tag: string, reconnectWorker: () => void) => (
-    event: CloseEvent
-  ) => {
+  private commonOnSocketCloseFactory = (
+    tag: "connect" | "reconnect",
+    reconnectWorker: () => void
+  ) => (event: CloseEvent) => {
     this.debug("Received `onclose` (via %s) notification from socket.", tag)
     this.isConnected = false
     this.connectionPromise = undefined
@@ -439,50 +445,33 @@ class DefaultSocket implements Socket {
     this.debug("Sending a `onClose` notification to client consumer (via %s).", tag)
     this.onClose(event)
 
-    if (event.code !== 1000 && event.code !== 1005) {
+    if (event.code !== 1000 && event.code !== 1005 && this.options.autoReconnect) {
       this.debug(
         "Socket has close abnormally (via %s), trying to re-connect to socket (infinite retry).",
         tag
       )
+
       reconnectWorker()
+    } else {
+      // It's really the end, notify `onTermination` handler if set
+      if (this.onTerminationListener) {
+        this.onTerminationListener()
+      }
     }
   }
 
   private onSocketMessage = (event: MessageEvent) => {
-    let payload: any
+    let message: any
     try {
-      payload = JSON.parse(event.data) as { [key: string]: any }
+      message = JSON.parse(event.data) as { [key: string]: any }
     } catch (error) {
-      this.debug("Received a non JSON message, are you sure you are talking to dfuse API?")
-      return
-    }
-
-    const type = payload.type
-    if (!this.canHandleType(type)) {
-      this.debug(
-        "Sending an `onInvalidMessage` notification to client consumer for type [%s].",
-        type
-      )
-      this.onInvalidMessage(payload)
-      return
-    }
-
-    if (type === "ping") {
-      this.debug("Discarding 'ping' message from reaching the underlying message listener.")
+      this.debug("Received a non-JSON message, are you sure you are talking to dfuse API?")
       return
     }
 
     if (this.listener) {
-      this.listener(payload as InboundMessage)
+      this.listener(message)
     }
-  }
-
-  private canHandleType(type: string) {
-    const actualType = (type || "").toLowerCase()
-    const validTypes = Object.keys(InboundMessageType).map((value) => value.toLowerCase())
-
-    // We know that in the Enum, keys are the same as the type values, so this works
-    return validTypes.indexOf(actualType) > -1
   }
 
   private registerKeepAliveHandler() {
@@ -564,10 +553,6 @@ class DefaultSocket implements Socket {
     this.socket = undefined
   }
 
-  private onInvalidMessage(message: object) {
-    ;(this.options.onInvalidMessage || noop)(message)
-  }
-
   /**
    * We notify both the `onReconnect` option passed when constructing
    * the socket and the one (if present) that was passed when connecting
@@ -578,16 +563,16 @@ class DefaultSocket implements Socket {
   private onReconnect() {
     // Let's call the `connect` `onReconnectListener` first then followed
     // by the one the consumer of the socket passed
-    ;(this.onReconnectListener || noop)()
-    ;(this.options.onReconnect || noop)()
+    if (this.onReconnectListener) this.onReconnectListener()
+    if (this.options.onReconnect) this.options.onReconnect()
   }
 
   private onClose(message: any) {
-    ;(this.options.onClose || noop)(message)
+    if (this.options.onClose) this.options.onClose(message)
   }
 
   private onError(message: any) {
-    ;(this.options.onError || noop)(message)
+    if (this.options.onError) this.options.onError(message)
   }
 
   private keepAliveOption(): boolean {

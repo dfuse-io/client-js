@@ -10,8 +10,8 @@ describe("socket", () => {
   let mockWebSocket: MockWebSocket
   let receivedMessages: InboundMessage[]
   const noopListener = () => null
-  const accumulatingListener = (message: InboundMessage) => {
-    receivedMessages.push(message)
+  const accumulatingListener = (message: unknown) => {
+    receivedMessages.push(message as InboundMessage)
   }
 
   beforeEach(() => {
@@ -468,45 +468,6 @@ describe("socket", () => {
 
     expect(receivedMessages).toHaveLength(1)
     expect(receivedMessages[0]).toEqual({ type: InboundMessageType.LISTENING, data: {} })
-  })
-
-  it("notifies onInvalidMessage when message type is invalid", async () => {
-    const onInvalidMessage = jest.fn()
-    const socket = createSocket("any", {
-      onInvalidMessage,
-      webSocketFactory: createWebSocketFactory(mockWebSocket)
-    })
-
-    setTimeout(() => {
-      openConnection(mockWebSocket)
-    }, 0)
-
-    expect.hasAssertions()
-    await expect(socket.connect(accumulatingListener)).resolves.toBeUndefined()
-    sendRawMessageToConnection(mockWebSocket, {
-      data: JSON.stringify({ type: "something else" })
-    })
-
-    expect(onInvalidMessage).toHaveBeenCalledTimes(1)
-    expect(onInvalidMessage).toHaveBeenCalledWith({ type: "something else" })
-  })
-
-  it("does not forward received message to listener when invalid type", async () => {
-    const socket = createSocket("any", {
-      webSocketFactory: createWebSocketFactory(mockWebSocket)
-    })
-
-    setTimeout(() => {
-      openConnection(mockWebSocket)
-    }, 0)
-
-    expect.hasAssertions()
-    await expect(socket.connect(accumulatingListener)).resolves.toBeUndefined()
-    sendRawMessageToConnection(mockWebSocket, {
-      data: JSON.stringify({ type: "something else" })
-    })
-
-    expect(receivedMessages).toHaveLength(0)
   })
 
   it("performs a single connect on multiple send calls without being connected yet", async () => {

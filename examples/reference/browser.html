@@ -3,7 +3,7 @@
 <!--
     In this example, we showcase how to use the UMD build of dfuse client to
     enable usage of the `@dfuse/client` in a Browser directly whitout the need
-    to use a bundling tool like WebPack or Rollup.
+    to use a bundling tool like Webpack or Rollup.
 -->
 
 <html lang="en-US">
@@ -100,21 +100,23 @@
       //
       // Don't hesitate to report an error if it's not the case.
       //
-      const { createDfuseClient, InboundMessageType, waitFor } = dfuseClient
+      const { createDfuseClient, waitFor } = dfuseClient
 
       const client = createDfuseClient({
-        apiKey: "<Paste API key here!>",
+        apiKey: "<Paste your dfuse API key here!>",
         network: "mainnet"
       })
 
       let transfers = []
 
       const onMessage = (message) => {
-        if (message.type === InboundMessageType.ACTION_TRACE) {
-          const { from, to, quantity, memo } = message.data.trace.act.data
-          const transfer = `Transfer [${from} -> ${to}, ${quantity}] (${memo})`
+        if (message.type === "data") {
+          message.data.searchTransactionsForward.trace.matchingActions.forEach((action) => {
+            const { from, to, quantity, memo } = action.json
+            const transfer = `Transfer [${from} -> ${to}, ${quantity}] (${memo})`
 
-          transfers = [...transfers.slice(-100), transfer]
+            transfers = [...transfers.slice(-100), transfer]
+          })
 
           updateTransfers(transfers)
         }
@@ -128,10 +130,16 @@
       }
 
       const run = async () => {
-        const stream = await client.streamActionTraces(
-          { accounts: "eosio.token", action_names: "transfer" },
-          onMessage
-        )
+        const operation = `
+          subscription {
+            searchTransactionsForward(query: "receiver: eosio.token action:transfer") {
+              trace { matchingActions { json } }
+            }
+          }
+        `
+
+        const stream = await client.graphql(operation, { onMessage })
+
         await waitFor(5000)
         await stream.close()
       }

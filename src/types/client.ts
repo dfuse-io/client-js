@@ -7,6 +7,7 @@ import {
 import { ApiTokenInfo, AuthTokenResponse } from "./auth-token"
 import { SearchTransactionsResponse, SearchSortType } from "./search"
 import { OnStreamMessage } from "./stream-client"
+import { OnGraphqlStreamMessage } from "./graphql-stream-client"
 
 import {
   StateAbiResponse,
@@ -23,6 +24,7 @@ import { Stream } from "./stream"
 import { HttpQueryParameters, HttpHeaders } from "./http-client"
 import { TransactionLifecycle } from "./transaction"
 import { BlockIdByTimeResponse, ComparisonOperator } from "./block-id"
+import { GraphqlDocument, GraphqlOperationType, GraphqlVariables } from "./graphql"
 
 export type RequestIdGenerator = () => string
 
@@ -75,6 +77,20 @@ export interface DfuseClient {
    * be invoked anymore.
    */
   release(): void
+
+  //
+  /// GraphQL API
+  //
+
+  graphql<T = unknown>(
+    document: string | GraphqlDocument,
+    options?: {
+      operationType?: GraphqlOperationType
+      id?: string
+      variables?: GraphqlVariables
+      onMessage?: OnGraphqlStreamMessage<T>
+    }
+  ): Promise<Stream | T>
 
   //
   /// WebSocket API

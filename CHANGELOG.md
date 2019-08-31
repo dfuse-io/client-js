@@ -1,10 +1,49 @@
 # Changelog
 
-## 0.2.11 @ Next (In progress)
+## 0.3.0 @ Next (In progress)
+
+### Changes
+
+- Added support for GraphQL directly in the library. The client has now a `graphql(...)` method.
+  All document operation type are supported: Query, Mutation & Subscription. For now, you must provide
+  the document as a `string` value. You can use the `gql` string literal, but you must send it as a
+  string to the client for now. See [GraphQL - Use 'gql' tag & Typings](./examples/advanced/graphql-gql-tag.ts)
+  example about how to do just that.
+
+  **Note** Passing directly a `gql` will be supported on the next iteration of the release candidate.
+
+- It's now possible to `join` an existing `Stream` object. After receiving a stream, you can
+  now do `await stream.join()` to wait until the `Stream` completes. A stream completes when:
+
+  - It's `close` method has been called by the client.
+  - The server sent the completion message completing the stream.
+  - The server sent an irrecoverable error terminating the stream.
 
 - Added support for `GET /v0/state/table/row` (`stateTableRow`) endpoint.
+
 - Added support for `symbol` and `symbol_code` as valid `key_type` for easier conversion of values.
+
 - Now using `POST` version for `stateTablesForScopes` and `stateTableForAccounts`.
+
+### Breaking Changes
+
+- (Light) The `SocketOptions#onInvalidMessage` has been removed completely. Since now all messages are
+  forwarded, this was now useless. Note that `ping` and other `keep alive` are still trapped by the library
+  and you will never receive them directly anymore.
+
+- (Light) The `SocketListenerMessage` type now being more loose, all messages are forwarded to it, so it could be
+  possible to receive messages that you did not receive before. This trickles down to the `OnStreamMessage` listener
+  of Stream API. Ensures that you validate the `type` field and only consume messages that are of interest to you.
+
+  But in reality, this has really low impact as the protocol did not change and as such, no new messages can arrive
+  for now.
+
+- (Light) The `SocketListenerMessage` type is has been loosen, now accepting `unknown` instead of `InboundMessage`.
+- (Light) The `Socket#send` method type has been loosen, now accepting `unknown` instead of `OutboundMessage`.
+
+### Deprecations
+
+- Deprecated `ConnectOptions` (renamed to `SocketConnectOptions` in a different file now also).
 
 ## 0.2.10 (August 12, 2019)
 
@@ -63,8 +102,9 @@
 
 - Removed duplicated `DbOp` definition which was wrong anyway.
 
-- Deprecated `RAMOP` (renamed to `RamOp`).
+### Deprecations
 
+- Deprecated `RAMOP` (renamed to `RamOp`).
 - Deprecated `DBOp` (renamed to `DbOp`).
 
 ## 0.2.3 (April 30, 2019)

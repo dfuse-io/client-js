@@ -6,6 +6,7 @@ Table of contents:
 - [From `@dfuse/client@0.2.0` to `@dfuse/client@0.2.1`](#from-dfuseclient020-to-dfuseclient021)
 - [From `@dfuse/client@0.2.2` to `@dfuse/client@0.2.3`](#from-dfuseclient022-to-dfuseclient023)
 - [From `@dfuse/client@0.2.3` to `@dfuse/client@0.2.4`](#from-dfuseclient023-to-dfuseclient024)
+- [From `@dfuse/client@0.2.x` to `@dfuse/client@0.3.0`](#from-dfuseclient02x-to-dfuseclient030)
 
 The on-going list of breaking changes from current major to next one
 can be consulted at the end of the document. You are encourage to fix
@@ -214,9 +215,20 @@ encoded string.
 Simply update by fixing the compilations errors, re-working your logic
 to handle those corner cases that were ignored before.
 
-### From `@dfuse/client@0.2.x` to `@dfuse/client@next`
+### From `@dfuse/client@0.2.x` to `@dfuse/client@0.3.0`
 
 Some types were rename, here the massive rename that can be done:
 
 - Rename any occurrences of `RAMPOp` type to `RamOp`.
 - Rename any occurrences of `DBOp` type to `DbOp`.
+- Rename any occurrences of `ConnectOptions` type to `SocketConnectOptions`
+
+If you had the `onInvalidMessage` socket options set, simply remove it, it's
+not used anymore.
+
+Ensure that you validate the `type` of each message you receive through
+`dfuse Stream API` (`streamXXX` methods) to ensure you only deal with
+message you care about.
+
+If you had a dependency on `Socket` class, the type for `send` and `SocketMessageListener`
+are now looser accepting any type instead of only `dfuse Stream API` types.

@@ -1,11 +1,10 @@
 import { InboundMessageType, InboundMessage } from "../../message/inbound"
-import { createStreamClient, StreamClientOptions } from "../stream-client"
+import { createStreamClient } from "../stream-client"
 import { StreamClient } from "../../types/stream-client"
-import { mock, MockSocket } from "./mocks"
+import { mock, MockSocket, createSocketController, SocketController } from "./mocks"
 import { OutboundMessageType, OutboundMessage } from "../../message/outbound"
 import { DfuseClientError } from "../../types/error"
-import { SocketMessageListener } from "../../types/socket"
-import { SocketOptions, ConnectOptions } from "../socket"
+import { SocketMessageListener, SocketConnectOptions } from "../../types/socket"
 
 const message1: OutboundMessage = {
   type: OutboundMessageType.GET_HEAD_INFO,
@@ -21,13 +20,15 @@ const message2: OutboundMessage = {
 
 describe("StreamClient", () => {
   let socket: MockSocket
+  let socketController: SocketController
   let client: StreamClient
 
   beforeEach(() => {
     socket = new MockSocket()
-    socket.connectMock.mockReturnValue(Promise.resolve())
-    socket.disconnectMock.mockReturnValue(Promise.resolve())
     socket.sendMock.mockReturnValue(Promise.resolve())
+
+    socketController = createSocketController(socket)
+    socketController.setDisconnected()
 
     client = createStreamClient("any", {
       socket
@@ -95,7 +96,7 @@ describe("StreamClient", () => {
     expect(socket.disconnectMock).toHaveBeenCalledTimes(0)
   })
 
-  it("calls socket connect when registering first stream", async () => {
+  it("calls socket connect when registering and socket not connected", async () => {
     await client.registerStream(message1, jest.fn())
 
     expect(socket.connectMock).toHaveBeenCalledTimes(1)
@@ -152,54 +153,38 @@ describe("StreamClient", () => {
   })
 
   it("forwards message to right registered stream when there is a single one", async () => {
-    let sendMessage: (message: InboundMessage) => void
     const streamOnMessage = mock<InboundMessage>()
-
-    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
-      sendMessage = listener
-      return Promise.resolve()
-    })
-
     await client.registerStream(message1, streamOnMessage)
 
-    // @ts-ignore
-    const mustSendMessage = sendMessage
-    const message = { type: InboundMessageType.PING, req_id: message1.req_id, data: {} }
+    const message = { type: InboundMessageType.PROGRESS, req_id: message1.req_id, data: {} }
 
-    mustSendMessage(message)
+    socketController.send(message)
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
     expect(streamOnMessage).toHaveBeenCalledWith(message)
   })
 
   it("forwards message to right registered stream when there is multiples", async () => {
-    let sendMessage: (message: InboundMessage) => void
     const streamOnMessage1 = mock<InboundMessage>()
     const streamOnMessage2 = mock<InboundMessage>()
-
-    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
-      sendMessage = listener
-      return Promise.resolve()
-    })
 
     await client.registerStream(message1, streamOnMessage1)
     await client.registerStream(message2, streamOnMessage2)
 
     // @ts-ignore
-    const mustSendMessage = sendMessage
     const sentMessage1 = {
-      type: InboundMessageType.PING,
+      type: InboundMessageType.PROGRESS,
       req_id: message1.req_id,
       data: { field: 1 }
     }
 
     const sentMessage2 = {
-      type: InboundMessageType.PING,
+      type: InboundMessageType.PROGRESS,
       req_id: message2.req_id,
       data: { field: 2 }
     }
 
-    mustSendMessage(sentMessage1)
-    mustSendMessage(sentMessage2)
+    socketController.send(sentMessage1)
+    socketController.send(sentMessage2)
 
     expect(streamOnMessage1).toHaveBeenCalledTimes(1)
     expect(streamOnMessage1).toHaveBeenCalledWith(sentMessage1)
@@ -209,41 +194,23 @@ describe("StreamClient", () => {
   })
 
   it("ignores message when no registered stream", async () => {
-    let sendMessage: (message: InboundMessage) => void
     const streamOnMessage = mock<InboundMessage>()
-
-    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
-      sendMessage = listener
-      return Promise.resolve()
-    })
-
     await client.registerStream(message1, streamOnMessage)
 
-    // @ts-ignore
-    const mustSendMessage = sendMessage
-    const message = { type: InboundMessageType.PING, req_id: message1.req_id, data: {} }
+    const message = { type: InboundMessageType.PROGRESS, req_id: message1.req_id, data: {} }
 
-    mustSendMessage(message)
+    socketController.send(message)
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
     expect(streamOnMessage).toHaveBeenCalledWith(message)
   })
 
   it("ignores message when no registered stream exists for id", async () => {
-    let sendMessage: (message: InboundMessage) => void
     const streamOnMessage = mock<InboundMessage>()
-
-    socket.connectMock.mockImplementation((listener: SocketMessageListener) => {
-      sendMessage = listener
-      return Promise.resolve()
-    })
-
     await client.registerStream(message1, streamOnMessage)
 
-    // @ts-ignore
-    const mustSendMessage = sendMessage
-    const message = { type: InboundMessageType.PING, req_id: "random_id", data: {} }
+    const message = { type: InboundMessageType.PROGRESS, req_id: "random_id", data: {} }
 
-    mustSendMessage(message)
+    socketController.send(message)
     expect(streamOnMessage).toHaveBeenCalledTimes(0)
   })
 
@@ -251,25 +218,17 @@ describe("StreamClient", () => {
     const stream = await client.registerStream(message1, jest.fn())
 
     socket.isConnectedMock.mockReturnValue(false)
-    stream.close()
+    await stream.close()
 
     expect(socket.sendMock).toHaveBeenCalledTimes(1)
     expect(socket.sendMock).toHaveBeenCalledWith(message1)
   })
 
   it("automatically restarts stream by default on reconnection", async () => {
-    let notifyOnReconnect: (message: InboundMessage) => void
     const streamOnMessage = mock<InboundMessage>()
-
-    socket.connectMock.mockImplementation((_: any, options: ConnectOptions) => {
-      notifyOnReconnect = options.onReconnect!
-      return Promise.resolve()
-    })
-
     await client.registerStream(message1, streamOnMessage)
 
-    // @ts-ignore Flagged as potentially undefined, but will have been set by the time we reach this execution point
-    notifyOnReconnect()
+    socketController.notifyReconnection()
 
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, message1)
@@ -281,33 +240,22 @@ describe("StreamClient", () => {
       autoRestartStreamsOnReconnect: false
     })
 
-    let notifyOnReconnect: (message: InboundMessage) => void
     const streamOnMessage = mock<InboundMessage>()
-
-    socket.connectMock.mockImplementation((_: any, options: ConnectOptions) => {
-      notifyOnReconnect = options.onReconnect!
-      return Promise.resolve()
-    })
-
     const stream = await client.registerStream(message1, streamOnMessage)
 
-    // @ts-ignore Will have been set by the time we reach this execution point
-    notifyOnReconnect()
-
-    expect(socket.sendMock).toHaveBeenCalledTimes(1)
-
+    // Assume there was a reconnect at this point
     await stream.restart()
+
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, message1)
   })
 
   it("change start_block when restart marker is used to restart", async () => {
     const streamOnMessage = mock<InboundMessage>()
-
     const stream = await client.registerStream(message1, streamOnMessage)
 
     // Assume there was a reconnect at this point
-    stream.restart({ atBlockNum: 10 })
+    await stream.restart({ atBlockNum: 10 })
 
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
@@ -325,7 +273,7 @@ describe("StreamClient", () => {
     stream.mark({ atBlockNum: 100 })
 
     // Assume there was a reconnect at this point
-    stream.restart({ atBlockNum: 50 })
+    await stream.restart({ atBlockNum: 50 })
 
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
@@ -344,7 +292,7 @@ describe("StreamClient", () => {
     stream.mark({ atBlockNum: 100 })
 
     // Assume there was a reconnect at this point
-    stream.restart()
+    await stream.restart()
 
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
@@ -353,6 +301,40 @@ describe("StreamClient", () => {
       type: "get_head_info",
       start_block: 100
     })
+  })
+
+  it("stream mark on stream client only accept correct atBlockNum marker", async () => {
+    const streamOnMessage = mock<InboundMessage>()
+    const stream = await client.registerStream(message1, streamOnMessage)
+
+    const expectedError = new DfuseClientError(
+      "Only non-zero & positive `atBlockNum` markers are accepted for this operation"
+    )
+
+    expect(() => {
+      stream.mark({ cursor: "" })
+    }).toThrowError(expectedError)
+
+    expect(() => {
+      stream.mark({ atBlockNum: 0 })
+    }).toThrowError(expectedError)
+
+    expect(() => {
+      stream.mark({ atBlockNum: -1 })
+    }).toThrowError(expectedError)
+  })
+
+  it("restart marker on stream client only accept correct atBlockNum marker", async () => {
+    const streamOnMessage = mock<InboundMessage>()
+    const stream = await client.registerStream(message1, streamOnMessage)
+
+    const expectedError = new DfuseClientError(
+      "Only non-zero & positive `atBlockNum` markers are accepted for this operation"
+    )
+
+    expect(stream.restart({ cursor: "" })).rejects.toThrowError(expectedError)
+    expect(stream.restart({ atBlockNum: 0 })).rejects.toThrowError(expectedError)
+    expect(stream.restart({ atBlockNum: -1 })).rejects.toThrowError(expectedError)
   })
 
   it("throws when trying to restart a stream that was closed", async () => {

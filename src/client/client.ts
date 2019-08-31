@@ -47,6 +47,8 @@ import {
 } from "../types/http-client"
 import { DfuseClientError, DfuseError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
+import { createGraphqlStreamClient, GraphqlStreamClientOptions } from "./graphql-stream-client"
+
 import { StreamClient, OnStreamMessage } from "../types/stream-client"
 import {
   ApiTokenStore,
@@ -58,6 +60,8 @@ import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
 import { TransactionLifecycle } from "../types/transaction"
 import { ComparisonOperator, BlockIdByTimeResponse } from "../types/block-id"
+import { GraphqlStreamClient, OnGraphqlStreamMessage } from "../types/graphql-stream-client"
+import { GraphqlVariables, GraphqlOperationType, GraphqlDocument } from "../types/graphql"
 
 const MAX_UINT32_INTEGER = 2147483647
 
@@ -146,7 +150,7 @@ export interface DfuseClientOptions {
    * [[DfuseClientOptions.streamClientOptions]] is set, it used when creating
    * the default instanve.
    *
-   * @default A default [[StreamClient]] instance (via [[createStreamClient]]) using [[DfuseClientOptions.httpClientOptions]].
+   * @default A default [[StreamClient]] instance (via [[createStreamClient]]) using [[DfuseClientOptions.streamClientOptions]].
    */
   streamClient?: StreamClient
 
@@ -160,6 +164,28 @@ export interface DfuseClientOptions {
    * @default `{}` See [[StreamClientOptions]] for default values
    */
   streamClientOptions?: StreamClientOptions
+
+  /**
+   * The [[GraphqlStreamClient]] instance that [[DfuseClient]] should use to interact
+   * with dfuse GraphQL Subscription API. When `undefined` (the default), an instance is
+   * created using [[createGraphqlStreamClient]] factory method and used. If
+   * [[DfuseClientOptions.graphqlStreamClientOptions]] is set, it used when creating
+   * the default instanve.
+   *
+   * @default A default [[GraphqlStreamClient]] instance (via [[createGraphqlStreamClient]]) using [[DfuseClientOptions.graphqlStreamClientOptions]].
+   */
+  graphqlStreamClient?: GraphqlStreamClient
+
+  /**
+   * The [[GraphqlStreamClientOptions]] that should be used when creating the default
+   * instance of [[GraphqlStreamClient]].
+   *
+   * This parameter has no effect at all if the [[DfuseClientOptions.graphqlStreamClient]] is
+   * provided.
+   *
+   * @default `{}` See [[GraphqlStreamClientOptions]] for default values
+   */
+  graphqlStreamClientOptions?: GraphqlStreamClientOptions
 
   /**
    * The API token store instance that should be use by the [[DfuseClient]]
@@ -224,6 +250,10 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
     options.streamClient ||
     createStreamClient(websocketUrl + "/v1/stream", options.streamClientOptions)
 
+  const graphqlStreamClient =
+    options.graphqlStreamClient ||
+    createGraphqlStreamClient(endpoints.graphqlStreamUrl, options.graphqlStreamClientOptions)
+
   const apiTokenStore = options.apiTokenStore || inferApiTokenStore(options.apiKey)
   const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
 
@@ -234,6 +264,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
     endpoints,
     httpClient,
     streamClient,
+    graphqlStreamClient,
     apiTokenStore,
     refreshScheduler,
     requestIdGenerator
@@ -243,7 +274,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 function checkApiKey(apiKey: string) {
   if (!apiKey.match(/^(mobile|server|web)_[0-9a-f]{2,}/i)) {
     const messages = [
-      "The provided API key is not in the right format expecting it",
+      "The provided API key is not in the right format, expecting it",
       "to start with either `mobile_`, `server_` or `web_` followed",
       "by a series of hexadecimal character (i.e.) `web_0123456789abcdef`)",
       ""
@@ -328,6 +359,7 @@ export class DefaultClient implements DfuseClient {
   protected apiTokenManager: ApiTokenManager
   protected httpClient: HttpClient
   protected streamClient: StreamClient
+  protected graphqlStreamClient: GraphqlStreamClient
   protected requestIdGenerator: RequestIdGenerator
 
   protected debug: IDebugger = debugFactory("dfuse:client")
@@ -337,6 +369,7 @@ export class DefaultClient implements DfuseClient {
     endpoints: DfuseClientEndpoints,
     httpClient: HttpClient,
     streamClient: StreamClient,
+    graphqlStreamClient: GraphqlStreamClient,
     apiTokenStore: ApiTokenStore,
     refreshScheduler: RefreshScheduler,
     requestIdGenerator: RequestIdGenerator
@@ -345,6 +378,7 @@ export class DefaultClient implements DfuseClient {
     this.endpoints = endpoints
     this.httpClient = httpClient
     this.streamClient = streamClient
+    this.graphqlStreamClient = graphqlStreamClient
     this.requestIdGenerator = requestIdGenerator
 
     this.apiTokenManager = createApiTokenManager(
@@ -360,7 +394,89 @@ export class DefaultClient implements DfuseClient {
     this.debug("Releasing default dfuse client")
     this.httpClient.release()
     this.streamClient.release()
+    this.graphqlStreamClient.release()
     this.apiTokenManager.release()
+  }
+
+  //
+  /// GraphQL API
+  //
+
+  public async graphql<T = unknown>(
+    document: string | GraphqlDocument,
+    options: {
+      operationType?: GraphqlOperationType
+      id?: string
+      variables?: GraphqlVariables
+      onMessage?: OnGraphqlStreamMessage<T>
+    } = {}
+  ): Promise<Stream | T> {
+    if (options.operationType && !isValidDocumentType(options.operationType)) {
+      throw new DfuseError(
+        `The 'options.operationType' value '${
+          options.operationType
+        }' is invalid, it must be either 'query', 'mutation' or 'subscription').`
+      )
+    }
+
+    // If an `onMessage` options is provided, always use the WebSocket connection
+    if (options.onMessage) {
+      return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
+        this.graphqlStreamClient.setApiToken(apiTokenInfo.token)
+
+        return this.graphqlStreamClient.registerStream(
+          options.id || this.requestIdGenerator(),
+          // FIXME: Turn the document if a GraphQL document into a proper document string
+          document,
+          options.variables,
+          options.onMessage!
+        )
+      })
+    }
+
+    const operationType = this.inferOperationType(document, options.operationType)
+    if (!operationType && !options.onMessage) {
+      const messages = [
+        "We were not able to infer the GraphQL operation type you are trying to perform from",
+        "the document and options you provided. Without the document's operation type, we are",
+        "unable to determine the transport layer to use to execute your operation, either HTTP",
+        "or WebSocket transport.",
+        "",
+        "If you passed a document as a plain 'string' value, please use the `options.operationType`",
+        "option to provide the operation type to perform. You can also use the 'gql' string literal",
+        "processor to turn your string into a rich Document, on which inference always work.",
+        "",
+        "If you already provided the document a rich Document format via the 'gql` ...`' call, then it's",
+        "probably a bug in this library. You can provide the `options.operationType` option to workaround",
+        "the problem and report the bug to us with the document string used.",
+        "",
+        "Valid `options.operationType` values are either 'query', 'mutation' or 'subscription'.",
+        "",
+        "You can also force usage of WebSocket transport by providing the `options.onMessage` which",
+        "forces the usage of the WebSocket transport."
+      ]
+
+      throw new DfuseError(messages.join("\n"))
+    }
+
+    if (operationType === "subscription" && !options.onMessage) {
+      const messages = [
+        "The `options.onMessage` parameter is required for 'subscription' document.",
+        "If your document is not a 'subscription' type, this is probably a bug with the library.",
+        "You can provide the `options.operationType` option to workaroundthe problem and report",
+        "the bug to us with the document string used."
+      ]
+
+      throw new DfuseError(messages.join("\n"))
+    }
+
+    // FIXME: Turn the document into a proper document string if a GraphQL document
+    return await this.apiRequest<T>(
+      "/graphql",
+      "POST",
+      {},
+      { query: document as string, variables: options.variables }
+    )
   }
 
   //
@@ -688,10 +804,56 @@ export class DefaultClient implements DfuseClient {
     return await worker(apiTokenInfo)
   }
 
+  private inferOperationType(
+    document: string | GraphqlDocument,
+    predefinedOperationType?: GraphqlOperationType
+  ): GraphqlOperationType | undefined {
+    this.debug(
+      "Trying to infer operation type based on document and predefined operation type, predefined operation type '%s' and document %o",
+      predefinedOperationType,
+      document
+    )
+    if (predefinedOperationType) {
+      this.debug("Predefined type '%s' provided, using it straight away.", predefinedOperationType)
+      return predefinedOperationType
+    }
+
+    if (typeof document === "string") {
+      this.debug("Document is a plain string type, performing a poor-man Regex extraction.")
+
+      const matches = document.match(
+        /^\s*(query|mutation|subscription)?\s*([_A-Za-z][_0-9A-Za-z]*\s*)?(\([^\)]*\)\s*)?{/
+      )
+
+      if (matches == null) {
+        this.debug("Document string did not match our Regex, aborting inference.")
+        return undefined
+      }
+      if (matches && matches[1]) {
+        this.debug("Document string Regex matches have operation type '%s', using it.", matches[1])
+        return matches[1] as GraphqlOperationType
+      }
+
+      this.debug("Document string Regex matches but operation type was not present, using 'query'.")
+      return "query"
+    }
+
+    // FIXME: Make the initial AST walking and work our way through!
+    return undefined
+  }
+
   private onTokenRefresh = (apiToken: string) => {
     // Ensure we update the API token to have it at its latest value
     this.streamClient.setApiToken(apiToken)
   }
+}
+
+function isValidDocumentType(type?: string): boolean {
+  if (!type) {
+    return false
+  }
+
+  return type === "subscription" || type === "query" || type === "mutation"
 }
 
 function randomReqId() {
