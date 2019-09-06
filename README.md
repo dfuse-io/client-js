@@ -1,6 +1,6 @@
 # dfuse JavaScript/TypeScript Client Library
 
-A WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io> on EOS networks.
+A WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io>.
 
 **Note** This library is the newest hottest version of [@dfuse/eosws-js](https://github.com/dfuse-io/eosws-js)
 library. If you land here because your are using it, refer to the [MIGRATION.md](./MIGRATION.md) file for how
