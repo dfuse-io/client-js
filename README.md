@@ -1,16 +1,12 @@
 # dfuse JavaScript/TypeScript Client Library
 
-A WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io>.
-
-**Note** This library is the newest hottest version of [@dfuse/eosws-js](https://github.com/dfuse-io/eosws-js)
-library. If you land here because your are using it, refer to the [MIGRATION.md](./MIGRATION.md) file for how
-to upgrade.
+A GraphQL, WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io> ([dfuse docs](https://docs.dfuse.io)).
 
 ## Installation
 
 Using Yarn:
 
-    yarn add @dfuse/client
+    yarn add @dfuse/client@next
 
     # Use this command if you are using npm
     #npm install --save @dfuse/client
@@ -27,7 +23,12 @@ What you get by using this library:
 
 ## Quick Start
 
-When targeting a browser (you will need a bundler like WebPack since we only ship ES5 modules files for now):
+_Notice_ You should replace the sequence of characters `Paste your API key here`
+in the script above with your actual API key obtain from https://app.dfuse.io. A
+valid API key starts with either `mobile_`, `server_` or `web_` followed by a series of
+hexadecimal character (i.e.) `web_0123456789abcdef`).
+
+### EOS
 
 <!-- prettier-ignore -->
 ```js
@@ -57,10 +58,36 @@ client.graphql(operation, {
 })
 ```
 
-_Notice_ You should replace the sequence of characters `Paste your API key here`
-in the script above with your actual API key obtain from https://app.dfuse.io. A
-valid API key starts with either `mobile_`, `server_` or `web_` followed by a series of
-hexadecimal character (i.e.) `web_0123456789abcdef`).
+### Ethereum
+
+<!-- prettier-ignore -->
+```js
+const { createDfuseClient } = require("@dfuse/client")
+
+const client = createDfuseClient({ 
+  apiKey: "Paste your API key here", 
+  network: "mainnet.eth.dfuse.io",
+})
+
+const operation = `
+  subscription {
+    searchTransactions(query: "method: 'transfer(address,uint256)'") {
+      node { from to value(encoding: ETHER) }
+    }
+  }
+`
+
+client.graphql(operation, {
+  onMessage: (message) => {
+    if (message.type === "data") {
+      const { from, to, value } = message.data.searchTransactions.node
+      console.log(`Transfer [${from} -> ${to}, ${value}]`)
+    }
+  }
+}).catch((error) => {
+  console.log("An error occurred.", error)
+})
+```
 
 ### Node.js
 
