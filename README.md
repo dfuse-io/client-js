@@ -9,7 +9,7 @@ Using Yarn:
     yarn add @dfuse/client@next
 
     # Use this command if you are using npm
-    #npm install --save @dfuse/client
+    #npm install --save @dfuse/client@next
 
 ## Features
 
