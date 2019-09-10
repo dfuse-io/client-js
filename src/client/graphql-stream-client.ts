@@ -199,9 +199,9 @@ class DefaultGrahqlStreamClient {
 
     if (message.type === "data") {
       if (message.payload.errors) {
-        stream.onMessage({ type: "error", errors: message.payload.errors })
+        stream.onMessage({ type: "error", errors: message.payload.errors }, stream)
       } else {
-        stream.onMessage({ type: "data", data: message.payload.data })
+        stream.onMessage({ type: "data", data: message.payload.data }, stream)
       }
 
       // FIXME: Does a "data" message with an `errors` field will later receive the `error` msg
@@ -211,11 +211,11 @@ class DefaultGrahqlStreamClient {
     }
 
     if (message.type === "error") {
-      stream.onMessage({ type: "error", errors: [message.payload] })
+      stream.onMessage({ type: "error", errors: [message.payload] }, stream)
     }
 
     if (message.type === "complete") {
-      stream.onMessage({ type: "complete" })
+      stream.onMessage({ type: "complete" }, stream)
     }
 
     this.debug("About to close stream due to GraphQL '%s' message.", message.type)

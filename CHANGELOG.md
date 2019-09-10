@@ -4,6 +4,82 @@
 
 ### Changes
 
+- Improved TypeScript typings on `graphql` to ensure automatic inference
+  can be done when using `query/mutation` via HTTP over any operation
+  in streaming mode.
+
+- The streaming `onMessage` handler for `graphql` now receives a second
+  argument `marker` than can has a method `mark` to easily mark the
+  stream at cursor location within the message handler directly.
+
+- The streaming `onMessage` handler for `streamXXX` calls now receives a second
+  argument `marker` than can has a method `mark` to easily mark the
+  stream at cursor location within the message handler directly.
+
+### Breaking Changes (Between `rc.1` and `rc.2`)
+
+- The `graphql()` method types has changed so TypeScript can automatically
+  infers the actual return type. There is now two signatures possible for
+  `graphql`.
+
+  The request/response version:
+
+  ```
+  graphql<T = any>(
+    document: string | GraphqlDocument,
+    options?: {
+      variables?: GraphqlVariables
+      operationType?: Exclude<GraphqlOperationType, "subscription">
+    }
+  ): Promise<GraphqlResponse<T>>
+  ```
+
+  This version is used for `Query` or `Mutation` going only and by using
+  this signature, you are telling us to use the HTTP transport layer. This
+  signature always returns a `Promise<GraphqlResponse<T>>` and doesn't
+  accept any listener.
+
+  The streaming version:
+
+  ```
+  graphql<T = any>(
+    document: string | GraphqlDocument,
+    onMessage: OnGraphqlStreamMessage<T>,
+    options?: {
+      variables?: GraphqlVariables
+      operationType?: GraphqlOperationType
+    }
+  ): Promise<Stream>
+  ```
+
+  This version can be used with all operation types and by using
+  this signature, you are telling us to use the WebSocket transport layer.
+  This always returns a `Promise<Stream>` and is now similar to other streaming
+  method in the client.
+
+  To upgrade, change all you streaming calls from:
+
+  ```
+  graphql(` <document> `, { onMessage: (...) => { <handler> }, variables: { ... } })
+  ```
+
+  To
+
+  ```
+  graphql(` <document> `, (...) => { <handler> }, { variables: { ... } })
+  ```
+
+  The `query` or `mutation` calls remains the same, but you might need to fix
+  typings of those since we now return a `GraphqlResponse<T>` instance of a plain
+  `T` type.
+
+  You can then remove any `as Promise<...>` typecast you might had before to help
+  TypeScript infer the right type.
+
+## 0.3.0-rc.1
+
+### Changes
+
 - Added support for GraphQL directly in the library. The client has now a `graphql(...)` method.
   All document operation type are supported: Query, Mutation & Subscription. For now, you must provide
   the document as a `string` value. You can use the `gql` string literal, but you must send it as a

@@ -24,7 +24,7 @@ import { Stream } from "./stream"
 import { HttpQueryParameters, HttpHeaders } from "./http-client"
 import { TransactionLifecycle } from "./transaction"
 import { BlockIdByTimeResponse, ComparisonOperator } from "./block-id"
-import { GraphqlDocument, GraphqlOperationType, GraphqlVariables } from "./graphql"
+import { GraphqlDocument, GraphqlOperationType, GraphqlVariables, GraphqlResponse } from "./graphql"
 
 export type RequestIdGenerator = () => string
 
@@ -82,15 +82,63 @@ export interface DfuseClient {
   /// GraphQL API
   //
 
-  graphql<T = unknown>(
+  /**
+   * Perform a `query` or `mutation` via the HTTP transport layer. The
+   * semantic of this method is to resolve the promise with the GraphQL
+   * response when the operation succeed on the server, whenever the
+   * actual GraphQL response contains an `errors` field or not.
+   *
+   * If an error at the HTTP error, the promise will be rejected.
+   *
+   * @param document (required) The GraphQL operation document to perform. It must be
+   *                 either a `query` or `mutation` operation. A `subscription`
+   *                 operation is not supported by this method. You must use
+   *                 the method that accept `options.onMessage` to make it work.
+   * @param options (optional) Specific options that can be provided
+   * @param options.variables (defaults `undefined`) The variables that need to be provided to the GraphQL operation.
+   * @param options.operationType (defaults `undefined`) The operation type to perform, can be provided when cannot be inferred directly.
+   */
+  graphql<T = any>(
     document: string | GraphqlDocument,
     options?: {
-      operationType?: GraphqlOperationType
-      id?: string
       variables?: GraphqlVariables
-      onMessage?: OnGraphqlStreamMessage<T>
+      operationType?: Exclude<GraphqlOperationType, "subscription">
     }
-  ): Promise<Stream | T>
+  ): Promise<GraphqlResponse<T>>
+
+  /**
+   * Perform a `query`, `mutation` or `subscription` via the WebSocket transport
+   * layer. The semantic of this method is to resolve the promise with the [[Stream]]
+   * object if the connection was established correctly (or if it was already
+   * established) and the initial subscription message was sent correctly (this does
+   * not check if it was received correctly).
+   *
+   * Each message for the subscription will be sent to the `onMessage` handler defined
+   * on the `options` field.
+   *
+   * The [[Stream]] object can be used to control the stream. It can be marked via
+   * [[Stream#mark]] (so on reconnect, this stream restarts at the last marked location),
+   * joined via [[Stream#join]] (so you wait until the stream actually finishes) or closed
+   * via [[Stream#close]].
+   *
+   * If we are unable to establish the connection or the initial send message cannot
+   * be sent, then the promise will reject with the appropriate error.
+   *
+   * @param document (required) The GraphQL operation document to perform.
+   * @param options (required) Specific options that can be provided
+   * @param options.onMessage (required) The message handler that receives all GraphQL subscription message. The message
+   *                                     received can be of type `data`, `error` or `complete`.
+   * @param options.variables (defaults `undefined`) The variables that need to be provided to the GraphQL operation.
+   * @param options.operationType (defaults `undefined`) The operation type to perform, can be provided when cannot be inferred directly.
+   */
+  graphql<T = any>(
+    document: string | GraphqlDocument,
+    onMessage: OnGraphqlStreamMessage<T>,
+    options?: {
+      variables?: GraphqlVariables
+      operationType?: GraphqlOperationType
+    }
+  ): Promise<Stream>
 
   //
   /// WebSocket API

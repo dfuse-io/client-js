@@ -6,9 +6,9 @@ async function main() {
 
   try {
     const response = await client.stateTablesForScopes(
-      "eosio",
+      "eosio.token",
       ["b1", "eoscanadacom", "eosnewyorkio"],
-      "delband"
+      "accounts"
     )
 
     console.log("State tables for scopes response", prettifyJson(response))

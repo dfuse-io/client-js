@@ -145,9 +145,7 @@ describe("DfuseClient", () => {
       graphqlStreamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
 
       const streamOnMessage = mock<OnGraphqlStreamMessage>()
-      await expect(
-        client.graphql("subscription { doc }", { onMessage: streamOnMessage })
-      ).resolves.toEqual(stream)
+      await expect(client.graphql("subscription { doc }", streamOnMessage)).resolves.toEqual(stream)
     })
 
     it("is an error to have subscription document without providing the onMesage options", async () => {
@@ -181,7 +179,7 @@ the bug to us with the document string used."
 
       const streamOnMessage = mock<OnGraphqlStreamMessage>()
       await expect(
-        client.graphql("mutation { doc }", { onMessage: streamOnMessage, operationType: "query" })
+        client.graphql("mutation { doc }", streamOnMessage, { operationType: "query" })
       ).resolves.toEqual(stream)
     })
 

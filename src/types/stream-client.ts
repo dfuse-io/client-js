@@ -61,5 +61,7 @@ export interface StreamClient {
   unregisterStream(id: string): Promise<void>
 }
 
-export type OnStreamMessage = (message: InboundMessage) => void
+export type OnStreamMarker = { mark(data: { atBlockNum: number }): void }
+
+export type OnStreamMessage = (message: InboundMessage, marker: OnStreamMarker) => void
 export type OnStreamRestart = () => void

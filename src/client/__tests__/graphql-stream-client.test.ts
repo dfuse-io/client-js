@@ -175,12 +175,12 @@ describe("GraphqlStreamClient", () => {
     socketController.send({ type: "data", id: "1", payload: {} })
 
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage).toHaveBeenCalledWith({ type: "data", data: undefined })
+    expect(streamOnMessage.mock.calls[0][0]).toEqual({ type: "data", data: undefined })
   })
 
   it("forwards data errors message to right registered stream when there is a single one", async () => {
     const streamOnMessage = mock<OnGraphqlStreamMessage>()
-    await client.registerStream("1", document1, undefined, streamOnMessage)
+    const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
 
     socketController.send({
       type: "data",
@@ -189,15 +189,18 @@ describe("GraphqlStreamClient", () => {
     })
 
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage).toHaveBeenCalledWith({
-      type: "error",
-      errors: ["first error", "second error"]
-    })
+    expect(streamOnMessage).toHaveBeenCalledWith(
+      {
+        type: "error",
+        errors: ["first error", "second error"]
+      },
+      stream
+    )
   })
 
   it("forwards error message to right registered stream when there is a single one", async () => {
     const streamOnMessage = mock<OnGraphqlStreamMessage>()
-    await client.registerStream("1", document1, undefined, streamOnMessage)
+    const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
 
     socketController.send({
       type: "error",
@@ -206,15 +209,18 @@ describe("GraphqlStreamClient", () => {
     })
 
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage).toHaveBeenCalledWith({
-      type: "error",
-      errors: ["an error"]
-    })
+    expect(streamOnMessage).toHaveBeenCalledWith(
+      {
+        type: "error",
+        errors: ["an error"]
+      },
+      stream
+    )
   })
 
   it("forwards complete message to right registered stream when there is a single one", async () => {
     const streamOnMessage = mock<OnGraphqlStreamMessage>()
-    await client.registerStream("1", document1, undefined, streamOnMessage)
+    const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
 
     socketController.send({
       type: "complete",
@@ -222,26 +228,29 @@ describe("GraphqlStreamClient", () => {
     })
 
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage).toHaveBeenCalledWith({
-      type: "complete"
-    })
+    expect(streamOnMessage).toHaveBeenCalledWith(
+      {
+        type: "complete"
+      },
+      stream
+    )
   })
 
   it("forwards message to right registered stream when there is multiples", async () => {
     const streamOnMessage1 = mock<OnGraphqlStreamMessage>()
     const streamOnMessage2 = mock<OnGraphqlStreamMessage>()
 
-    await client.registerStream("1", document1, undefined, streamOnMessage1)
-    await client.registerStream("2", document2, undefined, streamOnMessage2)
+    const stream1 = await client.registerStream("1", document1, undefined, streamOnMessage1)
+    const stream2 = await client.registerStream("2", document2, undefined, streamOnMessage2)
 
     socketController.send({ type: "data", id: "1", payload: { data: "1" } })
     socketController.send({ type: "data", id: "2", payload: { data: "2" } })
 
     expect(streamOnMessage1).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage1).toHaveBeenCalledWith({ type: "data", data: "1" })
+    expect(streamOnMessage1).toHaveBeenCalledWith({ type: "data", data: "1" }, stream1)
 
     expect(streamOnMessage2).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage2).toHaveBeenCalledWith({ type: "data", data: "2" })
+    expect(streamOnMessage2).toHaveBeenCalledWith({ type: "data", data: "2" }, stream2)
   })
 
   it("ignores message when no registered stream exists for id", async () => {

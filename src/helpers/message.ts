@@ -1,4 +1,4 @@
-import { OnStreamMessage } from "../types/stream-client"
+import { OnStreamMessage, OnStreamMarker } from "../types/stream-client"
 import { InboundMessage } from "../message/inbound"
 
 /**
@@ -27,10 +27,10 @@ import { InboundMessage } from "../message/inbound"
 export function dynamicMessageDispatcher(typeToDispatcher: {
   [messageType: string]: OnStreamMessage
 }): OnStreamMessage {
-  return (message: InboundMessage) => {
+  return (message: InboundMessage, marker: OnStreamMarker) => {
     const dispatcher = typeToDispatcher[message.type]
     if (dispatcher) {
-      dispatcher(message)
+      dispatcher(message, marker)
     }
   }
 }

@@ -172,7 +172,7 @@ class DefaultStreamClient {
       return
     }
 
-    stream.onMessage(message)
+    stream.onMessage(message, stream)
   }
 
   private handleReconnection = () => {

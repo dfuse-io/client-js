@@ -78,5 +78,10 @@ export type GraphqlStreamMessage<T = unknown> =
       type: "complete"
     }
 
-export type OnGraphqlStreamMessage<T = unknown> = (message: GraphqlStreamMessage<T>) => void
+export type OnGraphqlStreamMarker = { mark(data: { cursor: string }): void }
+
+export type OnGraphqlStreamMessage<T = unknown> = (
+  message: GraphqlStreamMessage<T>,
+  marker: OnGraphqlStreamMarker
+) => void
 export type OnGraphqlStreamRestart = () => void

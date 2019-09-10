@@ -154,21 +154,21 @@ describe("StreamClient", () => {
 
   it("forwards message to right registered stream when there is a single one", async () => {
     const streamOnMessage = mock<InboundMessage>()
-    await client.registerStream(message1, streamOnMessage)
+    const stream = await client.registerStream(message1, streamOnMessage)
 
     const message = { type: InboundMessageType.PROGRESS, req_id: message1.req_id, data: {} }
 
     socketController.send(message)
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage).toHaveBeenCalledWith(message)
+    expect(streamOnMessage).toHaveBeenCalledWith(message, stream)
   })
 
   it("forwards message to right registered stream when there is multiples", async () => {
     const streamOnMessage1 = mock<InboundMessage>()
     const streamOnMessage2 = mock<InboundMessage>()
 
-    await client.registerStream(message1, streamOnMessage1)
-    await client.registerStream(message2, streamOnMessage2)
+    const stream1 = await client.registerStream(message1, streamOnMessage1)
+    const stream2 = await client.registerStream(message2, streamOnMessage2)
 
     // @ts-ignore
     const sentMessage1 = {
@@ -187,21 +187,21 @@ describe("StreamClient", () => {
     socketController.send(sentMessage2)
 
     expect(streamOnMessage1).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage1).toHaveBeenCalledWith(sentMessage1)
+    expect(streamOnMessage1).toHaveBeenCalledWith(sentMessage1, stream1)
 
     expect(streamOnMessage2).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage2).toHaveBeenCalledWith(sentMessage2)
+    expect(streamOnMessage2).toHaveBeenCalledWith(sentMessage2, stream2)
   })
 
   it("ignores message when no registered stream", async () => {
     const streamOnMessage = mock<InboundMessage>()
-    await client.registerStream(message1, streamOnMessage)
+    const stream = await client.registerStream(message1, streamOnMessage)
 
     const message = { type: InboundMessageType.PROGRESS, req_id: message1.req_id, data: {} }
 
     socketController.send(message)
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
-    expect(streamOnMessage).toHaveBeenCalledWith(message)
+    expect(streamOnMessage).toHaveBeenCalledWith(message, stream)
   })
 
   it("ignores message when no registered stream exists for id", async () => {

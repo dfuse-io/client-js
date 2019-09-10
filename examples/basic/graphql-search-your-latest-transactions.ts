@@ -7,9 +7,9 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
-    const response = (await client.graphql(searchTransactions, {
+    const response = await client.graphql(searchTransactions, {
       variables: { limit: 10 }
-    })) as any
+    })
 
     console.log()
     console.log(`Your latest 10 transactions`)
@@ -33,7 +33,7 @@ async function main() {
 
 const searchTransactions = `
   query ($limit: Int64!) {
-    searchTransactionsBackward(query: "auth:${account}", limit: $limit) {
+    searchTransactions(query: "auth:${account}", limit: $limit) {
       results {
         block {
           num

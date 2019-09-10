@@ -61,7 +61,12 @@ import { Stream } from "../types/stream"
 import { TransactionLifecycle } from "../types/transaction"
 import { ComparisonOperator, BlockIdByTimeResponse } from "../types/block-id"
 import { GraphqlStreamClient, OnGraphqlStreamMessage } from "../types/graphql-stream-client"
-import { GraphqlVariables, GraphqlOperationType, GraphqlDocument } from "../types/graphql"
+import {
+  GraphqlVariables,
+  GraphqlOperationType,
+  GraphqlDocument,
+  GraphqlResponse
+} from "../types/graphql"
 
 const MAX_UINT32_INTEGER = 2147483647
 
@@ -259,6 +264,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 
   const requestIdGenerator = options.requestIdGenerator || randomReqId
 
+  // @ts-ignore
   return new DefaultClient(
     options.apiKey,
     endpoints,
@@ -402,15 +408,24 @@ export class DefaultClient implements DfuseClient {
   /// GraphQL API
   //
 
-  public async graphql<T = unknown>(
+  // @ts-ignore
+  public async graphql<T = any>(
     document: string | GraphqlDocument,
+    onMessage?:
+      | OnGraphqlStreamMessage<T>
+      | {
+          variables?: GraphqlVariables
+          operationType?: Exclude<GraphqlOperationType, "subscription">
+        },
     options: {
       operationType?: GraphqlOperationType
-      id?: string
       variables?: GraphqlVariables
-      onMessage?: OnGraphqlStreamMessage<T>
     } = {}
-  ): Promise<Stream | T> {
+  ): Promise<GraphqlResponse<T> | Stream> {
+    if (typeof onMessage !== "function" && onMessage) {
+      options = onMessage
+    }
+
     if (options.operationType && !isValidDocumentType(options.operationType)) {
       throw new DfuseError(
         `The 'options.operationType' value '${
@@ -420,22 +435,23 @@ export class DefaultClient implements DfuseClient {
     }
 
     // If an `onMessage` options is provided, always use the WebSocket connection
-    if (options.onMessage) {
+    const onMessageProvided = typeof onMessage === "function" && onMessage
+    if (onMessageProvided) {
       return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
         this.graphqlStreamClient.setApiToken(apiTokenInfo.token)
 
         return this.graphqlStreamClient.registerStream(
-          options.id || this.requestIdGenerator(),
+          this.requestIdGenerator(),
           // FIXME: Turn the document if a GraphQL document into a proper document string
           document,
           options.variables,
-          options.onMessage!
+          onMessage as OnGraphqlStreamMessage<T>
         )
       })
     }
 
     const operationType = this.inferOperationType(document, options.operationType)
-    if (!operationType && !options.onMessage) {
+    if (!operationType && !onMessageProvided) {
       const messages = [
         "We were not able to infer the GraphQL operation type you are trying to perform from",
         "the document and options you provided. Without the document's operation type, we are",
@@ -459,7 +475,7 @@ export class DefaultClient implements DfuseClient {
       throw new DfuseError(messages.join("\n"))
     }
 
-    if (operationType === "subscription" && !options.onMessage) {
+    if (operationType === "subscription" && !onMessageProvided) {
       const messages = [
         "The `options.onMessage` parameter is required for 'subscription' document.",
         "If your document is not a 'subscription' type, this is probably a bug with the library.",
@@ -471,7 +487,7 @@ export class DefaultClient implements DfuseClient {
     }
 
     // FIXME: Turn the document into a proper document string if a GraphQL document
-    return await this.apiRequest<T>(
+    return await this.apiRequest<GraphqlResponse<T>>(
       "/graphql",
       "POST",
       {},
@@ -485,7 +501,7 @@ export class DefaultClient implements DfuseClient {
 
   public streamActionTraces(
     data: GetActionTracesMessageData,
-    onMessage: (message: InboundMessage) => void,
+    onMessage: OnStreamMessage,
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getActionTracesMessage(
@@ -500,7 +516,7 @@ export class DefaultClient implements DfuseClient {
 
   public async streamTableRows(
     data: GetTableRowsMessageData,
-    onMessage: (message: InboundMessage) => void,
+    onMessage: OnStreamMessage,
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getTableRowsMessage(
@@ -515,7 +531,7 @@ export class DefaultClient implements DfuseClient {
 
   public async streamTransaction(
     data: GetTransactionLifecycleMessageData,
-    onMessage: (message: InboundMessage) => void,
+    onMessage: OnStreamMessage,
     options: StreamOptions = {}
   ): Promise<Stream> {
     const message = getTransactionLifecycleMessage(
@@ -529,10 +545,7 @@ export class DefaultClient implements DfuseClient {
     return this.registerStream(message, onMessage)
   }
 
-  public streamHeadInfo(
-    onMessage: (message: InboundMessage) => void,
-    options: StreamOptions = {}
-  ): Promise<Stream> {
+  public streamHeadInfo(onMessage: OnStreamMessage, options: StreamOptions = {}): Promise<Stream> {
     const message = getHeadInfoMessage(
       mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
         listen: true

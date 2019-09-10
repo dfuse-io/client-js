@@ -6,13 +6,9 @@ import { OutboundMessage } from "../../message/outbound"
 import { StreamClient, OnStreamMessage } from "../../types/stream-client"
 import { HttpClient, HttpQueryParameters, HttpHeaders } from "../../types/http-client"
 import { Stream } from "../../types/stream"
-import {
-  GraphqlStreamClient,
-  GraphqlDocument,
-  GraphqlVariables,
-  OnGraphqlStreamMessage
-} from "../../types/graphql-stream-client"
+import { GraphqlStreamClient, OnGraphqlStreamMessage } from "../../types/graphql-stream-client"
 import { regExpLiteral } from "@babel/types"
+import { GraphqlDocument, GraphqlVariables } from "../../types/graphql"
 
 export function mock<T>(implementation?: (...args: any) => T): jest.Mock<T, any> {
   if (implementation === undefined) {

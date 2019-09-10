@@ -63,5 +63,12 @@ export type GraphqlVariables =
 
 export type GraphqlResponse<T> = {
   data: T
-  errors?: Error[]
+  errors?: GraphqlResponseError[]
+}
+
+export type GraphqlResponseError = {
+  message: string
+  locations?: { line: number; column: number }[]
+  path?: (string | number)[]
+  extensions?: Record<string, unknown>
 }
