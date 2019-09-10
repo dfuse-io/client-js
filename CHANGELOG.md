@@ -2,6 +2,8 @@
 
 ## 0.3.0 @ Next (In progress)
 
+## 0.3.0-rc.2 (September 10, 2019)
+
 ### Changes
 
 - Improved TypeScript typings on `graphql` to ensure automatic inference
@@ -76,7 +78,7 @@
   You can then remove any `as Promise<...>` typecast you might had before to help
   TypeScript infer the right type.
 
-## 0.3.0-rc.1
+## 0.3.0-rc.1 (August 31, 2019)
 
 ### Changes
 
