@@ -7,14 +7,17 @@ async function main() {
     network: DFUSE_API_NETWORK
   })
 
-  const stream = await client.graphql(streamTransfer, (message) => {
+  const stream = await client.graphql(streamTransfer, (message, marker) => {
     if (message.type === "data") {
-      const actions = message.data.searchTransactionsForward.trace.matchingActions
+      const data = message.data.searchTransactionsForward
+      const actions = data.trace.matchingActions
 
       actions.forEach(({ json }: any) => {
         const { from, to, quantity, memo } = json
         console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
       })
+
+      marker.mark({ cursor: data.cursor })
     }
   })
 
@@ -27,6 +30,7 @@ async function main() {
 const streamTransfer = `
   subscription {
     searchTransactionsForward(query: "receiver:eosio.token action:transfer") {
+      cursor
       trace {
         matchingActions {
           json
