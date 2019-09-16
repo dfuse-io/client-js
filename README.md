@@ -77,15 +77,15 @@ const operation = `
   }
 `
 
-client.graphql(operation, {
-  onMessage: (message) => {
-    if (message.type === "data") {
-      const { from, to, value } = message.data.searchTransactions.node
-      console.log(`Transfer [${from} -> ${to}, ${value}]`)
+client.graphql(operation,
+    (message) => {
+        if (message.type === "data") {
+            const { from, to, value } = message.data.searchTransactions.node
+            console.log(`Transfer [${from} -> ${to}, ${value}]`)
+        }
     }
-  }
-}).catch((error) => {
-  console.log("An error occurred.", error)
+).catch((error) => {
+    console.log("An error occurred.", error)
 })
 ```
 
