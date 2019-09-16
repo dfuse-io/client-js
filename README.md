@@ -44,18 +44,18 @@ const operation = `
   }
 `
 
-client.graphql(operation, {
-  onMessage: (message) => {
-    if (message.type === "data") {
-      message.data.searchTransactionsForward.trace.matchingActions.forEach((action) => {
-        const { from, to, quantity, memo } = action.json
-        console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
-      })
-    }
-  }
-}).catch((error) => {
-  console.log("An error occurred.", error)
-})
+client.graphql(
+    operation,
+    (message) => {
+        if (message.type === "data") {
+            message.data.searchTransactionsForward.trace.matchingActions.forEach((action) => {
+                const { from, to, quantity, memo } = action.json
+                console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
+            })
+        }
+    }).catch((error) => {
+    console.log("An error occurred.", error)
+});
 ```
 
 ### Ethereum
