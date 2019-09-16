@@ -24,7 +24,7 @@ async function main() {
       return
     }
 
-    edges.forEach(({ cursor, node }: any) => {
+    edges.forEach(({ node }: any) => {
       console.log(`- ${buildEthqLink(node.hash)} (Block #${node.block.number})`)
     })
     console.log()
@@ -39,7 +39,6 @@ const searchTransactions = `
   query ($limit: Int64!) {
     searchTransactions(query: "signer:${address}", limit: $limit, sort: DESC) {
       edges {
-        cursor
         node {
           hash
           block {

@@ -103,12 +103,9 @@ class Engine {
       }
     `
 
-    this.stream = await (this.client.graphql(graphqlDocument, {
-      variables: {
-        // In a real-word production code
-        cursor: ""
-      },
-      onMessage: (message: GraphqlStreamMessage) => {
+    this.stream = await this.client.graphql(
+      graphqlDocument,
+      (message: GraphqlStreamMessage) => {
         if (message.type === "data") {
           this.onResult(message.data as Message<KarmaTransfer>)
         }
@@ -116,8 +113,14 @@ class Engine {
         if (message.type === "error") {
           this.onError(message.errors)
         }
+      },
+      {
+        variables: {
+          // In a real-word production code
+          cursor: ""
+        }
       }
-    }) as Promise<Stream>)
+    )
 
     this.stream.onPostRestart = () => {
       console.log()

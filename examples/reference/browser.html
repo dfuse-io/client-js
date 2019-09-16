@@ -109,19 +109,6 @@
 
       let transfers = []
 
-      const onMessage = (message) => {
-        if (message.type === "data") {
-          message.data.searchTransactionsForward.trace.matchingActions.forEach((action) => {
-            const { from, to, quantity, memo } = action.json
-            const transfer = `Transfer [${from} -> ${to}, ${quantity}] (${memo})`
-
-            transfers = [...transfers.slice(-100), transfer]
-          })
-
-          updateTransfers(transfers)
-        }
-      }
-
       const updateTransfers = () => {
         document.getElementById("transfers").innerHTML = transfers
           .reverse()
@@ -138,7 +125,18 @@
           }
         `
 
-        const stream = await client.graphql(operation, { onMessage })
+        const stream = await client.graphql(operation, (message) => {
+          if (message.type === "data") {
+            message.data.searchTransactionsForward.trace.matchingActions.forEach((action) => {
+              const { from, to, quantity, memo } = action.json
+              const transfer = `Transfer [${from} -> ${to}, ${quantity}] (${memo})`
+
+              transfers = [...transfers.slice(-100), transfer]
+            })
+
+            updateTransfers(transfers)
+          }
+        })
 
         await waitFor(5000)
         await stream.close()
