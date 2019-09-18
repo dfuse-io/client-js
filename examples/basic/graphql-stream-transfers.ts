@@ -1,5 +1,5 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
-import { createDfuseClient, waitFor, Stream } from "@dfuse/client"
+import { createDfuseClient, waitFor } from "@dfuse/client"
 
 async function main() {
   const client = createDfuseClient({

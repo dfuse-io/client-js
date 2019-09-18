@@ -66,17 +66,37 @@ export interface GraphqlStreamClient {
 }
 
 export type GraphqlStreamMessage<T = unknown> =
-  | {
-      type: "data"
-      data: T
-    }
-  | {
-      type: "error"
-      errors: Error[]
-    }
-  | {
-      type: "complete"
-    }
+  | DataGraphqlStreamMessage<T>
+  | ErrorGraphqlStreamMessage
+  | CompleteGraphqlStreamMessage
+
+/**
+ * Represents a valid data result for which the payload of type `T` will
+ * be available for consumption in the `data` field.
+ */
+export type DataGraphqlStreamMessage<T> = { type: "data"; data: T }
+
+/**
+ * Represents an error message received from the stream. Both resolvers
+ * error as well as stream error will fall into this type. When `terminal`
+ * is sets to `true`, this message is a stream error meaning the stream
+ * should terminate and cannot continue.
+ *
+ * **Note** Only when it's a terminal error and auto restart on error is sets to
+ * true on the GraphQL stream client that the stream will auto-restart.
+ */
+export type ErrorGraphqlStreamMessage = {
+  type: "error"
+  errors: Error[]
+  terminal: boolean
+}
+
+/**
+ * Represents the completion of the streaming in a correct maner. This message
+ * means that messages will never be received anymore for this stream, even if
+ * it's restarted.
+ */
+export type CompleteGraphqlStreamMessage = { type: "complete" }
 
 export type OnGraphqlStreamMarker = { mark(data: { cursor: string }): void }
 

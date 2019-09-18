@@ -206,7 +206,8 @@ describe("GraphqlStreamClient", () => {
     expect(streamOnMessage).toHaveBeenCalledWith(
       {
         type: "error",
-        errors: ["first error", "second error"]
+        errors: ["first error", "second error"],
+        terminal: false
       },
       stream
     )
@@ -226,7 +227,8 @@ describe("GraphqlStreamClient", () => {
     expect(streamOnMessage).toHaveBeenCalledWith(
       {
         type: "error",
-        errors: ["an error"]
+        errors: ["an error"],
+        terminal: true
       },
       stream
     )

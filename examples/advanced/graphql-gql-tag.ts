@@ -11,7 +11,7 @@ import { print as printGraphqlDocument } from "graphql/language/printer"
  * parsing and turning them into proper JSON can be performed
  * at compile time using the appropriate Webpack or Rollup loader.
  *
- * Those dependencies are totally optional, check out the `examples/basic/gragpql-query.ts`
+ * Those dependencies are totally optional, check out the `examples/basic/gragpql-search-your-latest-transactions.ts`
  * file for an example that does not use those depencendies.
  */
 type Message = {

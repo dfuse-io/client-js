@@ -4,6 +4,10 @@
 
 ### Changes
 
+- Added `terminal` property on `error` message received by the `OnGraphqlStreamMessage`
+  so consumer can determine if this is a fatal error and the stream is
+  now terminated or if it's a resolver error and more data will come in.
+
 - Added `autoDisconnectSocket` option to add the possibility to prevent
   automatic disconnection of socket when no more stream are active in
   the client.

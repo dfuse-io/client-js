@@ -150,7 +150,7 @@ class Engine {
         }
 
         if (message.type === "error") {
-          this.onError(message.errors)
+          this.onError(message.errors, message.terminal)
         }
 
         if (message.type === "complete") {
@@ -197,10 +197,10 @@ class Engine {
     console.log(`Live marker received @ ${printBlock(blockId, blockNum)}`)
 
     // We commit also on progress. The reasoning is that we have now move 10 blocks
-    // forward through the change, and we received a corresponding cursor. In the
+    // forward through the chain, and we received a corresponding cursor. In the
     // commit phase, we will mark the stream with `stream.mark({ cursor })` which
     // we ensure that on reconnection, the cursor will start back right at the
-    // correct progress cursor, this cost effective and improves slightly the
+    // correct progress cursor, this is cost effective and improves slightly the
     // reconnection performance as we start closer to the tip of the chain.
     this.commit(cursor)
   }
@@ -228,11 +228,14 @@ class Engine {
     this.commit(data.cursor)
   }
 
-  private onError = (errors: Error[]) => {
-    console.log(
-      "Received an 'error' message, the stream will automatically reconnects in 2.5s",
-      prettifyJson(errors)
-    )
+  private onError = (errors: Error[], terminal: boolean) => {
+    console.log("Received an 'error' message", prettifyJson(errors))
+
+    if (terminal) {
+      console.log(
+        "Received a terminal 'error' message, the stream will automatically reconnects in 2.5s"
+      )
+    }
   }
 
   private onComplete = () => {

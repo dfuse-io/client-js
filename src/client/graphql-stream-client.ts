@@ -256,7 +256,7 @@ class DefaultGrahqlStreamClient {
 
     if (message.type === "data") {
       if (message.payload.errors) {
-        stream.onMessage({ type: "error", errors: message.payload.errors }, stream)
+        stream.onMessage({ type: "error", errors: message.payload.errors, terminal: false }, stream)
       } else {
         stream.onMessage({ type: "data", data: message.payload.data }, stream)
       }
@@ -266,7 +266,7 @@ class DefaultGrahqlStreamClient {
     }
 
     if (message.type === "error") {
-      stream.onMessage({ type: "error", errors: [message.payload] }, stream)
+      stream.onMessage({ type: "error", errors: [message.payload], terminal: true }, stream)
 
       if (this.autoRestartStreamsOnError) {
         this.debug(
