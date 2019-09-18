@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.3.0 @ Next (In progress)
+
 ## 0.3.0-rc.3 (September 18, 2019)
 
 ### Changes
@@ -16,8 +18,8 @@
   `stream.join()` Promise.
 
 - A `1005` WebSocket close code is now considered to be an abnormal closure
-  and will re-trigger a re-connection. `1005` is a close message without
-  any reason. The spec is unclear is normal closing of the connection should
+  and will trigger a re-connection. `1005` is a close message without
+  any reason. The spec is unclear if normal closing of the connection
   can use both `1000` and `1005`. However, since we control the backend, we
   will now assume that a `1005` is an abnormal condition and dfuse WebSocket
   handling will always send a correct `1000` code for a normal ending of the
