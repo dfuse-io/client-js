@@ -156,6 +156,20 @@ describe("GraphqlStreamClient", () => {
     await stream.close()
 
     expect(socket.disconnectMock).toHaveBeenCalledTimes(1)
+    expect(socket.isConnected).toBeFalsy()
+  })
+
+  it("keeps socket alive when no more stream present via close but keep socet open sets to true", async () => {
+    client = createGraphqlStreamClient("any", {
+      socket,
+      autoDisconnectSocket: false
+    })
+
+    const stream = await client.registerStream("1", document1, undefined, jest.fn())
+    await stream.close()
+
+    expect(socket.disconnectMock).toHaveBeenCalledTimes(0)
+    expect(socket.isConnected).toBeTruthy()
   })
 
   it("does not call disconnect after a full register/unregister cycle with one still active", async () => {
@@ -400,7 +414,7 @@ describe("GraphqlStreamClient", () => {
     }).toThrowError(expectedError)
   })
 
-  it("restart marker on stream client only accept correct atBlockNum marker", async () => {
+  it("restart marker on stream client only accept correct cursor marker", async () => {
     const streamOnMessage = mock<OnGraphqlStreamMessage>()
     const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
 
@@ -434,16 +448,47 @@ describe("GraphqlStreamClient", () => {
 
     await stream.join()
 
-    expect(socket.sendMock).toHaveBeenCalledTimes(3)
-    expect(socket.sendMock).toHaveBeenNthCalledWith(3, {
-      id: "1",
-      type: "stop"
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
+      type: "connection_init",
+      payload: { Authorization: "123" }
     })
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, document1Start)
 
     expect(socket.isConnected).toBeFalsy()
   })
 
-  it("reception of an error message does correctly terminate it", async () => {
+  it("automatically restarts stream by default on error message", async () => {
+    client = createGraphqlStreamClient("any", {
+      socket,
+      restartOnErrorDelayInMs: 0
+    })
+    client.setApiToken("123")
+
+    const streamOnMessage = mock<OnGraphqlStreamMessage>()
+    const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
+
+    socketController.send({ id: "1", type: "error", payload: { error: "error1" } })
+
+    await new Promise((resolve) => {
+      stream.onPostRestart = resolve
+    })
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(3)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
+      type: "connection_init",
+      payload: { Authorization: "123" }
+    })
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, document1Start)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(3, document1Start)
+  })
+
+  it("reception of an error message does correctly terminate it when autoRestartOnError is off", async () => {
+    client = createGraphqlStreamClient("any", {
+      socket,
+      autoRestartStreamsOnError: false
+    })
+
     const streamOnMessage = jest.fn()
     const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
 
@@ -451,12 +496,40 @@ describe("GraphqlStreamClient", () => {
 
     await expect(stream.join()).rejects.toEqual({ error: "error1" })
 
-    expect(socket.sendMock).toHaveBeenCalledTimes(3)
-    expect(socket.sendMock).toHaveBeenNthCalledWith(3, {
-      id: "1",
-      type: "stop"
-    })
-
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.isConnected).toBeFalsy()
+  })
+
+  it("manual close without error correctly resolves join deferred", async () => {
+    const streamOnMessage = jest.fn()
+    const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
+
+    setTimeout(() => {
+      stream.close()
+    }, 0)
+
+    await expect(stream.join()).resolves.toBeUndefined()
+  })
+
+  it("manual close with error correctly rejects join deferred", async () => {
+    const streamOnMessage = jest.fn()
+    const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
+
+    setTimeout(() => {
+      stream.close({ error: new Error("test") })
+    }, 0)
+
+    await expect(stream.join()).rejects.toEqual(new Error("test"))
+  })
+
+  it("unregister stream correctly resolves join deferred", async () => {
+    const streamOnMessage = jest.fn()
+    const stream = await client.registerStream("1", document1, undefined, streamOnMessage)
+
+    setTimeout(() => {
+      client.unregisterStream("1")
+    }, 0)
+
+    await expect(stream.join()).resolves.toBeUndefined()
   })
 })

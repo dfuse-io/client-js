@@ -57,6 +57,14 @@ export interface SocketOptions {
    */
   keepAliveIntervalInMs?: number
 
+  /**
+   * The set of webSocket protocols we want to send when performing the
+   * connection handshake. For example, GraphQL subscription over WebSocket
+   * uses "graphql-ws" protocol while standard WebSocket connection can
+   * pass `undefined` as the value.
+   *
+   * @default `undefined`
+   */
   webSocketProtocols?: string | string[]
 
   /**
@@ -445,7 +453,7 @@ class DefaultSocket implements Socket {
     this.debug("Sending a `onClose` notification to client consumer (via %s).", tag)
     this.onClose(event)
 
-    if (event.code !== 1000 && event.code !== 1005 && this.options.autoReconnect) {
+    if (event.code !== 1000 && this.options.autoReconnect) {
       this.debug(
         "Socket has close abnormally (via %s), trying to re-connect to socket (infinite retry).",
         tag

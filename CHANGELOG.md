@@ -2,6 +2,26 @@
 
 ## 0.3.0 @ Next (In progress)
 
+### Changes
+
+- Added `autoDisconnectSocket` option to add the possibility to prevent
+  automatic disconnection of socket when no more stream are active in
+  the client.
+
+- Fixed `GraphqlStreamClient.unregisterStream` not correctly resolving the
+  `stream.join()` Promise.
+
+- A `1005` WebSocket close code is now considered to be an abnormal closure
+  and will re-trigger a re-connection. `1005` is a close message without
+  any reason. The spec is unclear is normal closing of the connection should
+  can use both `1000` and `1005`. However, since we control the backend, we
+  will now assume that a `1005` is an abnormal condition and dfuse WebSocket
+  handling will always send a correct `1000` code for a normal ending of the
+  socket connection.
+
+- A GraphQL stream will now auto restart when an error message has been
+  received from the backend.
+
 ## 0.3.0-rc.2 (September 10, 2019)
 
 ### Changes

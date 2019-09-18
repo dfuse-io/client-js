@@ -15,6 +15,9 @@ import {
   GraphqlInboundMessage,
   GraphqlStartOutboundMessage
 } from "../types/graphql"
+import { waitFor } from "../helpers/time"
+
+export const DEFAULT_RESTART_ON_ERROR_DELAY_IN_MS = 2500 // 2.5s
 
 /**
  * The set of options that can be used when constructing a the default
@@ -38,13 +41,42 @@ export interface GraphqlStreamClientOptions {
   socketOptions?: SocketOptions
 
   /**
-   * Determines all streams should automatically restart when the socket disconnects. The stream
+   * Determines if all streams should automatically restart when the socket disconnects. The stream
    * will re-connect at their latest marked value (See [[Stream.mark]]) if present or at current
    * block if it was never marked.
    *
    * @default `true`
    */
   autoRestartStreamsOnReconnect?: boolean
+
+  /**
+   * Determines if all streams should automatically restart when the stream receives an `error`
+   * message type from the server. The stream will try to restart automatically at their latest
+   * marked value (See [[Stream.mark]]) if present or at current block if it was never marked.
+   *
+   * @default `true`
+   */
+  autoRestartStreamsOnError?: boolean
+
+  /**
+   * The delay after the the stream receives an error message to wait for before restarting
+   * the stream. As no effect if [[GraphqlStreamClientOptions.autoRestartStreamsOnError]] is sets
+   * to `false`.
+   *
+   * @default `2.5s` (See [[DEFAULT_RESTART_ON_ERROR_DELAY_IN_MS]])
+   */
+  restartOnErrorDelayInMs?: number
+
+  /**
+   * When sets to `true`, when no more streams are active, the socket is
+   * automatically disconnected and closde. This option should be set to
+   * `false` when using `Query` or `Mutation` over WebSocket transport
+   * to avoid opening/closing the WebSocket connection for each operation
+   * or when multiple short lived `Subscription`s are used.
+   *
+   * @default `true`
+   */
+  autoDisconnectSocket?: boolean
 }
 
 /**
@@ -69,22 +101,39 @@ export function createGraphqlStreamClient(
       }),
     options.autoRestartStreamsOnReconnect === undefined
       ? true
-      : options.autoRestartStreamsOnReconnect
+      : options.autoRestartStreamsOnReconnect,
+    options.autoRestartStreamsOnError === undefined ? true : options.autoRestartStreamsOnError,
+    options.restartOnErrorDelayInMs === undefined
+      ? DEFAULT_RESTART_ON_ERROR_DELAY_IN_MS
+      : options.restartOnErrorDelayInMs,
+    options.autoDisconnectSocket === undefined ? true : options.autoDisconnectSocket
   )
 }
 
 class DefaultGrahqlStreamClient {
   private socket: Socket
   private autoRestartStreamsOnReconnect: boolean
+  private autoRestartStreamsOnError: boolean
+  private restartOnErrorDelayInMs: number
+  private autoDisconnectSocket: boolean
   private debug: IDebugger = debugFactory("dfuse:graphql-stream")
 
   private apiToken?: string
   private connectionEstablisher: GraphqlConnectionEstablisher
   private streams: { [id: string]: DefaultGraphqlStream<any> } = {}
 
-  constructor(socket: Socket, autoRestartStreamsOnReconnect: boolean) {
+  constructor(
+    socket: Socket,
+    autoRestartStreamsOnReconnect: boolean,
+    autoRestartStreamsOnError: boolean,
+    restartOnErrorDelayInMs: number,
+    autoDisconnectSocket: boolean
+  ) {
     this.socket = socket
     this.autoRestartStreamsOnReconnect = autoRestartStreamsOnReconnect
+    this.autoRestartStreamsOnError = autoRestartStreamsOnError
+    this.restartOnErrorDelayInMs = restartOnErrorDelayInMs
+    this.autoDisconnectSocket = autoDisconnectSocket
 
     this.connectionEstablisher = new GraphqlConnectionEstablisher(this.debug)
   }
@@ -133,7 +182,7 @@ class DefaultGrahqlStreamClient {
       streamExists,
       unregisterStream,
       this.socket,
-      this.debug.extend(id, ":")
+      this.debug
     )
 
     // Let's first register stream to ensure that if messages arrives before we got back
@@ -152,29 +201,37 @@ class DefaultGrahqlStreamClient {
   }
 
   public async unregisterStream(id: string): Promise<void> {
-    if (this.streams[id] === undefined) {
+    const stream = this.streams[id]
+    if (stream === undefined) {
       this.debug("Stream [%s] is already unregistered, nothing to do.", id)
       return
     }
 
     this.debug("Unregistering stream [%s].", id)
-
     delete this.streams[id]
 
-    if (this.socket.isConnected) {
-      // FIXME: We should not send a stop message in the event the stream has already received `error` or `complete` message
-      await this.socket.send({ id, type: "stop" })
-    }
-
-    if (Object.keys(this.streams).length <= 0) {
-      this.debug("No more stream present, terminating connection & disconnecting socket.")
-      if (this.socket.isConnected) {
-        await this.socket.disconnect()
+    try {
+      if (stream.isActive && this.socket.isConnected) {
+        await this.socket.send({ id, type: "stop" })
       }
+
+      if (Object.keys(this.streams).length <= 0 && this.autoDisconnectSocket) {
+        this.debug(
+          "No more stream present and auto disconnect sets to true, terminating connection & disconnecting socket."
+        )
+        if (this.socket.isConnected) {
+          await this.socket.disconnect()
+        }
+      }
+
+      stream.onUnregister()
+    } catch (error) {
+      stream.onUnregister(error)
+      throw error
     }
   }
 
-  private handleMessage = (rawMessage: unknown) => {
+  private handleMessage = async (rawMessage: unknown) => {
     const message = rawMessage as GraphqlInboundMessage
     if (message.type === "ka") {
       this.debug("Discarding 'ka' (Keep Alive) message from reaching the underlying stream(s).")
@@ -204,35 +261,51 @@ class DefaultGrahqlStreamClient {
         stream.onMessage({ type: "data", data: message.payload.data }, stream)
       }
 
-      // FIXME: Does a "data" message with an `errors` field will later receive the `error` msg
-      //        or should we close in this case also right away?
       // Let's not continue for a data message
       return
     }
 
     if (message.type === "error") {
       stream.onMessage({ type: "error", errors: [message.payload] }, stream)
+
+      if (this.autoRestartStreamsOnError) {
+        this.debug(
+          "Stream [%s] received error message and auto restart on error set, waiting [%d ms] before restarting",
+          stream.id,
+          this.restartOnErrorDelayInMs
+        )
+        await waitFor(this.restartOnErrorDelayInMs)
+        await stream.restart().catch((error) => {
+          // Can only happen if the socket does not auto-reconnect and connection lost, in which, stream is screwed anyway
+          stream.close({ error }).catch(onStreamCloseError)
+        })
+
+        return
+      }
+
+      stream.isActive = false
     }
 
     if (message.type === "complete") {
       stream.onMessage({ type: "complete" }, stream)
+      stream.isActive = false
     }
 
-    this.debug("About to close stream due to GraphQL '%s' message.", message.type)
-    let closeError: Error | undefined
-    if (message.type === "error") {
-      closeError = message.payload
-    }
-
-    stream.close({ error: closeError }).catch((error) => {
+    this.debug("About to close stream [%s] due to GraphQL '%s' message.", stream.id, message.type)
+    const onStreamCloseError = (error: any) => {
       // FIXME: We shall pass this error somewhere, to some kind of notifier or event
       //        emitter but there is no such stuff right now.
       this.debug(
-        "Closing the stream (in response of GraphQL '%s' message) failed %O.",
+        "Closing the stream [%s] (in response of GraphQL '%s' message) failed %O.",
+        stream.id,
         message.type,
         error
       )
-    })
+    }
+
+    const closeError = message.type === "error" ? message.payload : undefined
+
+    stream.close({ error: closeError }).catch(onStreamCloseError)
   }
 
   private handleReconnection = () => {
@@ -262,8 +335,10 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
   public readonly id: string
   public onPostRestart?: OnGraphqlStreamRestart
 
+  private active: boolean
   private activeMarker?: StreamMarker
   private activeJoiner?: Deferred<void>
+  private closeError?: Error
   private registrationDocument: GraphqlDocument
   private registrationVariables: GraphqlVariables | (() => GraphqlVariables) | undefined
   private onMessageHandler: OnGraphqlStreamMessage<T>
@@ -283,6 +358,7 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
     debug: IDebugger
   ) {
     this.id = id
+    this.active = false
     this.registrationDocument = registrationDocument
     this.registrationVariables = registrationVariables
     this.onMessageHandler = onMessage
@@ -290,6 +366,14 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
     this.unregisterStream = unregisterStream
     this.socket = socket
     this.debug = debug
+  }
+
+  public get isActive(): boolean {
+    return this.active
+  }
+
+  public set isActive(value: boolean) {
+    this.active = value
   }
 
   public get onMessage(): OnGraphqlStreamMessage<T> {
@@ -309,10 +393,13 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
       }
     }
 
-    return this.socket.send(message)
+    return this.socket.send(message).then(() => {
+      this.active = true
+    })
   }
 
   public async restart(marker?: StreamMarker): Promise<void> {
+    this.debug("About to restart stream [%s]", this.id)
     this.checkMarker(marker)
 
     if (!this.streamExists(this.id)) {
@@ -332,12 +419,14 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
     if (activeMarker) {
       message.payload.variables = {
         ...(message.payload.variables || {}),
-        // @ts-ignore The `cursor` field is the only possibility here, it's just TypeScript can discriminate it
+        // @ts-ignore The `cursor` field is the only possibility here, it's just TypeScript can't discriminate it
         cursor: activeMarker.cursor
       }
     }
 
-    await this.socket.send(message)
+    await this.socket.send(message).then(() => {
+      this.active = true
+    })
 
     if (this.onPostRestart) {
       this.onPostRestart()
@@ -378,20 +467,9 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
   }
 
   public async close(options: { error?: Error } = {}): Promise<void> {
-    return (
-      this.unregisterStream(this.id)
-        .then(() => {
-          if (options.error) {
-            this.reject(options.error)
-          } else {
-            this.resolve()
-          }
-        })
-        // FIXME: We should probably return a MultiError of some kind to report both error if `options.error` exists
-        .catch((error) => {
-          this.reject(error)
-        })
-    )
+    this.closeError = options.error
+
+    return await this.unregisterStream(this.id)
   }
 
   private checkMarker(marker?: StreamMarker): StreamMarker | undefined {
@@ -406,16 +484,32 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
     return marker
   }
 
+  // Public only for the stream client to be able to call us directly. Not best practice but since
+  // the client and his streams are tighly coupled, cohesion makes sense here. Will never be seen
+  // by a consumer anyway and this method is not part of any backward compatibility policy.
+  public onUnregister(unregisterError?: Error) {
+    // FIXME: We should probably return a MultiError of some kind to report both of
+    //        `unregisterError` and `this.closeError` if they are both set.
+
+    if (unregisterError) {
+      this.reject(unregisterError)
+    } else if (this.closeError) {
+      this.reject(this.closeError)
+    } else {
+      this.resolve()
+    }
+  }
+
   private resolve = () => {
     if (this.activeJoiner) {
-      this.debug("Resolving joiner promise.")
+      this.debug("Resolving joiner promise for stream [%s].", this.id)
       this.activeJoiner.resolve()
     }
   }
 
   private reject = (error: Error) => {
     if (this.activeJoiner) {
-      this.debug("Rejecting joiner promise with error %o.", error)
+      this.debug("Rejecting joiner promise for stream [%s] with error %o.", this.id, error)
       this.activeJoiner.reject(error)
     }
   }

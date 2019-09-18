@@ -237,23 +237,6 @@ describe("socket", () => {
     expect(socket.isConnected).toBeFalsy()
   })
 
-  it("doesn't try to reconnect on close code 1005 (no status code present)", async () => {
-    const socket = createSocket("any", {
-      webSocketFactory: createWebSocketFactory(mockWebSocket)
-    })
-
-    setTimeout(() => {
-      openConnection(mockWebSocket)
-      closeConnection(mockWebSocket, { code: 1005 })
-    }, 0)
-
-    expect.hasAssertions()
-    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
-    reopenConnection(mockWebSocket)
-
-    expect(socket.isConnected).toBeFalsy()
-  })
-
   it("doesn't try to reconnect when autoReconnect is false", async () => {
     const socket = createSocket("any", {
       autoReconnect: false,

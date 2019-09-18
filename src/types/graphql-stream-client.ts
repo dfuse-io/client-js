@@ -54,8 +54,8 @@ export interface GraphqlStreamClient {
   /**
    * Unregister the stream represented by this stream's id.
    *
-   * This will send the `unlisten` message to the remote endpoint effectively
-   * stopping the dfuse Stream as well as the flow of message.
+   * This will send the `stop` message to the remote endpoint effectively
+   * stopping the dfuse GraphQL Subscription as well as the flow of message.
    *
    * All stream should be unregistered when not required anymore to clean up
    * resources and ensure no more extra bandwidth are required.

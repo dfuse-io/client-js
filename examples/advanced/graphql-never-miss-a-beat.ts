@@ -6,6 +6,8 @@ import {
   DfuseClient,
   GraphqlStreamMessage
 } from "@dfuse/client"
+import { writeFileSync, readFileSync, existsSync } from "fs"
+import * as path from "path"
 
 /**
  * In this example, we will showcase how to implement bulletproof
@@ -24,6 +26,8 @@ import {
  * having our code restart at the exact correct place a commit had
  * occurred.
  */
+const LAST_CURSOR_FILENAME = "last_cursor.txt"
+
 async function main() {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
@@ -81,11 +85,46 @@ class Engine {
   public async start() {
     console.log("Engine starting")
 
-    // Here we use the `liveMarkerInterval` which with give us a notification each
-    // 10 blocks. This is useful to update the cursor when your query is low traffic.
-    // Otherwise, you could restart thousands of blocks behing tip of chain. See
-    // `onProgress` for further details about cursor saving on this notification.
-    const graphqlDocument = `
+    /**
+     * At the engine start, we load back our latest persisted cursor,
+     * if it exists. This way, we either start fresh because it's the
+     * very first time to script is run.
+     *
+     * Or, already ran but was stopped or crashed while streaming
+     * data. In this case, our persistence storage (a simple file
+     * in this demo), will contains our last persisted stored cursor.
+     */
+    let lastPersistedCursor = ""
+    const lastCursorPath = path.resolve(__dirname, LAST_CURSOR_FILENAME)
+    if (existsSync(lastCursorPath)) {
+      lastPersistedCursor = readFileSync(lastCursorPath).toString()
+      console.log("Read last persisted cursor, start back at cursor " + lastPersistedCursor)
+    }
+
+    /**
+     * Two things to note in the operation GraphQL document.
+     *
+     * First thing, we use a `$cursor` variable to pass the cursor. This is critical
+     * for proper functionning of the auto restart feature. On initial start of the
+     * stream, the `$cursor` variable is used straight from the `variables` options
+     * of the `graphql` method (which is either empty or the last persisted cursor).
+     * However, upon a stream re-connection, the `variables.cursor` is automatically
+     * updated with the latest marked cursor when provided enabling the stream to
+     * automatically restart at the exact location it stops, i.e. the `cursor`.
+     *
+     * Second thing, we use the `liveMarkerInterval` which with give us a notification each
+     * 10 blocks. This is useful to update the cursor when your query is low traffic.
+     * Otherwise, you could restart thousands of blocks behing tip of chain. See
+     * `onProgress` for further details about cursor saving on this notification.
+     *
+     * **Note** The `cursor` value when defined (i.e. not the empty string) always takes
+     * precedence over `lowBlockNum`/`highBlockNum` boundaries. For example, a query
+     * `cursor: "", lowBlockNum: 10, highBlockNum: 20` will start from `lowBlockNum`
+     * then stream up, while `cursor: <cursor>, lowBlockNum: 10, highBlockNum: 20`
+     * will start at `<cursor>` location, maybe transaction #3 within block #15 and
+     * then reach top boundary and stop there.
+     */
+    const operation = `
       subscription ($cursor: String!) {
         searchTransactionsForward(query: "receiver:therealkarma action:transfer", cursor: $cursor, liveMarkerInterval: 10) {
           undo
@@ -104,7 +143,7 @@ class Engine {
     `
 
     this.stream = await this.client.graphql(
-      graphqlDocument,
+      operation,
       (message: GraphqlStreamMessage) => {
         if (message.type === "data") {
           this.onResult(message.data as Message<KarmaTransfer>)
@@ -113,11 +152,21 @@ class Engine {
         if (message.type === "error") {
           this.onError(message.errors)
         }
+
+        if (message.type === "complete") {
+          this.onComplete()
+        }
       },
       {
         variables: {
-          // In a real-word production code
-          cursor: ""
+          /**
+           * The `cursor` variable is used on initial start of the stream. Afterwards, if the
+           * stream is marked (via `marker.mark(...)` like in the demo), the marked `cursor` will
+           * be used upon a reconnection. This means `lastPersistedCursor` is only really used
+           * once and overriden later on by the library. Other variables, if any, are left intact
+           * and only the cursor is updated to reflect the current marker state.
+           */
+          cursor: lastPersistedCursor
         }
       }
     )
@@ -129,8 +178,16 @@ class Engine {
       )
       console.log()
 
-      // Upon a reconnection, we need to clear previously accumulated actions
-      this.flushPending()
+      /**
+       * When the stream reconnects, we must flush all of the current pending transactions
+       * as the stream restarts at our last marked block, inclusively.
+       *
+       * Since we mark after commit, anything currently in pending was not committed.
+       * As such, let's flush all pending actions. The dfuse GraphQL Stream API will stream
+       * them back anyway due to `cursor`.
+       */
+      console.log("Flushing pending action(s) due to refresh")
+      this.pendingActions = []
     }
 
     console.log("Stream connected, ready to receive messages")
@@ -172,7 +229,14 @@ class Engine {
   }
 
   private onError = (errors: Error[]) => {
-    console.log("Received an 'error' message", prettifyJson(errors))
+    console.log(
+      "Received an 'error' message, the stream will automatically reconnects in 2.5s",
+      prettifyJson(errors)
+    )
+  }
+
+  private onComplete = () => {
+    console.log("Received a 'complete' message, no more results for this stream")
   }
 
   private commit(cursor: string) {
@@ -193,24 +257,16 @@ class Engine {
     this.ensureStream().mark({ cursor })
 
     /**
-     * In a real-word production code, you would also need to persist the
-     * `cursor` value to ensure that upon a process restart, you start back from
-     * this exact value.
+     * In a real-word production code, you need to also persist the cursor into
+     * a persistent storage. This is important so when the actual process ends
+     * or crash, upon restart, you simply load your latest saved `cursor` and
+     * starts back from that point.
+     *
+     * In this demo, we simply save it to a file on the file system. This could be
+     * easily replaced with a database save, cloud upload, local storage in the
+     * browser on anything that is persistent across restarts of the script.
      */
-
-    console.log("")
-  }
-
-  /**
-   * When the stream reconnects, we must flush all of the current pending transactions
-   * as the stream restarts at our last marked block, inclusively.
-   *
-   * Since we mark after commit, anything currently in pending was not committed.
-   * As such, let's flush all pending actions. The dfuse GraphQL Stream API will stream them back.
-   */
-  public async flushPending() {
-    console.log("Flushing pending action(s) due to refresh")
-    this.pendingActions = []
+    writeFileSync(path.resolve(__dirname, LAST_CURSOR_FILENAME), cursor)
   }
 
   public async stop() {
