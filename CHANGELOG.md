@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 @ Next (In progress)
+## 0.3.0-rc.3 (September 18, 2019)
 
 ### Changes
 
