@@ -1,4 +1,4 @@
-import { OnStreamMessage, OnStreamMarker } from "../types/stream-client"
+import { OnStreamMessage } from "../types/stream-client"
 import { InboundMessage } from "../message/inbound"
 import { Stream } from "../types/stream"
 
