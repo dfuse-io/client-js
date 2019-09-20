@@ -61,7 +61,14 @@ export interface StreamClient {
   unregisterStream(id: string): Promise<void>
 }
 
-export type OnStreamMarker = { mark(data: { atBlockNum: number }): void }
-
-export type OnStreamMessage = (message: InboundMessage, marker: OnStreamMarker) => void
+/**
+ * Handler invoked when a message is routed to this exact stream via the matching
+ * of the message id and the stream id. If this is invoked, you are guaranteed to
+ * received a message for your stream.
+ *
+ * @param message The actual inbound WebSocket message received destinated to you
+ * @param stream The actual stream object on which the handler is defined, can be used to
+ *               mark the stream at right location or close it eagerly.
+ */
+export type OnStreamMessage = (message: InboundMessage, stream: Stream) => void
 export type OnStreamRestart = () => void

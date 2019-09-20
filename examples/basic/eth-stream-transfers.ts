@@ -7,12 +7,12 @@ async function main() {
     network: "mainnet.eth.dfuse.io"
   })
 
-  const stream = await client.graphql(streamTransfer, (message, marker) => {
+  const stream = await client.graphql(streamTransfer, (message) => {
     if (message.type === "data") {
       const { cursor, node } = message.data.searchTransactions
       console.log(`Transfer [${node.from} -> ${node.to}, ${node.value}]`)
 
-      marker.mark({ cursor })
+      stream.mark({ cursor })
     }
   })
 

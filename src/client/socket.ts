@@ -450,7 +450,11 @@ class DefaultSocket implements Socket {
 
     this.cleanSocket()
 
-    this.debug("Sending a `onClose` notification to client consumer (via %s).", tag)
+    this.debug(
+      "Sending a `onClose` (%d) notification to client consumer (via %s).",
+      event.code,
+      tag
+    )
     this.onClose(event)
 
     if (event.code !== 1000 && this.options.autoReconnect) {

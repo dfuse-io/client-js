@@ -39,6 +39,7 @@ const client = createDfuseClient({ apiKey: "Paste your API key here", network: "
 const operation = `
   subscription {
     searchTransactionsForward(query: "receiver: eosio.token action:transfer") {
+      cursor
       trace { matchingActions { json } }
     }
   }
@@ -46,12 +47,16 @@ const operation = `
 
 client.graphql(
     operation,
-    (message) => {
+    (message, stream) => {
         if (message.type === "data") {
-            message.data.searchTransactionsForward.trace.matchingActions.forEach((action) => {
+            const payload = message.data.searchTransactionsForward
+            payload.trace.matchingActions.forEach((action) => {
                 const { from, to, quantity, memo } = action.json
                 console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
             })
+
+            // Ensure to aslo persist the cursor so you never miss a beat!
+            stream.mark({ cursor: payload.cursor })
         }
     }).catch((error) => {
     console.log("An error occurred.", error)
@@ -64,24 +69,29 @@ client.graphql(
 ```js
 const { createDfuseClient } = require("@dfuse/client")
 
-const client = createDfuseClient({ 
-  apiKey: "Paste your API key here", 
+const client = createDfuseClient({
+  apiKey: "Paste your API key here",
   network: "mainnet.eth.dfuse.io",
 })
 
 const operation = `
   subscription {
     searchTransactions(query: "method: 'transfer(address,uint256)'") {
+      cursor
       node { from to value(encoding: ETHER) }
     }
   }
 `
 
 client.graphql(operation,
-    (message) => {
+    (message, stream) => {
         if (message.type === "data") {
-            const { from, to, value } = message.data.searchTransactions.node
+            const payload = message.data.searchTransactions
+            const { from, to, value } = payload.node
             console.log(`Transfer [${from} -> ${to}, ${value}]`)
+
+            // Ensure to aslo persist the cursor so you never miss a beat!
+            stream.mark({ cursor: payload.cursor })
         }
     }
 ).catch((error) => {

@@ -31,7 +31,8 @@ const LAST_CURSOR_FILENAME = "last_cursor.txt"
 async function main() {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK,
+    network: "localhost:8080",
+    secure: false,
     graphqlStreamClientOptions: {
       socketOptions: {
         reconnectDelayInMs: 250
@@ -256,7 +257,6 @@ class Engine {
      * at the right block, upon restarting, the stream will automatically start back
      * at this block ensuring you never miss a single action.
      */
-    console.log(`Marking stream up to cursor`)
     this.ensureStream().mark({ cursor })
 
     /**

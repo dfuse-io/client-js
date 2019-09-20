@@ -7,7 +7,7 @@ async function main() {
     network: DFUSE_API_NETWORK
   })
 
-  const stream = await client.graphql(streamTransfer, (message, marker) => {
+  const stream = await client.graphql(streamTransfer, (message) => {
     if (message.type === "data") {
       const data = message.data.searchTransactionsForward
       const actions = data.trace.matchingActions
@@ -17,7 +17,7 @@ async function main() {
         console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
       })
 
-      marker.mark({ cursor: data.cursor })
+      stream.mark({ cursor: data.cursor })
     }
   })
 

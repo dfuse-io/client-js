@@ -98,10 +98,17 @@ export type ErrorGraphqlStreamMessage = {
  */
 export type CompleteGraphqlStreamMessage = { type: "complete" }
 
-export type OnGraphqlStreamMarker = { mark(data: { cursor: string }): void }
-
+/**
+ * Handler invoked when a message is routed to this exact stream via the matching
+ * of the message id and the stream id. If this is invoked, you are guaranteed to
+ * received a message for your stream.
+ *
+ * @param message The actual inbound GraphQL message received destinated to you.
+ * @param stream The actual stream object on which the handler is defined, can be used to
+ *               mark the stream at right location or close it eagerly.
+ */
 export type OnGraphqlStreamMessage<T = unknown> = (
   message: GraphqlStreamMessage<T>,
-  marker: OnGraphqlStreamMarker
+  stream: Stream
 ) => void
 export type OnGraphqlStreamRestart = () => void
