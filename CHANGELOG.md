@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.3.0 @ Next (In progress)
+## 0.3.0-rc.4 (September 20, 2019)
+
+- The second parameter of streaming `OnMessage` handler for both WebSocket
+  and GraphQL is the full `Stream` object. Previously it was a different
+  type named `marker` but this was not the clearest way. This is a backward
+  compatible move, the old interface was a subset of the `Stream` interface.
+
+  By doing this, it is also possible to close the stream straight within
+  the message handler via `stream.close()` call.
 
 ## 0.3.0-rc.3 (September 18, 2019)
 
