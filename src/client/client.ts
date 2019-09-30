@@ -264,7 +264,6 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 
   const requestIdGenerator = options.requestIdGenerator || randomReqId
 
-  // @ts-ignore
   return new DefaultClient(
     options.apiKey,
     endpoints,
@@ -408,7 +407,10 @@ export class DefaultClient implements DfuseClient {
   /// GraphQL API
   //
 
-  // @ts-ignore
+  // The return type has `Promise<GraphqlResponse<T> | Stream | any>`. The `any` sadly is an
+  // artefact to please the compiler. Without it, the compiler thinks the resulting type is
+  // not a proper implementation of `DfuseClient.graphql` which has two signatures, both of them
+  // being of a different return type.
   public async graphql<T = any>(
     document: string | GraphqlDocument,
     onMessage?:
@@ -421,7 +423,7 @@ export class DefaultClient implements DfuseClient {
       operationType?: GraphqlOperationType
       variables?: GraphqlVariables
     } = {}
-  ): Promise<GraphqlResponse<T> | Stream> {
+  ): Promise<GraphqlResponse<T> | Stream | any> {
     if (typeof onMessage !== "function" && onMessage) {
       options = onMessage
     }

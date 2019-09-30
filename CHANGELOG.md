@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0-rc.6 (September 30, 2019)
+
+- Fixed some `@ts-ignore` that would cause library consumer to choke on compiling.
+
 ## 0.3.0-rc.5 (September 30, 2019)
 
 - Moved `@types/debug` from `devDependencies` to a plain `dependencies` instead.
