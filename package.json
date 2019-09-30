@@ -1,6 +1,6 @@
 {
   "name": "@dfuse/client",
-  "version": "0.3.0-rc.3",
+  "version": "0.3.0-rc.4",
   "description": "dfuse JavaScript/TypeScript Client Library (for [dfuse API](https://docs.dfuse.io/))",
   "sideEffects": false,
   "main": "dist/lib/index.js",
@@ -60,7 +60,6 @@
     ]
   },
   "devDependencies": {
-    "@types/debug": "^0.0.31",
     "@types/dotenv": "^4.0.3",
     "@types/jest": "^23.3.9",
     "@types/jest-expect-message": "^1.0.0",
@@ -101,6 +100,7 @@
     "ws": "^7.0.1"
   },
   "dependencies": {
+    "@types/debug": "^0.0.31",
     "debug": "^4.1.0"
   }
 }
