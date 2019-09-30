@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0-rc.5 (September 30, 2019)
+
+- Moved `@types/debug` from `devDependencies` to a plain `dependencies` instead.
+
 ## 0.3.0-rc.4 (September 20, 2019)
 
 - The second parameter of streaming `OnMessage` handler for both WebSocket
