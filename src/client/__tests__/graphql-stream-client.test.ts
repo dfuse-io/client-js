@@ -2,14 +2,14 @@ import { mock, MockSocket, createSocketController, SocketController } from "./mo
 import { DfuseClientError } from "../../types/error"
 import { GraphqlStreamClient, OnGraphqlStreamMessage } from "../../types/graphql-stream-client"
 import { createGraphqlStreamClient } from "../graphql-stream-client"
-import { GraphqlOutboundMessage } from "../../types/graphql"
+import { GraphqlOutboundMessage, GraphqlStartOutboundMessage } from "../../types/graphql"
 
 const document1 = "{ doc1 }"
 const document2 = "{ doc2 }"
 
-const document1Start = {
+const document1Start: GraphqlStartOutboundMessage = {
   id: "1",
-  payload: { query: "{ doc1 }", variables: undefined },
+  payload: { query: "{ doc1 }", variables: { cursor: "" } },
   type: "start"
 }
 
@@ -50,6 +50,25 @@ describe("GraphqlStreamClient", () => {
       payload: { Authorization: "123" }
     })
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, document1Start)
+  })
+
+  it("variables with cursor can be set when registering stream", async () => {
+    await client.registerStream("1", document1, { cursor: "abc", another: "one" }, jest.fn())
+
+    expect(socket.connectMock).toHaveBeenCalledTimes(1)
+
+    const customStart: GraphqlStartOutboundMessage = {
+      id: "1",
+      payload: { query: "{ doc1 }", variables: { cursor: "abc", another: "one" } },
+      type: "start"
+    }
+
+    expect(socket.sendMock).toHaveBeenCalledTimes(2)
+    expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
+      type: "connection_init",
+      payload: { Authorization: "123" }
+    })
+    expect(socket.sendMock).toHaveBeenNthCalledWith(2, customStart)
   })
 
   it("client correctly handle connection_error when registering stream", async () => {

@@ -7,6 +7,14 @@ async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: "mainnet.eth.dfuse.io" })
 
   try {
+    const searchTransactions = `query ($limit: Int64!) {
+      searchTransactions(query: "signer:${address}", limit: $limit, sort: DESC) {
+        edges {
+          node { hash block { number } }
+        }
+      }
+    }`
+
     const response = await client.graphql(searchTransactions, {
       variables: { limit: 10 }
     })
@@ -34,21 +42,6 @@ async function main() {
 
   client.release()
 }
-
-const searchTransactions = `
-  query ($limit: Int64!) {
-    searchTransactions(query: "signer:${address}", limit: $limit, sort: DESC) {
-      edges {
-        node {
-          hash
-          block {
-            number
-          }
-        }
-      }
-    }
-  }
-`
 
 function buildEthqLink(transactionId: string) {
   return `https://ethq.app/tx/${transactionId}`

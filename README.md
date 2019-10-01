@@ -6,10 +6,10 @@ A GraphQL, WebSocket and HTTP REST client library to consume dfuse API <https://
 
 Using Yarn:
 
-    yarn add @dfuse/client@next
+    yarn add @dfuse/client
 
     # Use this command if you are using npm
-    #npm install --save @dfuse/client@next
+    #npm install --save @dfuse/client
 
 ## Features
 
@@ -18,7 +18,7 @@ What you get by using this library:
 - Full dfuse API coverage (GraphQL, REST & WebSocket)
 - API Token issuance & management (auto-refresh, expiration handling, storage, etc)
 - Automatic re-connection on socket close
-- Stream progress management and auto-restart on socket re-connection
+- Stream progress management and auto-restart at last marked location on socket re-connection
 - Full customization power
 
 ## Quick Start
@@ -31,71 +31,74 @@ hexadecimal character (i.e.) `web_0123456789abcdef`).
 ### EOS
 
 <!-- prettier-ignore -->
+<small>See [examples/graphql-stream-transfers.ts](./examples/basic/graphql-stream-transfers.ts)</small>
+
 ```js
-const { createDfuseClient, InboundMessageType } = require("@dfuse/client")
+const { createDfuseClient } = require("@dfuse/client")
+const client = createDfuseClient({ apiKey: "<Paste your API key here>", network: "mainnet" })
 
-const client = createDfuseClient({ apiKey: "Paste your API key here", network: "mainnet" })
-
-const operation = `
-  subscription {
-    searchTransactionsForward(query: "receiver: eosio.token action:transfer") {
-      cursor
-      trace { matchingActions { json } }
+const streamTransfer = `subscription($cursor: String!) {
+  searchTransactionsForward(query: "receiver:eosio.token action:transfer", cursor: $cursor) {
+    undo cursor
+    trace {
+      matchingActions { json }
     }
   }
-`
+}`
 
-client.graphql(
-    operation,
-    (message, stream) => {
-        if (message.type === "data") {
-            const payload = message.data.searchTransactionsForward
-            payload.trace.matchingActions.forEach((action) => {
-                const { from, to, quantity, memo } = action.json
-                console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
-            })
+await client.graphql(streamTransfer, (message, stream) => {
+  if (message.type === "error") {
+    console.log("An error occurred", message.errors, message.terminal)
+  }
 
-            // Ensure to aslo persist the cursor so you never miss a beat!
-            stream.mark({ cursor: payload.cursor })
-        }
-    }).catch((error) => {
-    console.log("An error occurred.", error)
-});
+  if (message.type === "data") {
+    const data = message.data.searchTransactionsForward
+    const actions = data.trace.matchingActions
+
+    actions.forEach(({ json }: any) => {
+      const { from, to, quantity, memo } = json
+      console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
+    })
+
+    stream.mark({ cursor: data.cursor })
+  }
+
+  if (message.type === "complete") {
+    console.log("Stream completed")
+  }
+})
 ```
 
 ### Ethereum
+
+<small>See [examples/eth-stream-transfers.ts](./examples/basic/eth-stream-transfers.ts)</small>
 
 <!-- prettier-ignore -->
 ```js
 const { createDfuseClient } = require("@dfuse/client")
 
-const client = createDfuseClient({
-  apiKey: "Paste your API key here",
-  network: "mainnet.eth.dfuse.io",
-})
-
-const operation = `
-  subscription {
-    searchTransactions(query: "method: 'transfer(address,uint256)'") {
-      cursor
-      node { from to value(encoding: ETHER) }
-    }
+const streamTransfer = `subscription($cursor: String) {
+  searchTransactions(query: "method:'transfer(address,uint256)'", cursor: $cursor) {
+    undo cursor
+    node { hash from to value(encoding: ETHER) }
   }
-`
+}`
 
-client.graphql(operation,
-    (message, stream) => {
-        if (message.type === "data") {
-            const payload = message.data.searchTransactions
-            const { from, to, value } = payload.node
-            console.log(`Transfer [${from} -> ${to}, ${value}]`)
+await client.graphql(streamTransfer, (message, stream) => {
+  if (message.type === "error") {
+    console.log("An error occurred", message.errors, message.terminal)
+  }
 
-            // Ensure to aslo persist the cursor so you never miss a beat!
-            stream.mark({ cursor: payload.cursor })
-        }
-    }
-).catch((error) => {
-    console.log("An error occurred.", error)
+  if (message.type === "data") {
+    const { cursor, node } = message.data.searchTransactions
+    console.log(`Transfer [${node.from} -> ${node.to}, ${node.value}]`)
+
+    stream.mark({ cursor })
+  }
+
+  if (message.type === "complete") {
+    console.log("Stream completed")
+  }
 })
 ```
 

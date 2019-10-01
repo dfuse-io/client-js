@@ -447,7 +447,10 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
       type: "start",
       payload: {
         query: this.registrationDocument,
-        variables: resolvedVariables as (Record<string, unknown> | undefined)
+        variables: {
+          cursor: "",
+          ...((resolvedVariables as (Record<string, unknown> | undefined)) || {})
+        }
       }
     }
   }

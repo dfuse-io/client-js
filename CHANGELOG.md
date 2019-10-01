@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 (October 1, 2019)
+
+- Official 0.3.0 release.
+
+- Fixed socket trying to re-connect when disconnection was asked directly by the client.
+
+- The cursor is sent empty when not present in GraphQL stream. Still possible to pass
+  your own.
+
 ## 0.3.0-rc.6 (September 30, 2019)
 
 - Fixed some `@ts-ignore` that would cause library consumer to choke on compiling.

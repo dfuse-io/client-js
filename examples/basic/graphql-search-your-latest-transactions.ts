@@ -6,6 +6,15 @@ const account = "eoscanadacom"
 async function main() {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
+  const searchTransactions = `query ($limit: Int64!) {
+    searchTransactionsBackward(query: "auth:${account}", limit: $limit) {
+      results {
+        block { num }
+        trace { id matchingActions { json } }
+      }
+    }
+  }`
+
   try {
     const response = await client.graphql(searchTransactions, {
       variables: { limit: 10 }
@@ -30,24 +39,6 @@ async function main() {
 
   client.release()
 }
-
-const searchTransactions = `
-  query ($limit: Int64!) {
-    searchTransactions(query: "auth:${account}", limit: $limit) {
-      results {
-        block {
-          num
-        }
-        trace {
-          id
-          matchingActions {
-            json
-          }
-        }
-      }
-    }
-  }
-`
 
 function buildEosqLink(transactionId: string) {
   let suffix = ""

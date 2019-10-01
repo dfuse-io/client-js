@@ -7,7 +7,20 @@ async function main() {
     network: DFUSE_API_NETWORK
   })
 
+  const streamTransfer = `subscription($cursor: String!) {
+    searchTransactionsForward(query: "receiver:eosio.token action:transfer", cursor: $cursor) {
+      undo cursor
+      trace {
+        matchingActions { json }
+      }
+    }
+  }`
+
   const stream = await client.graphql(streamTransfer, (message) => {
+    if (message.type === "error") {
+      console.log("An error occurred", message.errors, message.terminal)
+    }
+
     if (message.type === "data") {
       const data = message.data.searchTransactionsForward
       const actions = data.trace.matchingActions
@@ -19,6 +32,10 @@ async function main() {
 
       stream.mark({ cursor: data.cursor })
     }
+
+    if (message.type === "complete") {
+      console.log("Stream completed")
+    }
   })
 
   await waitFor(5000)
@@ -26,18 +43,5 @@ async function main() {
 
   client.release()
 }
-
-const streamTransfer = `
-  subscription {
-    searchTransactionsForward(query: "receiver:eosio.token action:transfer") {
-      cursor
-      trace {
-        matchingActions {
-          json
-        }
-      }
-    }
-  }
-`
 
 runMain(main)

@@ -225,6 +225,7 @@ class DefaultSocket implements Socket {
   private options: SocketOptions
 
   public isConnected: boolean = false
+  public disconnectInitiator?: "client" | "server"
   public socket?: WebSocket
 
   private debug: IDebugger
@@ -307,6 +308,7 @@ class DefaultSocket implements Socket {
       "Lazily disconnected, remaining clean up shall be performed when receiving `onclose` event."
     )
     this.isConnected = false
+    this.disconnectInitiator = "client"
 
     this.closePromise = new Promise((resolve) => {
       // Shall be resolved by the `onClose` event handler on this class
@@ -457,7 +459,11 @@ class DefaultSocket implements Socket {
     )
     this.onClose(event)
 
-    if (event.code !== 1000 && this.options.autoReconnect) {
+    if (
+      event.code !== 1000 &&
+      this.disconnectInitiator !== "client" &&
+      this.options.autoReconnect
+    ) {
       this.debug(
         "Socket has close abnormally (via %s), trying to re-connect to socket (infinite retry).",
         tag
@@ -465,10 +471,13 @@ class DefaultSocket implements Socket {
 
       reconnectWorker()
     } else {
-      // It's really the end, notify `onTermination` handler if set
+      this.debug("Terminating socket lifecycle (via %s), no reconnection will be attempted.", tag)
+
       if (this.onTerminationListener) {
         this.onTerminationListener()
       }
+
+      this.disconnectInitiator = undefined
     }
   }
 

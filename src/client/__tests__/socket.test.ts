@@ -5,6 +5,7 @@ import { WebSocketFactory } from "../../types/socket"
 import { CLOSED } from "ws"
 import { MockSocket, MockWebSocket } from "./mocks"
 import { doesNotReject } from "assert"
+import { Deferred } from "../../helpers/promises"
 
 describe("socket", () => {
   let mockWebSocket: MockWebSocket
@@ -233,6 +234,34 @@ describe("socket", () => {
     expect.hasAssertions()
     await expect(socket.connect(noopListener)).resolves.toBeUndefined()
     reopenConnection(mockWebSocket)
+
+    expect(socket.isConnected).toBeFalsy()
+  })
+
+  it("doesn't try to reconnect on abnormal closure when the client initiated the close call", async () => {
+    const socket = createSocket("any", {
+      webSocketFactory: createWebSocketFactory(mockWebSocket)
+    })
+
+    setTimeout(() => {
+      openConnection(mockWebSocket)
+    }, 0)
+
+    const terminationDeferred = new Deferred()
+
+    await expect(
+      socket.connect(noopListener, {
+        onTermination() {
+          terminationDeferred.resolve()
+        }
+      })
+    ).resolves.toBeUndefined()
+
+    setTimeout(() => {
+      closeConnection(mockWebSocket, { code: 1001 })
+    }, 0)
+    await socket.disconnect()
+    await terminationDeferred.promise()
 
     expect(socket.isConnected).toBeFalsy()
   })
