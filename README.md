@@ -31,7 +31,7 @@ hexadecimal character (i.e.) `web_0123456789abcdef`).
 ### EOS
 
 <!-- prettier-ignore -->
-<small>See [examples/graphql-stream-transfers.ts](./examples/basic/graphql-stream-transfers.ts)</small>
+See [examples/graphql-stream-transfers.ts](./examples/basic/graphql-stream-transfers.ts)
 
 ```js
 const { createDfuseClient } = require("@dfuse/client")
@@ -71,7 +71,7 @@ await client.graphql(streamTransfer, (message, stream) => {
 
 ### Ethereum
 
-<small>See [examples/eth-stream-transfers.ts](./examples/basic/eth-stream-transfers.ts)</small>
+See [examples/eth-stream-transfers.ts](./examples/basic/eth-stream-transfers.ts)
 
 <!-- prettier-ignore -->
 ```js
@@ -287,6 +287,9 @@ for production grade details on efficiently use `@dfuse/client`
 - [GraphQL Stream Transfers (Query)](./examples/basic/graphql-stream-transfers.ts)
 - [GraphQL Search Your Latest Transactions (Subscription)](./examples/basic/graphql-search-your-latest-transactions.ts)
 
+- [Ethereum Stream Transfers](./examples/basic/eth-stream-transfers.ts)
+- [Ethereum Search Your Latest Transactions](./examples/basic/eth-search-your-latest-transactions.ts)
+
 - [Check Balance (delta between fixed block and now)](./examples/basic/check-balance.ts)
 - [Search Your Latest Transactions](./examples/basic/search-your-latest-transactions.ts)
 - [Stream Transfers](./examples/basic/stream-transfers.ts)
@@ -309,6 +312,7 @@ deal with error and edge cases (like micro-forks!).
 - [Node.js HTTP & WebSocket Configuration - Avoid polluting the global scope and customizing WebSocket client](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
 - [Stream Irreversible Events Only - Avoiding dealing with micro-forks (non-live)](./examples/advanced/stream-only-irreversible-events.ts)
 - [Track RAM Usage - Or how to use the search cursor to fetch next results](./examples/advanced/track-ram-usage.ts)
+- [Has Account - Quickest way to have a method to check if an account exists on the chain](./examples/advanced/has-account.ts)
 
 #### Reference
 
@@ -318,7 +322,9 @@ in each dfuse Stream and full configuration options for the library itself and a
 
 - HTTP
 
+  - [api-request.ts](./examples/reference/api-request.ts)
   - [auth-issue.ts](./examples/reference/auth-issue.ts)
+  - [fetch-block-id-by-time.ts](./examples/reference/fetch-block-id-by-time.ts)
   - [fetch-transaction.ts](./examples/reference/fetch-transactions.ts)
   - [search-transactions.ts](./examples/reference/search-transactions.ts)
   - [state-abi-bin-to-json.ts](./examples/reference/state-abi-bin-to-json.ts)
