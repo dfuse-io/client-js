@@ -1,25 +1,21 @@
 # dfuse JavaScript/TypeScript Client Library
 
-A WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io> on EOS networks.
-
-**Note** This library is the newest hottest version of [@dfuse/eosws-js](https://github.com/dfuse-io/eosws-js)
-library. If you land here because your are using it, refer to the [MIGRATION.md](./MIGRATION.md) file for how
-to upgrade.
+A GraphQL, WebSocket and HTTP REST client library to consume dfuse API <https://dfuse.io> ([dfuse docs](https://docs.dfuse.io)).
 
 ## Installation
 
 Using Yarn:
 
-    yarn add @dfuse/client
+    yarn add @dfuse/client@next
 
     # Use this command if you are using npm
-    #npm install --save @dfuse/client
+    #npm install --save @dfuse/client@next
 
 ## Features
 
 What you get by using this library:
 
-- Full dfuse API coverage (REST & WebSocket)
+- Full dfuse API coverage (GraphQL, REST & WebSocket)
 - API Token issuance & management (auto-refresh, expiration handling, storage, etc)
 - Automatic re-connection on socket close
 - Stream progress management and auto-restart on socket re-connection
@@ -27,7 +23,12 @@ What you get by using this library:
 
 ## Quick Start
 
-When targeting a browser (you will need a bundler like WebPack since we only ship ES5 modules files for now):
+_Notice_ You should replace the sequence of characters `Paste your API key here`
+in the script above with your actual API key obtain from https://app.dfuse.io. A
+valid API key starts with either `mobile_`, `server_` or `web_` followed by a series of
+hexadecimal character (i.e.) `web_0123456789abcdef`).
+
+### EOS
 
 <!-- prettier-ignore -->
 ```js
@@ -35,20 +36,68 @@ const { createDfuseClient, InboundMessageType } = require("@dfuse/client")
 
 const client = createDfuseClient({ apiKey: "Paste your API key here", network: "mainnet" })
 
-client.streamActionTraces({ accounts: "eosio.token", action_names: "transfer" }, (message) => {
-  if (message.type === InboundMessageType.ACTION_TRACE) {
-    const { from, to, quantity, memo } = message.data.trace.act.data
-    console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
+const operation = `
+  subscription {
+    searchTransactionsForward(query: "receiver: eosio.token action:transfer") {
+      cursor
+      trace { matchingActions { json } }
+    }
   }
-}).catch((error) => {
-  console.log("An error occurred.", error)
-})
+`
+
+client.graphql(
+    operation,
+    (message, stream) => {
+        if (message.type === "data") {
+            const payload = message.data.searchTransactionsForward
+            payload.trace.matchingActions.forEach((action) => {
+                const { from, to, quantity, memo } = action.json
+                console.log(`Transfer [${from} -> ${to}, ${quantity}] (${memo})`)
+            })
+
+            // Ensure to aslo persist the cursor so you never miss a beat!
+            stream.mark({ cursor: payload.cursor })
+        }
+    }).catch((error) => {
+    console.log("An error occurred.", error)
+});
 ```
 
-_Notice_ You should replace the sequence of characters `Paste your API key here`
-in the script above with your actual API key obtain from https://app.dfuse.io. A
-valid API key starts with either `mobile_`, `server_` or `web_` followed by a series of
-hexadecimal character (i.e.) `web_0123456789abcdef`).
+### Ethereum
+
+<!-- prettier-ignore -->
+```js
+const { createDfuseClient } = require("@dfuse/client")
+
+const client = createDfuseClient({
+  apiKey: "Paste your API key here",
+  network: "mainnet.eth.dfuse.io",
+})
+
+const operation = `
+  subscription {
+    searchTransactions(query: "method: 'transfer(address,uint256)'") {
+      cursor
+      node { from to value(encoding: ETHER) }
+    }
+  }
+`
+
+client.graphql(operation,
+    (message, stream) => {
+        if (message.type === "data") {
+            const payload = message.data.searchTransactions
+            const { from, to, value } = payload.node
+            console.log(`Transfer [${from} -> ${to}, ${value}]`)
+
+            // Ensure to aslo persist the cursor so you never miss a beat!
+            stream.mark({ cursor: payload.cursor })
+        }
+    }
+).catch((error) => {
+    console.log("An error occurred.", error)
+})
+```
 
 ### Node.js
 
@@ -145,13 +194,13 @@ This will save and retrieve the token from a local file on the disk
 at `~/.dfuse/<sha256-api-key>/token.info`.
 
 **Note** Depending on your deployment target (`Docker`, VM, etc.), it's possible
-that the home directory (`~`) is not writable, causing the default 
-[OnDiskApiTokenStore](https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html) 
+that the home directory (`~`) is not writable, causing the default
+[OnDiskApiTokenStore](https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html)
 instance on Node.js environment to not work correctly. In those cases, simply define
-yourself the `apiTokenStore` instance to use and pick the location where the token 
-should be saved. Instantiate a 
-[FileApiTokenStore](https://dfuse-io.github.io/client-js/classes/fileapitokenstore.html) 
-instance and use it as the `apiTokenStore` configuration value when instantiating the 
+yourself the `apiTokenStore` instance to use and pick the location where the token
+should be saved. Instantiate a
+[FileApiTokenStore](https://dfuse-io.github.io/client-js/classes/fileapitokenstore.html)
+instance and use it as the `apiTokenStore` configuration value when instantiating the
 dfuse Client:
 
 ```
@@ -232,6 +281,9 @@ These are the starter examples showing a concrete use case you can solve using `
 library. Those toy examples have low to no error handling, check the [Advanced section](#advanced)
 for production grade details on efficiently use `@dfuse/client`
 
+- [GraphQL Stream Transfers (Query)](./examples/basic/graphql-stream-transfers.ts)
+- [GraphQL Search Your Latest Transactions (Subscription)](./examples/basic/graphql-search-your-latest-transactions.ts)
+
 - [Check Balance (delta between fixed block and now)](./examples/basic/check-balance.ts)
 - [Search Your Latest Transactions](./examples/basic/search-your-latest-transactions.ts)
 - [Stream Transfers](./examples/basic/stream-transfers.ts)
@@ -242,6 +294,9 @@ for production grade details on efficiently use `@dfuse/client`
 You will find examples leveraging the full power library with all the correct patterns to
 consume the Blockchain data efficiently, with strict data integrity and how to properly
 deal with error and edge cases (like micro-forks!).
+
+- [GraphQL Never Miss a Beat - Ensuring consistent data integrity](./examples/advanced/graphql-never-miss-a-beat.ts)
+- [GraphQL - Use 'gql' tag & Typings](./examples/advanced/graphql-gql-tag.ts)
 
 - [Client & Socket Notifications - Looking at all events generated by the library](./examples/advanced/client-and-socket-notifications.ts)
 - [Forever Stream - Always stay connected to dfuse Stream](./examples/advanced/forever-streaming.ts)

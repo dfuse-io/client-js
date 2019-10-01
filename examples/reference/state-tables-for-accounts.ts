@@ -8,7 +8,10 @@ async function main() {
     const response = await client.stateTablesForAccounts(
       ["eosio.token", "trybenetwork", "parslseed123", "zkstokensr4u"],
       "eoscanadacom",
-      "accounts"
+      "accounts",
+      {
+        keyType: "symbol_code"
+      }
     )
 
     console.log("State tables for accounts response", prettifyJson(response))

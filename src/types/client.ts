@@ -7,6 +7,7 @@ import {
 import { ApiTokenInfo, AuthTokenResponse } from "./auth-token"
 import { SearchTransactionsResponse, SearchSortType } from "./search"
 import { OnStreamMessage } from "./stream-client"
+import { OnGraphqlStreamMessage } from "./graphql-stream-client"
 
 import {
   StateAbiResponse,
@@ -16,12 +17,14 @@ import {
   StateResponse,
   MultiStateResponse,
   StateKeyType,
-  StateTableScopesResponse
+  StateTableScopesResponse,
+  StateTableRowResponse
 } from "./state"
 import { Stream } from "./stream"
 import { HttpQueryParameters, HttpHeaders } from "./http-client"
 import { TransactionLifecycle } from "./transaction"
 import { BlockIdByTimeResponse, ComparisonOperator } from "./block-id"
+import { GraphqlDocument, GraphqlOperationType, GraphqlVariables, GraphqlResponse } from "./graphql"
 
 export type RequestIdGenerator = () => string
 
@@ -74,6 +77,68 @@ export interface DfuseClient {
    * be invoked anymore.
    */
   release(): void
+
+  //
+  /// GraphQL API
+  //
+
+  /**
+   * Perform a `query` or `mutation` via the HTTP transport layer. The
+   * semantic of this method is to resolve the promise with the GraphQL
+   * response when the operation succeed on the server, whenever the
+   * actual GraphQL response contains an `errors` field or not.
+   *
+   * If an error at the HTTP error, the promise will be rejected.
+   *
+   * @param document (required) The GraphQL operation document to perform. It must be
+   *                 either a `query` or `mutation` operation. A `subscription`
+   *                 operation is not supported by this method. You must use
+   *                 the method that accept `options.onMessage` to make it work.
+   * @param options (optional) Specific options that can be provided
+   * @param options.variables (defaults `undefined`) The variables that need to be provided to the GraphQL operation.
+   * @param options.operationType (defaults `undefined`) The operation type to perform, can be provided when cannot be inferred directly.
+   */
+  graphql<T = any>(
+    document: string | GraphqlDocument,
+    options?: {
+      variables?: GraphqlVariables
+      operationType?: Exclude<GraphqlOperationType, "subscription">
+    }
+  ): Promise<GraphqlResponse<T>>
+
+  /**
+   * Perform a `query`, `mutation` or `subscription` via the WebSocket transport
+   * layer. The semantic of this method is to resolve the promise with the [[Stream]]
+   * object if the connection was established correctly (or if it was already
+   * established) and the initial subscription message was sent correctly (this does
+   * not check if it was received correctly).
+   *
+   * Each message for the subscription will be sent to the `onMessage` handler defined
+   * on the `options` field.
+   *
+   * The [[Stream]] object can be used to control the stream. It can be marked via
+   * [[Stream#mark]] (so on reconnect, this stream restarts at the last marked location),
+   * joined via [[Stream#join]] (so you wait until the stream actually finishes) or closed
+   * via [[Stream#close]].
+   *
+   * If we are unable to establish the connection or the initial send message cannot
+   * be sent, then the promise will reject with the appropriate error.
+   *
+   * @param document (required) The GraphQL operation document to perform.
+   * @param options (required) Specific options that can be provided
+   * @param options.onMessage (required) The message handler that receives all GraphQL subscription message. The message
+   *                                     received can be of type `data`, `error` or `complete`.
+   * @param options.variables (defaults `undefined`) The variables that need to be provided to the GraphQL operation.
+   * @param options.operationType (defaults `undefined`) The operation type to perform, can be provided when cannot be inferred directly.
+   */
+  graphql<T = any>(
+    document: string | GraphqlDocument,
+    onMessage: OnGraphqlStreamMessage<T>,
+    options?: {
+      variables?: GraphqlVariables
+      operationType?: GraphqlOperationType
+    }
+  ): Promise<Stream>
 
   //
   /// WebSocket API
@@ -372,6 +437,7 @@ export interface DfuseClient {
    * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
    * `json: false`, then hexadecimal representation of its binary data is returned instead.
    * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table.
+   * Can be one of `uint64`, `name`, `hex`, `hex_be`, `symbol` or `symbol_code`.
    * @param options.withBlockNum (defaults `false`) Will return one `blockNum` with each row.
    * Represents the block at which that row was last changed.
    * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
@@ -392,6 +458,54 @@ export interface DfuseClient {
   ): Promise<StateResponse<T>>
 
   /**
+   * `GET /v0/state/table/row`
+   *
+   * Fetches a single row from the state of any table, at any block height.
+   *
+   * @param account Contract account targeted by the action.
+   * @param scope The name-encoded scope of the table you are requesting.
+   * For example, user balances for tokens live in their account name's scope.
+   * This is contract dependent, so inspect the ABI for the contract you are interested in.
+   * @param table The name-encoded table name you want to retrieve.
+   * For example, user balances for tokens live in the accounts table.
+   * Refer to the contract's ABI for a list of available tables.
+   * This is contract dependent.
+   * @param primaryKey The string representation of the primary key that you want to retrieve. The
+   * `primaryKey` is always a string, but can be encoded differently, for example `name` encoded
+   * like an account. The `keyType` is used to know how to transform the value in the string to the
+   * correct type.
+   * @param options (optional) Optional parameters
+   * @param options.blockNum (defaults `0`) The block number for which you want to retrieve the
+   * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
+   * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
+   * `json: false`, then hexadecimal representation of its binary data is returned instead.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table
+   * as well as how to interpret the `primary_key` received in string. Can be one of `uint64`, `name`,
+   * `hex`, `hex_be`, `symbol` or `symbol_code`.
+   * @param options.withBlockNum (defaults `false`) Will return one `blockNum` with each row.
+   * Represents the block at which that row was last changed.
+   * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
+   *
+   * @preview This endpoint is preview mode. This means it might be changed or removed and
+   * is not covered by breaking compatiblity policy of the project until it's out of preview.
+   *
+   * @see  https://docs.dfuse.io/#rest-api-get-v0-state-table-row
+   */
+  stateTableRow<T = unknown>(
+    account: string,
+    scope: string,
+    table: string,
+    primaryKey: string,
+    options?: {
+      blockNum?: number
+      json?: boolean
+      keyType?: StateKeyType
+      withBlockNum?: boolean
+      withAbi?: boolean
+    }
+  ): Promise<StateTableRowResponse<T>>
+
+  /**
    * `GET /v0/state/tables/accounts`
    *
    * Fetches a table for a given contract account for a group of scopes, at any block height.
@@ -407,8 +521,8 @@ export interface DfuseClient {
    * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
    * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
    * `json: false`, then hexadecimal representation of its binary data is returned instead.
-   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned
-   * table.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table.
+   * Can be one of `uint64`, `name`, `hex`, `hex_be`, `symbol` or `symbol_code`.
    * @param options.withBlockNum (defaults `false`) Will return one block_num with each row.
    * Represents the block at which that row was last changed.
    * @param options.withAbi (defaults `false`) Will return the ABI in effect at block block_num.
@@ -444,8 +558,8 @@ export interface DfuseClient {
    * consistent table snapshot. Defaults to `0` which means `Last Head Block`.
    * @param options.json (defaults `false`) Decode each row from its binary form into JSON. If
    * `json: false`, then hexadecimal representation of its binary data is returned instead.
-   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned
-   * table.
+   * @param options.keyType (defaults `"name"`) How to represent the row keys in the returned table.
+   * Can be one of `uint64`, `name`, `hex`, `hex_be`, `symbol` or `symbol_code`.
    * @param options.withBlockNum (defaults `false`) Will return one block_num with each row.
    * Represents the block at which that row was last changed.
    * @param options.withAbi (defaults `false`) Will return the ABI in effect at block `block_num`.

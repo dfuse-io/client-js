@@ -5,11 +5,13 @@ import {
   MockStreamClient,
   MockApiTokenStore,
   MockRefreshScheduler,
-  mock
+  mock,
+  MockGraphqlStreamClient
 } from "./mocks"
 import { OutboundMessageType } from "../../message/outbound"
 import { Stream } from "../../types/stream"
 import { DfuseError } from "../../types/error"
+import { OnGraphqlStreamMessage } from "../../types/graphql-stream-client"
 
 const defaultRequestId = "dc-123"
 
@@ -22,6 +24,7 @@ const nonExpiredApiTokenInfo = { token: "non-expired-far", expires_at: 2000 }
 describe("DfuseClient", () => {
   let httpClient: MockHttpClient
   let streamClient: MockStreamClient
+  let graphqlStreamClient: MockGraphqlStreamClient
   let apiTokenStore: MockApiTokenStore
   let refreshScheduler: MockRefreshScheduler
   let requestIdGenerator: RequestIdGenerator
@@ -32,6 +35,7 @@ describe("DfuseClient", () => {
 
     httpClient = new MockHttpClient()
     streamClient = new MockStreamClient()
+    graphqlStreamClient = new MockGraphqlStreamClient()
     apiTokenStore = new MockApiTokenStore()
     refreshScheduler = new MockRefreshScheduler()
     requestIdGenerator = mock<string>(() => defaultRequestId)
@@ -43,6 +47,7 @@ describe("DfuseClient", () => {
       network: "mainnet",
       httpClient,
       streamClient,
+      graphqlStreamClient,
       apiTokenStore,
       refreshScheduler,
       requestIdGenerator
@@ -114,6 +119,95 @@ describe("DfuseClient", () => {
     httpClient.authRequestMock.mockReturnValue(Promise.resolve(data))
 
     refresher()
+  })
+
+  describe("graphql", () => {
+    it("correctly pass default operation type document through http", async () => {
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve({ data: "response" }))
+
+      await expect(client.graphql("{ doc }")).resolves.toEqual({ data: "response" })
+    })
+
+    it("correctly pass query operation type document through http", async () => {
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve({ data: "response" }))
+
+      await expect(client.graphql("query { doc }")).resolves.toEqual({ data: "response" })
+    })
+
+    it("correctly pass mutation operation type document through http", async () => {
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve({ data: "response" }))
+
+      await expect(client.graphql("mutation { doc }")).resolves.toEqual({ data: "response" })
+    })
+
+    it("correctly pass subscription operation type document through WebSocket", async () => {
+      const stream: Stream = { id: "any", close: () => Promise.resolve() } as any
+      graphqlStreamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
+
+      const streamOnMessage = mock<OnGraphqlStreamMessage>()
+      await expect(client.graphql("subscription { doc }", streamOnMessage)).resolves.toEqual(stream)
+    })
+
+    it("is an error to have subscription document without providing the onMesage options", async () => {
+      const stream: Stream = { id: "any", close: () => Promise.resolve() } as any
+      graphqlStreamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
+
+      await expect(
+        client.graphql("subscription { doc }")
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        `
+"The \`options.onMessage\` parameter is required for 'subscription' document.
+If your document is not a 'subscription' type, this is probably a bug with the library.
+You can provide the \`options.operationType\` option to workaroundthe problem and report
+the bug to us with the document string used."
+`
+      )
+    })
+
+    it("correctly validates the operation type when provided", async () => {
+      await expect(
+        // @ts-ignore operationType is wrong on purpose
+        client.graphql("", { operationType: "random" })
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        `"The 'options.operationType' value 'random' is invalid, it must be either 'query', 'mutation' or 'subscription')."`
+      )
+    })
+
+    it("always uses WebSocket when onMessage options is defined", async () => {
+      const stream: Stream = { id: "any", close: () => Promise.resolve() } as any
+      graphqlStreamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
+
+      const streamOnMessage = mock<OnGraphqlStreamMessage>()
+      await expect(
+        client.graphql("mutation { doc }", streamOnMessage, { operationType: "query" })
+      ).resolves.toEqual(stream)
+    })
+
+    it("uses operationType over inferred value when present", async () => {
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve({ data: "response" }))
+
+      await expect(
+        client.graphql("subscription { doc }", { operationType: "query" })
+      ).resolves.toEqual({ data: "response" })
+    })
+
+    it("correctly passes variables via HTTP", async () => {
+      httpClient.apiRequestMock.mockReturnValue(Promise.resolve({ data: "response" }))
+
+      await expect(
+        client.graphql("query { doc }", { variables: { any: "value" } })
+      ).resolves.toEqual({ data: "response" })
+
+      expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
+      expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
+        nonExpiredApiTokenInfo.token,
+        "/graphql",
+        "POST",
+        {},
+        { query: "query { doc }", variables: { any: "value" } },
+        undefined
+      )
+    })
   })
 
   describe("stream", () => {
@@ -726,10 +820,10 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/accounts",
-        "GET",
-        { accounts: "eosio|second", scope: "scope", table: "table", json: true },
+        "POST",
         undefined,
-        undefined
+        { accounts: "eosio|second", scope: "scope", table: "table", json: true },
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 
@@ -751,7 +845,8 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/accounts",
-        "GET",
+        "POST",
+        undefined,
         {
           accounts: "eosio|second",
           block_num: 10,
@@ -762,8 +857,7 @@ describe("DfuseClient", () => {
           with_abi: true,
           with_block_num: false
         },
-        undefined,
-        undefined
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 
@@ -779,10 +873,10 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/scopes",
-        "GET",
-        { account: "eosio", scopes: "scope|second", table: "table", json: true },
+        "POST",
         undefined,
-        undefined
+        { account: "eosio", scopes: "scope|second", table: "table", json: true },
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 
@@ -804,7 +898,8 @@ describe("DfuseClient", () => {
       expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
         nonExpiredApiTokenInfo.token,
         "/v0/state/tables/scopes",
-        "GET",
+        "POST",
+        undefined,
         {
           account: "eosio",
           block_num: 10,
@@ -815,8 +910,7 @@ describe("DfuseClient", () => {
           with_abi: true,
           with_block_num: false
         },
-        undefined,
-        undefined
+        { "Content-Type": "application/x-www-form-urlencoded" }
       )
     })
 

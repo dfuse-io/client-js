@@ -31,11 +31,52 @@ describe("HttpClient", () => {
     expect(calledFetchHttpRequest(1)).toMatchObject({ method: "POST" })
   })
 
-  it("correctly sets body as stringified JSON on api request", async () => {
+  it("correctly sets body as stringified JSON when no content-type on api request", async () => {
     await client.apiRequest("token", "/", "POST", undefined, { complex: [{ struct: 0 }] })
 
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(calledFetchHttpRequest()).toMatchObject({ body: '{"complex":[{"struct":0}]}' })
+  })
+
+  it("correctly sets body as stringified JSON when content-type application/json on api request", async () => {
+    await client.apiRequest(
+      "token",
+      "/",
+      "POST",
+      undefined,
+      { complex: [{ struct: 0 }] },
+      {
+        "Content-Type": "application/json"
+      }
+    )
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(calledFetchHttpRequest()).toMatchObject({ body: '{"complex":[{"struct":0}]}' })
+  })
+
+  it("correctly sets body as stringified form data when content-type application/x-www-form-urlencoded on api request", async () => {
+    await client.apiRequest(
+      "token",
+      "/",
+      "POST",
+      undefined,
+      { complex: "field1", second: "harder" },
+      {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    )
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(calledFetchHttpRequest()).toMatchObject({ body: "complex=field1&second=harder" })
+  })
+
+  it("correctly sets body as raw string on api request with Content-Type header", async () => {
+    await client.apiRequest("token", "/", "POST", undefined, "raw { untransformed as is body }", {
+      "Content-Type": "custom/body"
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(calledFetchHttpRequest()).toMatchObject({ body: "raw { untransformed as is body }" })
   })
 
   it("correctly sets body as stringified JSON on auth request", async () => {

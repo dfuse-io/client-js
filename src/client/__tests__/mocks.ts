@@ -1,11 +1,14 @@
 import { ApiTokenInfo } from "../../types/auth-token"
 import { ApiTokenStore } from "../api-token-store"
 import { RefreshScheduler, ScheduleJob } from "../refresh-scheduler"
-import { Socket, SocketMessageListener, WebSocket } from "../../types/socket"
+import { Socket, SocketMessageListener, WebSocket, SocketConnectOptions } from "../../types/socket"
 import { OutboundMessage } from "../../message/outbound"
 import { StreamClient, OnStreamMessage } from "../../types/stream-client"
 import { HttpClient, HttpQueryParameters, HttpHeaders } from "../../types/http-client"
 import { Stream } from "../../types/stream"
+import { GraphqlStreamClient, OnGraphqlStreamMessage } from "../../types/graphql-stream-client"
+import { regExpLiteral } from "@babel/types"
+import { GraphqlDocument, GraphqlVariables } from "../../types/graphql"
 
 export function mock<T>(implementation?: (...args: any) => T): jest.Mock<T, any> {
   if (implementation === undefined) {
@@ -43,6 +46,37 @@ export class MockHttpClient implements HttpClient {
     headers?: HttpHeaders
   ): Promise<T> {
     return this.apiRequestMock(apiToken, path, method, params, body, headers)
+  }
+}
+
+export class MockGraphqlStreamClient implements GraphqlStreamClient {
+  public releaseMock = mock<void>()
+  public setApiTokenMock = jest.fn<void, [string]>((_apiToken: string) => {
+    return
+  })
+
+  public registerStreamMock = mock<Promise<Stream>>()
+  public unregisterStreamMock = mock<Promise<void>>(() => Promise.resolve())
+
+  public release(): void {
+    this.releaseMock()
+  }
+
+  public setApiToken(apiToken: string) {
+    this.setApiTokenMock(apiToken)
+  }
+
+  public registerStream<T = unknown>(
+    id: string,
+    document: GraphqlDocument,
+    variables: GraphqlVariables,
+    onMessage: OnGraphqlStreamMessage<T>
+  ): Promise<Stream> {
+    return this.registerStreamMock(id, document, variables, onMessage)
+  }
+
+  public unregisterStream(id: string): Promise<void> {
+    return this.unregisterStreamMock(id)
   }
 }
 
@@ -89,14 +123,18 @@ export class MockSocket implements Socket {
     listener: SocketMessageListener,
     options: { onReconnect?: () => void } = {}
   ): Promise<void> {
-    return this.connectMock(listener, options)
+    return this.connectMock(listener, options).then(() => {
+      this.isConnectedMock.mockReturnValue(true)
+    })
   }
 
   public disconnect(): Promise<void> {
-    return this.disconnectMock()
+    return this.disconnectMock().then(() => {
+      this.isConnectedMock.mockReturnValue(false)
+    })
   }
 
-  public send<T>(message: OutboundMessage<T>): Promise<void> {
+  public send<T = unknown>(message: T): Promise<void> {
     return this.sendMock(message)
   }
 
@@ -172,5 +210,86 @@ export class MockRefreshScheduler implements RefreshScheduler {
 
   public schedule(delayInSeconds: number, job: ScheduleJob): void {
     this.scheduleMock(delayInSeconds, job)
+  }
+}
+
+export type SocketController = {
+  send(message: any): void
+  replier(handler: (outboundMessage: any) => unknown | undefined): void
+
+  notifyReconnection(): void
+  notifyTermination(): void
+
+  setConnected(): void
+  setDisconnected(): void
+}
+
+export const createSocketController = (socket: MockSocket): SocketController => {
+  let sender: SocketMessageListener | undefined
+  let replier: ((outboundMessage: any) => unknown | undefined) | undefined
+  let reconnecNotifier: (() => void) | undefined
+  let terminationNotifier: (() => void) | undefined
+
+  socket.sendMock.mockImplementation((message: any) => {
+    if (replier) {
+      const reply = replier(message)
+      if (reply) {
+        // We use a setTimeout so it will be sent right after the promise as resolve in the return below
+        setTimeout(() => {
+          if (sender) {
+            sender(reply)
+          }
+        })
+      }
+    }
+    return Promise.resolve()
+  })
+
+  socket.connectMock.mockImplementation(
+    (listener: SocketMessageListener, options: SocketConnectOptions) => {
+      sender = listener
+      reconnecNotifier = options.onReconnect
+      terminationNotifier = options.onTermination
+      return Promise.resolve()
+    }
+  )
+
+  socket.disconnectMock.mockImplementation(() => {
+    sender = undefined
+    reconnecNotifier = undefined
+    terminationNotifier = undefined
+    return Promise.resolve()
+  })
+
+  return {
+    replier(handler: (outboundMessage: any) => unknown | undefined) {
+      replier = handler
+    },
+
+    send(message: any) {
+      if (sender) {
+        sender(message)
+      }
+    },
+
+    notifyReconnection() {
+      if (reconnecNotifier) {
+        reconnecNotifier()
+      }
+    },
+
+    notifyTermination() {
+      if (terminationNotifier) {
+        terminationNotifier()
+      }
+    },
+
+    setConnected() {
+      socket.isConnectedMock.mockReturnValue(true)
+    },
+
+    setDisconnected() {
+      socket.isConnectedMock.mockReturnValue(false)
+    }
   }
 }

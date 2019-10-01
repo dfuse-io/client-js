@@ -10,6 +10,7 @@ export const V0_STATE_KEY_ACCOUNTS = "/v0/state/key_accounts"
 export const V0_STATE_PERMISSION_LINKS = "/v0/state/permission_links"
 
 export const V0_STATE_TABLE = "/v0/state/table"
+export const V0_STATE_TABLE_ROW = "/v0/state/table/row"
 export const V0_STATE_TABLES_SCOPES = "/v0/state/tables/scopes"
 export const V0_STATE_TABLES_ACCOUNTS = "/v0/state/tables/accounts"
 export const V0_STATE_TABLE_SCOPES = "/v0/state/table_scopes"

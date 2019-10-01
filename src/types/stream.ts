@@ -42,10 +42,10 @@ export interface Stream {
   /**
    * Restart a stream after it has been disconnect. This re-sends the original
    * registration message along any start marker information (`start_block`
-   * argument of any [[OutboundMessage]]).
+   * argument dfuse Stream API or `cursor` variable for dfuse GraphQL API).
    *
    * If you pass a [[StreamMarker]], the marker is used to determine the
-   * `start_block` value (`start_block: marker.atBlockNum`).
+   * the right value to pick.
    *
    * If you do not pass any argument, the last marker set on this stream
    * instance (by calling [[mark]]) will be used if defined.
@@ -56,7 +56,11 @@ export interface Stream {
    * for your use case, ensure to either `mark` the stream to start
    * back at that point, or use a `marker` when re-connecting.
    *
-   * @param marker The marker used to decide where to `restart` the stream, see [[StreamMarker]].
+   * If the stream marker is invalid for the stream client, this will
+   * reject the promise with an appropriate error message.
+   *
+   * @param marker The marker used to decide where to `restart` the
+   * stream, see [[StreamMarker]].
    */
   restart(marker?: StreamMarker): Promise<void>
 
@@ -66,8 +70,33 @@ export interface Stream {
    *
    * This closes the socket connection at the same time in the event there
    * is no more stream connected.
+   *
+   * One can pass the optional `options.error` value to let the stream client
+   * managing the stream if this was caused by an error or not. When the `options.error`
+   * is set, it will usually be passed to the `join` promise which will be
+   * rejected.
+   *
+   * @param options (optional) Optional parameters
+   * @param options.error (defaults `undefined`) The error that caused this stream to be closed, if any.
    */
-  close(): Promise<void>
+  close(options?: { error?: Error }): Promise<void>
+
+  /**
+   * Join the corresponding stream, waiting for it's completion or for an
+   * error to occur. This promise will resolve only when the stream terminates,
+   * via any code path.
+   *
+   * The code path that can terminate a stream:
+   * - Someone called the `close` method on the stream.
+   * - The stream received a `complete` message indicating the end of the stream.
+   * - The stream received a terminating `error` message that forces the stream to stop.
+   * - The socket disconnects (whatever the cause, client or server side) and automatic re-connection is not enabled.
+   *
+   * In the even that disconnection was not abnormal or that the stream was close
+   * with the `options.error` being set (i.e. `stream.close({ error: new Error(...) }))`)
+   * the the promise will reject with the error being set.
+   */
+  join(): Promise<void>
 
   /**
    * Mark the stream at this giving block num. If you mark to tell the
@@ -78,9 +107,10 @@ export interface Stream {
    * at this exact marker, giving you blocks that were missed while
    * disconnected.
    *
-   * @param atBlockNum The block num at which to mark this stream progress.
+   * @param marker The marker object to use to mark the stream. Can be either
+   * the object `{ cursor: string }` or the object `{ atBlockNum: number }`.
    */
-  mark(options: { atBlockNum: number }): void
+  mark(marker: StreamMarker): void
 }
 
 /**
@@ -90,6 +120,4 @@ export interface Stream {
  * The marker can be later re-used to restart a [[Stream]] at the right
  * location.
  */
-export type StreamMarker = {
-  atBlockNum: number
-}
+export type StreamMarker = { cursor: string } | { atBlockNum: number }

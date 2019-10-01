@@ -1,5 +1,170 @@
 # Changelog
 
+## 0.3.0-rc.6 (September 30, 2019)
+
+- Fixed some `@ts-ignore` that would cause library consumer to choke on compiling.
+
+## 0.3.0-rc.5 (September 30, 2019)
+
+- Moved `@types/debug` from `devDependencies` to a plain `dependencies` instead.
+
+## 0.3.0-rc.4 (September 20, 2019)
+
+- The second parameter of streaming `OnMessage` handler for both WebSocket
+  and GraphQL is the full `Stream` object. Previously it was a different
+  type named `marker` but this was not the clearest way. This is a backward
+  compatible move, the old interface was a subset of the `Stream` interface.
+
+  By doing this, it is also possible to close the stream straight within
+  the message handler via `stream.close()` call.
+
+## 0.3.0-rc.3 (September 18, 2019)
+
+### Changes
+
+- Added `terminal` property on `error` message received by the `OnGraphqlStreamMessage`
+  so consumer can determine if this is a fatal error and the stream is
+  now terminated or if it's a resolver error and more data will come in.
+
+- Added `autoDisconnectSocket` option to add the possibility to prevent
+  automatic disconnection of socket when no more stream are active in
+  the client.
+
+- Fixed `GraphqlStreamClient.unregisterStream` not correctly resolving the
+  `stream.join()` Promise.
+
+- A `1005` WebSocket close code is now considered to be an abnormal closure
+  and will trigger a re-connection. `1005` is a close message without
+  any reason. The spec is unclear if normal closing of the connection
+  can use both `1000` and `1005`. However, since we control the backend, we
+  will now assume that a `1005` is an abnormal condition and dfuse WebSocket
+  handling will always send a correct `1000` code for a normal ending of the
+  socket connection.
+
+- A GraphQL stream will now auto restart when an error message has been
+  received from the backend.
+
+## 0.3.0-rc.2 (September 10, 2019)
+
+### Changes
+
+- Improved TypeScript typings on `graphql` to ensure automatic inference
+  can be done when using `query/mutation` via HTTP over any operation
+  in streaming mode.
+
+- The streaming `onMessage` handler for `graphql` now receives a second
+  argument `marker` than can has a method `mark` to easily mark the
+  stream at cursor location within the message handler directly.
+
+- The streaming `onMessage` handler for `streamXXX` calls now receives a second
+  argument `marker` than can has a method `mark` to easily mark the
+  stream at cursor location within the message handler directly.
+
+### Breaking Changes (Between `rc.1` and `rc.2`)
+
+- The `graphql()` method types has changed so TypeScript can automatically
+  infers the actual return type. There is now two signatures possible for
+  `graphql`.
+
+  The request/response version:
+
+  ```
+  graphql<T = any>(
+    document: string | GraphqlDocument,
+    options?: {
+      variables?: GraphqlVariables
+      operationType?: Exclude<GraphqlOperationType, "subscription">
+    }
+  ): Promise<GraphqlResponse<T>>
+  ```
+
+  This version is used for `Query` or `Mutation` going only and by using
+  this signature, you are telling us to use the HTTP transport layer. This
+  signature always returns a `Promise<GraphqlResponse<T>>` and doesn't
+  accept any listener.
+
+  The streaming version:
+
+  ```
+  graphql<T = any>(
+    document: string | GraphqlDocument,
+    onMessage: OnGraphqlStreamMessage<T>,
+    options?: {
+      variables?: GraphqlVariables
+      operationType?: GraphqlOperationType
+    }
+  ): Promise<Stream>
+  ```
+
+  This version can be used with all operation types and by using
+  this signature, you are telling us to use the WebSocket transport layer.
+  This always returns a `Promise<Stream>` and is now similar to other streaming
+  method in the client.
+
+  To upgrade, change all you streaming calls from:
+
+  ```
+  graphql(` <document> `, { onMessage: (...) => { <handler> }, variables: { ... } })
+  ```
+
+  To
+
+  ```
+  graphql(` <document> `, (...) => { <handler> }, { variables: { ... } })
+  ```
+
+  The `query` or `mutation` calls remains the same, but you might need to fix
+  typings of those since we now return a `GraphqlResponse<T>` instance of a plain
+  `T` type.
+
+  You can then remove any `as Promise<...>` typecast you might had before to help
+  TypeScript infer the right type.
+
+## 0.3.0-rc.1 (August 31, 2019)
+
+### Changes
+
+- Added support for GraphQL directly in the library. The client has now a `graphql(...)` method.
+  All document operation type are supported: Query, Mutation & Subscription. For now, you must provide
+  the document as a `string` value. You can use the `gql` string literal, but you must send it as a
+  string to the client for now. See [GraphQL - Use 'gql' tag & Typings](./examples/advanced/graphql-gql-tag.ts)
+  example about how to do just that.
+
+  **Note** Passing directly a `gql` will be supported on the next iteration of the release candidate.
+
+- It's now possible to `join` an existing `Stream` object. After receiving a stream, you can
+  now do `await stream.join()` to wait until the `Stream` completes. A stream completes when:
+
+  - It's `close` method has been called by the client.
+  - The server sent the completion message completing the stream.
+  - The server sent an irrecoverable error terminating the stream.
+
+- Added support for `GET /v0/state/table/row` (`stateTableRow`) endpoint.
+
+- Added support for `symbol` and `symbol_code` as valid `key_type` for easier conversion of values.
+
+- Now using `POST` version for `stateTablesForScopes` and `stateTableForAccounts`.
+
+### Breaking Changes
+
+- (Light) The `SocketOptions#onInvalidMessage` has been removed completely. Since now all messages are
+  forwarded, this was now useless. Note that `ping` and other `keep alive` are still trapped by the library
+  and you will never receive them directly anymore.
+
+- (Light) The `SocketListenerMessage` type now being more loose, all messages are forwarded to it, so it could be
+  possible to receive messages that you did not receive before. This trickles down to the `OnStreamMessage` listener
+  of Stream API. Ensures that you validate the `type` field and only consume messages that are of interest to you.
+
+  But in reality, this has really low impact as the protocol did not change and as such, no new messages can arrive
+  for now.
+
+- (Light) The `SocketListenerMessage` type is has been loosen, now accepting `unknown` instead of `InboundMessage`.
+- (Light) The `Socket#send` method type has been loosen, now accepting `unknown` instead of `OutboundMessage`.
+
+### Deprecations
+
+- Deprecated `ConnectOptions` (renamed to `SocketConnectOptions` in a different file now also).
+
 ## 0.2.10 (August 12, 2019)
 
 - Fixed typings for `stateTableForScopes` and `stateTableForAccounts` that was not correct
@@ -57,8 +222,9 @@
 
 - Removed duplicated `DbOp` definition which was wrong anyway.
 
-- Deprecated `RAMOP` (renamed to `RamOp`).
+### Deprecations
 
+- Deprecated `RAMOP` (renamed to `RamOp`).
 - Deprecated `DBOp` (renamed to `DbOp`).
 
 ## 0.2.3 (April 30, 2019)

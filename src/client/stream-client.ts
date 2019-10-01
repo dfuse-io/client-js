@@ -6,6 +6,7 @@ import { DfuseClientError } from "../types/error"
 import { StreamClient, OnStreamMessage, OnStreamRestart } from "../types/stream-client"
 import { Socket } from "../types/socket"
 import { Stream, StreamMarker } from "../types/stream"
+import { Deferred } from "../helpers/promises"
 
 /**
  * The set of options that can be used when constructing a the default
@@ -49,7 +50,7 @@ export interface StreamClientOptions {
  */
 export function createStreamClient(wsUrl: string, options: StreamClientOptions = {}): StreamClient {
   return new DefaultStreamClient(
-    options.socket || createSocket(wsUrl, options.socketOptions),
+    options.socket || createSocket(wsUrl, { id: "stream", ...options.socketOptions }),
     options.autoRestartStreamsOnReconnect === undefined
       ? true
       : options.autoRestartStreamsOnReconnect
@@ -57,12 +58,11 @@ export function createStreamClient(wsUrl: string, options: StreamClientOptions =
 }
 
 class DefaultStreamClient {
-  // Public only for tighly coupled Stream to be able to query current state of Streams
-  public streams: { [id: string]: DefaultStream } = {}
-
   private socket: Socket
   private autoRestartStreamsOnReconnect: boolean
   private debug: IDebugger = debugFactory("dfuse:stream")
+
+  private streams: { [id: string]: DefaultStream } = {}
 
   constructor(socket: Socket, autoRestartStreamsOnReconnect: boolean) {
     this.socket = socket
@@ -87,8 +87,8 @@ class DefaultStreamClient {
     message: OutboundMessage,
     onMessage: OnStreamMessage
   ): Promise<Stream> {
-    if (Object.keys(this.streams).length <= 0) {
-      this.debug("No prior stream present, connecting socket first.")
+    if (!this.socket.isConnected) {
+      this.debug("Socket is not connected, connecting socket first.")
       await this.socket.connect(this.handleMessage, { onReconnect: this.handleReconnection })
     }
 
@@ -108,7 +108,8 @@ class DefaultStreamClient {
       onMessage,
       streamExists,
       unregisterStream,
-      this.socket
+      this.socket,
+      this.debug.extend(id, ":")
     )
 
     // Let's first register stream to ensure that if messages arrives before we got back
@@ -136,32 +137,42 @@ class DefaultStreamClient {
     this.debug("Unregistering stream [%s] with message %o.", id, message)
 
     delete this.streams[id]
-    await this.socket.send(message)
+
+    if (this.socket.isConnected) {
+      await this.socket.send(message)
+    }
 
     if (Object.keys(this.streams).length <= 0) {
       this.debug("No more stream present, disconnecting socket.")
-      await this.socket.disconnect()
+      if (this.socket.isConnected) {
+        await this.socket.disconnect()
+      }
     }
   }
 
-  private handleMessage = (message: InboundMessage) => {
-    this.debug("Routing socket message of type '%s' to appropriate stream", message.type)
+  private handleMessage = (rawMessage: unknown) => {
+    const message = rawMessage as InboundMessage
+
+    if (message.type === "ping") {
+      this.debug("Discarding 'ping' message from reaching the underlying stream(s).")
+      return
+    }
+
+    this.debug(
+      "Routing socket message of type '%s' with req_id '%s' to appropriate stream",
+      message.type,
+      message.req_id
+    )
     const stream = this.streams[message.req_id || ""]
     if (stream === undefined) {
       this.debug(
-        "No stream currently registered able to handle message with 'req_id: %s'",
+        "No stream currently registered able to handle message with req_id '%s'",
         message.req_id
       )
       return
     }
 
-    this.debug(
-      "Found stream for 'req_id: %s', forwarding message of type '%s' to stream.",
-      message.req_id,
-      message.type
-    )
-
-    stream.onMessage(message)
+    stream.onMessage(message, stream)
   }
 
   private handleReconnection = () => {
@@ -180,11 +191,13 @@ class DefaultStream implements Stream {
   public onPostRestart?: OnStreamRestart
 
   private activeMarker?: StreamMarker
+  private activeJoiner?: Deferred<void>
   private registrationMessage: OutboundMessage
   private onMessageHandler: OnStreamMessage
   private unregisterStream: (id: string) => Promise<void>
   private streamExists: (id: string) => boolean
   private socket: Socket
+  private debug: IDebugger
 
   constructor(
     id: string,
@@ -192,7 +205,8 @@ class DefaultStream implements Stream {
     onMessage: OnStreamMessage,
     streamExists: (id: string) => boolean,
     unregisterStream: (id: string) => Promise<void>,
-    socket: Socket
+    socket: Socket,
+    debug: IDebugger
   ) {
     this.id = id
     this.registrationMessage = registrationMessage
@@ -200,13 +214,14 @@ class DefaultStream implements Stream {
     this.streamExists = streamExists
     this.unregisterStream = unregisterStream
     this.socket = socket
+    this.debug = debug
   }
 
   public get onMessage(): OnStreamMessage {
     return this.onMessageHandler
   }
 
-  public currentActiveMarker(): undefined | StreamMarker {
+  public currentActiveMarker(): StreamMarker | undefined {
     return this.activeMarker
   }
 
@@ -215,6 +230,8 @@ class DefaultStream implements Stream {
   }
 
   public async restart(marker?: StreamMarker): Promise<void> {
+    this.checkMarker(marker)
+
     if (!this.streamExists(this.id)) {
       throw new DfuseClientError(
         `Trying to restart a stream '${
@@ -223,11 +240,14 @@ class DefaultStream implements Stream {
       )
     }
 
-    const restartMessage = { ...this.registrationMessage }
+    let activeMarker = this.activeMarker
     if (marker) {
-      restartMessage.start_block = marker.atBlockNum
-    } else if (this.activeMarker) {
-      restartMessage.start_block = this.activeMarker.atBlockNum
+      activeMarker = marker
+    }
+
+    const restartMessage = { ...this.registrationMessage }
+    if (activeMarker) {
+      restartMessage.start_block = (activeMarker as any).atBlockNum
     }
 
     await this.socket.send(restartMessage)
@@ -237,17 +257,62 @@ class DefaultStream implements Stream {
     }
   }
 
-  public mark(options: { atBlockNum: number }) {
-    this.activeMarker = options
+  public async join(): Promise<void> {
+    if (this.activeJoiner !== undefined) {
+      return this.activeJoiner.promise()
+    }
+
+    this.activeJoiner = new Deferred()
+
+    return this.activeJoiner.promise()
   }
 
-  public async close(): Promise<void> {
-    if (this.socket.isConnected) {
-      return this.unregisterStream(this.id)
+  public mark(marker: StreamMarker) {
+    this.activeMarker = this.checkMarker(marker)
+  }
+
+  public async close(options: { error?: Error } = {}): Promise<void> {
+    return (
+      this.unregisterStream(this.id)
+        .then(() => {
+          if (options.error) {
+            this.reject(options.error)
+          } else {
+            this.resolve()
+          }
+        })
+        // FIXME: We should probably return a MultiError of some kind to report both error if `options.error` exists
+        .catch(this.reject)
+    )
+  }
+
+  private checkMarker(marker?: StreamMarker): StreamMarker | undefined {
+    if (!marker) {
+      return undefined
+    }
+
+    if (!(marker as any).atBlockNum || (marker as any).atBlockNum < 0) {
+      throw new DfuseClientError(
+        "Only non-zero & positive `atBlockNum` markers are accepted for this operation"
+      )
+    }
+
+    return marker
+  }
+
+  private resolve = () => {
+    if (this.activeJoiner) {
+      this.debug("Resolving joiner promise.")
+      this.activeJoiner.resolve()
+      this.activeJoiner = undefined
     }
   }
-}
 
-const noop = () => {
-  return
+  private reject = (error: Error) => {
+    if (this.activeJoiner) {
+      this.debug("Rejecting joiner promise with error %o.", error)
+      this.activeJoiner.reject(error)
+      this.activeJoiner = undefined
+    }
+  }
 }

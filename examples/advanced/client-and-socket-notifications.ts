@@ -47,10 +47,6 @@ async function main() {
       client.streamActionTraces(data, onMessage).then((transferStream) => {
         stream = transferStream
       })
-    },
-
-    onInvalidMessage(message: any) {
-      console.log("Socket has received a message type it does not handle.", message.type)
     }
   }
 

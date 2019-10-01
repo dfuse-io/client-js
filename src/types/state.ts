@@ -1,6 +1,6 @@
 import { DbRow } from "./common"
 
-export type StateKeyType = "name" | "hex" | "hex_be" | "uint64"
+export type StateKeyType = "name" | "hex" | "hex_be" | "uint64" | "symbol" | "symbol_code"
 
 export type StateAbiResponse = {
   block_num: number
@@ -85,4 +85,13 @@ export type TableRows<R = unknown> = {
   account: string
   scope: string
   rows: DbRow<R>[]
+}
+
+export type StateTableRowResponse<T = unknown> = {
+  up_to_block_id?: string
+  up_to_block_num?: number
+  last_irreversible_block_id: string
+  last_irreversible_block_num: number
+  abi?: Abi
+  row: DbRow<T>
 }

@@ -1,5 +1,7 @@
-import { InboundMessage } from "../message/inbound"
-import { OutboundMessage } from "../message/outbound"
+export type SocketConnectOptions = {
+  onReconnect?: () => void
+  onTermination?: () => void
+}
 
 /**
  * An abstraction over a WebSocket object to deal more easily with the
@@ -32,8 +34,11 @@ export interface Socket {
    * @param options The options that can be passed to the connect method for certain functionalities.
    * @param options.onReconnect An optional callback than can be passed to be notified **after** the
    * socket has successfully re-connected with the remote endpoint.
+   * @param options.onTermination An optional callback than can be passed to be notified when the socket
+   * has now terminated, i.e. that it is now disconnected (wheter via a client or server termination)
+   * and that it will no try to auto-reconnect anymore.
    */
-  connect(listener: SocketMessageListener, options?: { onReconnect?: () => void }): Promise<void>
+  connect(listener: SocketMessageListener, options?: SocketConnectOptions): Promise<void>
 
   /**
    * Disconnects the actual socket. This closes the underlying socket
@@ -42,12 +47,12 @@ export interface Socket {
   disconnect(): Promise<void>
 
   /**
-   * Send an [[OutboundMessage]] through the WebSocket to the dfuse Stream
-   * API endpoint.
+   * Send a message through the WebSocket. The message is stringified
+   * to JSON before being sent to the remote endpoint
    *
-   * @param message The actual outbound message to send to the remote endpoint.
+   * @param message The actual message to send to the remote endpoint.
    */
-  send<T>(message: OutboundMessage<T>): Promise<void>
+  send<T = unknown>(message: T): Promise<void>
 
   /**
    * Assigns a new API token to the stream client instance meaning the
@@ -66,7 +71,7 @@ export interface Socket {
   setApiToken(apiToken: string): void
 }
 
-export type SocketMessageListener = (message: InboundMessage) => void
+export type SocketMessageListener = (message: unknown) => void
 
 /**
  * This is copied here because the actual WebSocket is defined differently
