@@ -400,7 +400,7 @@ class DefaultSocket implements Socket {
   }
 
   private onSocketErrorFactory = (reject: Rejecter) => (event: Event) => {
-    this.debug("Received `onerror` notification from socket.")
+    this.debug("Received `onerror` notification from socket (%s).", (event as any).error)
 
     // The official WebSocket flow is to always send an `onclose` event after an `onerror`
     // ones, as such, we must not clean the socket at this point. We must always

@@ -3,8 +3,8 @@
 .envrc
 
 # Build
-docs/
-dist/
+/docs
+/dist
 
 # Coverage
 coverage/
