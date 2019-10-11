@@ -265,6 +265,17 @@ class DefaultGrahqlStreamClient {
       return
     }
 
+    const onStreamCloseError = (error: any) => {
+      // FIXME: We shall pass this error somewhere, to some kind of notifier or event
+      //        emitter but there is no such stuff right now.
+      this.debug(
+        "Closing the stream [%s] (in response of GraphQL '%s' message) failed %O.",
+        stream.id,
+        message.type,
+        error
+      )
+    }
+
     if (message.type === "error") {
       stream.onMessage({ type: "error", errors: [message.payload], terminal: true }, stream)
 
@@ -292,17 +303,6 @@ class DefaultGrahqlStreamClient {
     }
 
     this.debug("About to close stream [%s] due to GraphQL '%s' message.", stream.id, message.type)
-    const onStreamCloseError = (error: any) => {
-      // FIXME: We shall pass this error somewhere, to some kind of notifier or event
-      //        emitter but there is no such stuff right now.
-      this.debug(
-        "Closing the stream [%s] (in response of GraphQL '%s' message) failed %O.",
-        stream.id,
-        message.type,
-        error
-      )
-    }
-
     const closeError = message.type === "error" ? message.payload : undefined
 
     stream.close({ error: closeError }).catch(onStreamCloseError)
