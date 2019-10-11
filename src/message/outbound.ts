@@ -35,6 +35,7 @@ export type GetActionTracesMessageData = {
   with_dbops?: boolean
   with_dtrxops?: boolean
   with_ramops?: boolean
+  with_tableops?: boolean
   with_inline_traces?: boolean
 }
 

@@ -13,7 +13,10 @@ async function main() {
       with_inline_traces: true,
       with_dbops: true,
       with_dtrxops: true,
-      with_ramops: true
+      with_ramops: true,
+
+      // Don't confuse with `dbops`, this one streams smart contract's table creation/removal, not changes to rows!
+      with_tableops: true
     },
     (message: InboundMessage<any>) => {
       if (message.type === InboundMessageType.LISTENING) {
