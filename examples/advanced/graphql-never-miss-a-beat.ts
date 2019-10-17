@@ -31,8 +31,7 @@ const LAST_CURSOR_FILENAME = "last_cursor.txt"
 async function main() {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: "localhost:8080",
-    secure: false,
+    network: DFUSE_API_NETWORK,
     graphqlStreamClientOptions: {
       socketOptions: {
         reconnectDelayInMs: 250
