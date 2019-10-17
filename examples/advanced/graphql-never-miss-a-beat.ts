@@ -233,7 +233,7 @@ class Engine {
 
     if (terminal) {
       console.log(
-        "Received a terminal 'error' message, the stream will automatically reconnects in 2.5s"
+        "Received a terminal 'error' message, the stream will automatically reconnects in 250ms"
       )
     }
   }
