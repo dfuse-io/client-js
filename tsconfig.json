@@ -8,14 +8,14 @@
     "declarationDir": "dist/types",
     "sourceMap": true,
     "outDir": "dist/lib",
-
     /* Strict Type-Checking Options */
     "strict": true,
 
     /* Module Resolution Options */
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
   "files": ["src/index.ts"],
 
