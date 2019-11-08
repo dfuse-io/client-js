@@ -14,11 +14,16 @@ import { createDfuseClient } from "@dfuse/client"
 async function main() {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: "worbli"
+    network: "mainnet"
   })
 
   try {
-    const response = await client.apiRequest("/v1/chain/get_info", "GET")
+    const response = await client.apiRequest(
+      "/v1/chain/get_account",
+      "POST",
+      {},
+      { account_name: "eoscanadacom" }
+    )
 
     console.log("Chain info response", prettifyJson(response))
   } catch (error) {
