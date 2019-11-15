@@ -167,7 +167,8 @@ of `WebSocket` client, like the one provided by the [ws](https://npmjs.com/packa
 package.
 
 If none is provided, the library throw an error. To avoid this error, you should pass
-the `streamClientOptions.socketOptions.webSocketFactory` option when creating the dfuse
+the `streamClientOptions.socketOptions.webSocketFactory` and the
+`graphqlStreamClientOptions.socketOptions.webSocketFactory` options when creating the dfuse
 Client. This factory method receives the full url to connect to the remote endpoint
 (this will include the API token to use in query parameters of the url) and should
 return a valid `WebSocket` client object.
