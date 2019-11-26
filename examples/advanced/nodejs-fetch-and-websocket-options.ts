@@ -27,53 +27,14 @@ async function main() {
     httpClientOptions: {
       fetch: nodeFetch
     },
+    graphqlStreamClientOptions: {
+      socketOptions: {
+        webSocketFactory
+      }
+    },
     streamClientOptions: {
       socketOptions: {
-        /**
-         * The factory receives the full resolved URL, API token included,
-         * of the remote endpoint to connect to.
-         *
-         * When using the Node.js enviroment in your own
-         * factory, it is here that you can customize the WebSocket client instance.
-         * In the factory below, we jump the `maxPayload` size to 200M,
-         * which can be useful when streaming really big tables like the
-         * `voters` table on EOS.
-         *
-         * We also add error logging for errors occurring at the HTTP Upgrade
-         * level before turning the connection into a WebSocket connection. This
-         * can happen when authorization happens with your API token.
-         *
-         * **Note** Don't try to override the `onOpen`, `onClose`, `onError`
-         * and `onMessage` handler, they are overwritten by the `Socket` instance
-         * for its own usage.
-         *
-         * **Important Web Browser Usage Notice**
-         * We are in a Node.js context here, the `WebSocketClient` is a
-         * Node.js implementation of WebSocket Protocol. It does not have
-         * quite the same API interface. The configuration done below
-         * will not work in a Browser environment! Check W3C Browser
-         * WebSocket API to see what is accepted as it's second argument.
-         *
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket#Parameters
-         */
-        webSocketFactory: async (url: string) => {
-          const webSocket = new WebSocketClient(url, {
-            handshakeTimeout: 30 * 1000, // 30s
-            maxPayload: 200 * 1024 * 1000 * 1000 // 200Mb
-          })
-
-          const onUpgrade = (response: IncomingMessage) => {
-            console.log("Socket upgrade response status code.", response.statusCode)
-
-            // You need to remove the listener at some point since this factory
-            // is called at each reconnection with the remote endpoint!
-            webSocket.removeListener("upgrade", onUpgrade)
-          }
-
-          webSocket.on("upgrade", onUpgrade)
-
-          return webSocket
-        }
+        webSocketFactory
       }
     }
   })
@@ -97,6 +58,52 @@ async function main() {
   await stream.close()
 
   client.release()
+}
+
+/**
+ * The factory receives the full resolved URL, API token included,
+ * of the remote endpoint to connect to.
+ *
+ * When using the Node.js enviroment in your own
+ * factory, it is here that you can customize the WebSocket client instance.
+ * In the factory below, we jump the `maxPayload` size to 200M,
+ * which can be useful when streaming really big tables like the
+ * `voters` table on EOS.
+ *
+ * We also add error logging for errors occurring at the HTTP Upgrade
+ * level before turning the connection into a WebSocket connection. This
+ * can happen when authorization happens with your API token.
+ *
+ * **Note** Don't try to override the `onOpen`, `onClose`, `onError`
+ * and `onMessage` handler, they are overwritten by the `Socket` instance
+ * for its own usage.
+ *
+ * **Important Web Browser Usage Notice**
+ * We are in a Node.js context here, the `WebSocketClient` is a
+ * Node.js implementation of WebSocket Protocol. It does not have
+ * quite the same API interface. The configuration done below
+ * will not work in a Browser environment! Check W3C Browser
+ * WebSocket API to see what is accepted as it's second argument.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket#Parameters
+ */
+async function webSocketFactory(url: string) {
+  const webSocket = new WebSocketClient(url, {
+    handshakeTimeout: 30 * 1000, // 30s
+    maxPayload: 200 * 1024 * 1000 * 1000 // 200Mb
+  })
+
+  const onUpgrade = (response: IncomingMessage) => {
+    console.log("Socket upgrade response status code.", response.statusCode)
+
+    // You need to remove the listener at some point since this factory
+    // is called at each reconnection with the remote endpoint!
+    webSocket.removeListener("upgrade", onUpgrade)
+  }
+
+  webSocket.on("upgrade", onUpgrade)
+
+  return webSocket
 }
 
 main()
