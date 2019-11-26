@@ -5,7 +5,8 @@ import {
   InboundMessageType,
   waitFor,
   SocketOptions,
-  Stream
+  Stream,
+  GraphqlStreamMessage
 } from "@dfuse/client"
 
 /**
@@ -21,11 +22,11 @@ import {
  * - Socket `onError`: when an error occurs with the connection. You will still receive an `onClose` right aftet this one.
  * - Socket `onClose`: when the connection of the `Socket` was closed.
  * - Socket `onReconnect`: when the socket has automatically reconnected.
- * - Socket `onInvalidMessage`: when the socket receives a message type it's not aware of (i.e. it's not in the enum `InboundMessageType`).
  *
  * We will also register an `onPostRestart` listener on the `Stream`, which is called after
- * a `listen` has been sent back to the remote endpoint due to a socket `onReconnect`
- * event.
+ * a `listen` has been sent back to the remote endpoint due to a socket `onReconnect`.
+ *
+ * The example also show all cases that can happen with both streaming methods.
  */
 async function main() {
   const socketOptions: SocketOptions = {
@@ -42,48 +43,87 @@ async function main() {
 
     onReconnect() {
       console.log("Socket has been reconnected with remote server.")
-
-      console.log("Registering and updating stream.")
-      client.streamActionTraces(data, onMessage).then((transferStream) => {
-        stream = transferStream
-      })
     }
   }
 
-  let stream: Stream
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
     network: DFUSE_API_NETWORK,
     streamClientOptions: {
       socketOptions
+    },
+    graphqlStreamClientOptions: {
+      socketOptions
     }
   })
 
-  const data = {
-    accounts: "eosio.token",
-    action_names: "transfer"
-  }
+  const graphqlOperation = `subscription($cursor: String!) {
+    searchTransactionsForward(query: "action:onblock", cursor: $cursor) {
+      undo cursor
+      block { num timestamp }
+    }
+  }`
 
-  stream = await client.streamActionTraces(data, onMessage)
-  console.log("Socket is now connected.")
+  const graphqlStream = await client.graphql(
+    graphqlOperation,
+    (message: GraphqlStreamMessage<any>) => {
+      if (message.type === "error") {
+        // When `terminal: true`, an auto-reconnection is automatically performed
+        console.log("GraphQL stream error.", message.errors, message.terminal)
+        return
+      }
 
-  stream.onPostRestart = () => {
+      if (message.type === "data") {
+        console.log(
+          "GraphQL stream data.",
+          JSON.stringify({ ...message.data.searchTransactionsForward, cursor: undefined })
+        )
+
+        // Mark latest location where we want to start back at
+        graphqlStream.mark({ cursor: message.data.searchTransactionsForward.cursor })
+      }
+
+      if (message.type === "complete") {
+        console.log("GraphQL stream completed.")
+      }
+    }
+  )
+
+  graphqlStream.onPostRestart = () => {
     console.log()
     console.log(
-      "<============= Stream has restarted to its previous point (or HEAD if never `mark()`) =============>"
+      "<============= GraphQL stream has restarted to its previous `mark()` location =============>"
+    )
+  }
+
+  const wsStream = await client.streamHeadInfo((message: InboundMessage) => {
+    if (message.type === InboundMessageType.ERROR) {
+      console.log("WebSocket stream error.", message.data)
+      return
+    }
+
+    if (message.type === InboundMessageType.LISTENING) {
+      console.log("WebSocket stream is now listening.")
+    }
+
+    if (message.type === InboundMessageType.HEAD_INFO) {
+      console.log("WebSocket stream data.", JSON.stringify(message.data))
+      wsStream.mark({ atBlockNum: message.data.head_block_num })
+    }
+  })
+
+  wsStream.onPostRestart = () => {
+    console.log()
+    console.log(
+      "<============= WebSocket stream has restarted to its previous `mark()` location =============>"
     )
   }
 
   await waitFor(35000)
-  await stream.close()
+  await graphqlStream.close()
+  await wsStream.close()
 
   client.release()
-}
-
-function onMessage(message: InboundMessage) {
-  if (message.type === InboundMessageType.LISTENING) {
-    console.log("Stream is now listening.")
-  }
 }
 
 runMain(main)
