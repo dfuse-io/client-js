@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 (November 26, 2019)
+
+- Fixed avoid polluting the global scope example now that we added a second stream client
+  interface.
+
+- Removed usage of `finally` call on Promise to get back support for Node.js < 10.x.
+
 ## 0.3.0 (October 1, 2019)
 
 - Official 0.3.0 release.
