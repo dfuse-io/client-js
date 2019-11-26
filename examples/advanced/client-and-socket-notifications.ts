@@ -108,6 +108,8 @@ async function main() {
 
     if (message.type === InboundMessageType.HEAD_INFO) {
       console.log("WebSocket stream data.", JSON.stringify(message.data))
+
+      // Mark latest location where we want to start back at
       wsStream.mark({ atBlockNum: message.data.head_block_num })
     }
   })
