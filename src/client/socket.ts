@@ -384,7 +384,10 @@ class DefaultSocket implements Socket {
   }
 
   private onSocketReconnectOpenFactory = (resolve: Resolver<boolean>) => () => {
-    this.debug("Received `onopen` (via reconnect) notification from socket.")
+    this.debug(
+      "Received `onopen` (via reconnect) notification from socket with ready state %d.",
+      this.socket!.readyState
+    )
     this.isConnected = true
     this.connectionPromise = undefined
 
