@@ -320,13 +320,15 @@ class DefaultGrahqlStreamClient {
         return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].restart()))
       })
       .catch((error) => {
-        return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].close())).finally(
-          () => {
-            // FIXME: We shall pass this error somewhere, to some kind of notifier or event
-            //        emitter but there is no such stuff right now.
-            this.debug("The re-connection failed to re-establish the GraphQL connection %O", error)
-          }
-        )
+        const finalizer = () => {
+          // FIXME: We shall pass this error somewhere, to some kind of notifier or event
+          //        emitter but there is no such stuff right now.
+          this.debug("The re-connection failed to re-establish the GraphQL connection %O", error)
+        }
+
+        return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].close()))
+          .then(finalizer)
+          .catch(finalizer)
       })
   }
 }
