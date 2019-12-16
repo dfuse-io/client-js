@@ -117,6 +117,7 @@ class DefaultGrahqlStreamClient {
   private restartOnErrorDelayInMs: number
   private autoDisconnectSocket: boolean
   private debug: IDebugger = debugFactory("dfuse:graphql-stream")
+  private debugTrace: IDebugger = debugFactory("dfuse-trace:graphql-stream")
 
   private apiToken?: string
   private connectionEstablisher: GraphqlConnectionEstablisher
@@ -243,7 +244,7 @@ class DefaultGrahqlStreamClient {
       return
     }
 
-    this.debug(
+    this.debugTrace(
       "Routing socket message of type '%s' with id '%s' to appropriate stream",
       message.type,
       message.id

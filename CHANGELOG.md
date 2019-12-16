@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2 (December 16, 2019)
+
+- Added a `dfuse-trace:` debug namespace so by default, `dfuse:*` can be put on
+  for debugging purposes without generating tons of messages.
+
 ## 0.3.1 (November 26, 2019)
 
 - Fixed avoid polluting the global scope example now that we added a second stream client

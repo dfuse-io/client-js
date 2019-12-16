@@ -61,6 +61,7 @@ class DefaultStreamClient {
   private socket: Socket
   private autoRestartStreamsOnReconnect: boolean
   private debug: IDebugger = debugFactory("dfuse:stream")
+  private debugTrace: IDebugger = debugFactory("dfuse-trace:stream")
 
   private streams: { [id: string]: DefaultStream } = {}
 
@@ -158,7 +159,7 @@ class DefaultStreamClient {
       return
     }
 
-    this.debug(
+    this.debugTrace(
       "Routing socket message of type '%s' with req_id '%s' to appropriate stream",
       message.type,
       message.req_id
