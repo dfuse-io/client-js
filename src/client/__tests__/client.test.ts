@@ -12,6 +12,7 @@ import { OutboundMessageType } from "../../message/outbound"
 import { Stream } from "../../types/stream"
 import { DfuseError } from "../../types/error"
 import { OnGraphqlStreamMessage } from "../../types/graphql-stream-client"
+import { Deferred } from "../../helpers/promises"
 
 const defaultRequestId = "dc-123"
 
@@ -100,7 +101,7 @@ describe("DfuseClient", () => {
     }
   })
 
-  it("refresh stream token on token refresh", async (done) => {
+  it("refresh stream token on token refresh", async () => {
     // This is way too hacky, but the ApiTokenManager is not a dependencies of DfuseClient,
     // so, let's go the long way ... We call a function of the client so it will schedule
     // a refresh, once the call has been made, we can inspect our mock to retrieve the
@@ -108,17 +109,27 @@ describe("DfuseClient", () => {
     await client.stateAbi("eosio")
 
     expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(1)
-
     const refresher = refreshScheduler.scheduleMock.mock.calls[0][1]
-    streamClient.setApiTokenMock.mockImplementation((token: string) => {
-      expect(token).toEqual("refreshed-token")
-      done()
-    })
 
     const data = { token: "refreshed-token", expires_at: 10 }
     httpClient.authRequestMock.mockReturnValue(Promise.resolve(data))
 
+    const firstDone = new Deferred()
+    const secondDone = new Deferred()
+
+    streamClient.setApiTokenMock.mockImplementation((token: string) => {
+      expect(token).toEqual("refreshed-token")
+      firstDone.resolve()
+    })
+
+    graphqlStreamClient.setApiTokenMock.mockImplementation((token: string) => {
+      expect(token).toEqual("refreshed-token")
+      secondDone.resolve()
+    })
+
     refresher()
+
+    await Promise.all([firstDone.promise(), secondDone.promise()])
   })
 
   describe("graphql", () => {
@@ -138,6 +149,14 @@ describe("DfuseClient", () => {
       httpClient.apiRequestMock.mockReturnValue(Promise.resolve({ data: "response" }))
 
       await expect(client.graphql("mutation { doc }")).resolves.toEqual({ data: "response" })
+    })
+
+    it("correctly pass subscription operation type document through WebSocket", async () => {
+      const stream: Stream = { id: "any", close: () => Promise.resolve() } as any
+      graphqlStreamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
+
+      const streamOnMessage = mock<OnGraphqlStreamMessage>()
+      await expect(client.graphql("subscription { doc }", streamOnMessage)).resolves.toEqual(stream)
     })
 
     it("correctly pass subscription operation type document through WebSocket", async () => {

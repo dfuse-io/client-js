@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.3 (December 16, 2019)
+
+- Fix a bug where a GraphQL stream could re-connect with an expired token, you are invited
+  to update to this version.
+
 ## 0.3.2 (December 16, 2019)
 
 - Added a `dfuse-trace:` debug namespace so by default, `dfuse:*` can be put on

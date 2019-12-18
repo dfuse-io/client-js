@@ -860,6 +860,7 @@ export class DefaultClient implements DfuseClient {
   private onTokenRefresh = (apiToken: string) => {
     // Ensure we update the API token to have it at its latest value
     this.streamClient.setApiToken(apiToken)
+    this.graphqlStreamClient.setApiToken(apiToken)
   }
 }
 
