@@ -325,14 +325,14 @@ class DefaultGrahqlStreamClient {
       .then(() => {
         return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].restart()))
       })
-      .catch((error) => {
+      .catch(async (error) => {
         const finalizer = () => {
           // FIXME: We shall pass this error somewhere, to some kind of notifier or event
           //        emitter but there is no such stuff right now.
           this.debug("The re-connection failed to re-establish the GraphQL connection %O", error)
         }
 
-        return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].close()))
+        return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].close({ error })))
           .then(finalizer)
           .catch(finalizer)
       })
@@ -567,7 +567,7 @@ class GraphqlConnectionEstablisher {
     }
 
     if (message.type === "connection_error") {
-      this.debug("Received connection_error message, rejecting active promise")
+      this.debug("Received connection_error message %O, rejecting active promise", message.payload)
       this.reject(message.payload! as Error)
       return
     }
