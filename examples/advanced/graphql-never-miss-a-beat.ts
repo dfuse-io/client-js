@@ -1,11 +1,5 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK, prettifyJson } from "../config"
-import {
-  createDfuseClient,
-  waitFor,
-  Stream,
-  DfuseClient,
-  GraphqlStreamMessage
-} from "@dfuse/client"
+import { createDfuseClient, Stream, DfuseClient, GraphqlStreamMessage } from "@dfuse/client"
 import { writeFileSync, readFileSync, existsSync } from "fs"
 import * as path from "path"
 
@@ -40,10 +34,7 @@ async function main() {
   })
 
   const engine = new Engine(client)
-  await engine.start()
-
-  await waitFor(50000)
-  await engine.stop()
+  await engine.run()
 
   client.release()
 }
@@ -82,7 +73,7 @@ class Engine {
     this.client = client
   }
 
-  public async start() {
+  public async run() {
     console.log("Engine starting")
 
     /**
@@ -127,17 +118,9 @@ class Engine {
     const operation = `
       subscription ($cursor: String!) {
         searchTransactionsForward(query: "receiver:therealkarma action:transfer", cursor: $cursor, liveMarkerInterval: 10) {
-          undo
-          cursor
-          block {
-            id
-            num
-          }
-          trace {
-            matchingActions {
-              json
-            }
-          }
+          undo cursor
+          block { id num }
+          trace { matchingActions { json } }
         }
       }
     `
@@ -191,6 +174,10 @@ class Engine {
     }
 
     console.log("Stream connected, ready to receive messages")
+
+    // This join the stream, resolving only when the stream completes, which is never in our example
+    // so we wait forever at that point.
+    await this.stream.join()
   }
 
   private onProgress = (blockId: string, blockNum: number, cursor: string) => {
@@ -269,16 +256,6 @@ class Engine {
      * browser on anything that is persistent across restarts of the script.
      */
     writeFileSync(path.resolve(__dirname, LAST_CURSOR_FILENAME), cursor)
-  }
-
-  public async stop() {
-    await this.ensureStream().close()
-
-    console.log("Committed actions")
-    this.committedActions.forEach((action) => {
-      const { from, to, quantity } = action
-      console.log(`- Commit transfer [${from} -> ${to} ${quantity}]`)
-    })
   }
 
   private ensureStream(): Stream {
