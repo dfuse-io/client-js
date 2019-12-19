@@ -276,7 +276,20 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   )
 }
 
-function checkApiKey(apiKey: string) {
+// Even though higher the type say it cannot be empty, this is usually provided
+// by the user and as such, as assume it could be undefined.
+function checkApiKey(apiKey: string | undefined) {
+  if (apiKey == null) {
+    const messages = [
+      "The client must be configured with an API key via the ",
+      "`apiKey` config options.",
+      "",
+      "Received nothing."
+    ]
+
+    throw new DfuseError(messages.join("\n"))
+  }
+
   if (!apiKey.match(/^(mobile|server|web)_[0-9a-f]{2,}/i)) {
     const messages = [
       "The provided API key is not in the right format, expecting it",
