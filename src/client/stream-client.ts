@@ -1,7 +1,7 @@
 import debugFactory, { IDebugger } from "debug"
 import { SocketOptions, createSocket } from "./socket"
 import { OutboundMessage, unlistenMessage } from "../message/outbound"
-import { InboundMessage } from "../message/inbound"
+import { InboundMessage, InboundMessageType } from "../message/inbound"
 import { DfuseClientError } from "../types/error"
 import { StreamClient, OnStreamMessage, OnStreamRestart } from "../types/stream-client"
 import { Socket } from "../types/socket"
@@ -159,7 +159,16 @@ class DefaultStreamClient {
       return
     }
 
-    this.debugTrace(
+    let debug = this.debugTrace
+    if (
+      message.type === InboundMessageType.ERROR ||
+      message.type === InboundMessageType.LISTENING ||
+      message.type === InboundMessageType.UNLISTENED
+    ) {
+      debug = this.debug
+    }
+
+    debug(
       "Routing socket message of type '%s' with req_id '%s' to appropriate stream",
       message.type,
       message.req_id

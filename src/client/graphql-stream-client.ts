@@ -244,7 +244,12 @@ class DefaultGrahqlStreamClient {
       return
     }
 
-    this.debugTrace(
+    let debug = this.debug
+    if (message.type === "data") {
+      debug = this.debugTrace
+    }
+
+    debug(
       "Routing socket message of type '%s' with id '%s' to appropriate stream",
       message.type,
       message.id
