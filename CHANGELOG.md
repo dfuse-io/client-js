@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.3.3 (December 16, 2019)
+## 0.3.4 (December 19, 2019)
+
+- Fixed `stream.join()` implementation for GraphQL stream when impossible to re-connect.
+- Improvements to debug output related to received Socket messages.
+- Fixed bad validation of `apiKey` field, it's now handles `undefined` and `null` values.
+
+## 0.3.3 (December 18, 2019)
 
 - Fix a bug where a GraphQL stream could re-connect with an expired token, you are invited
   to update to this version.
