@@ -43,12 +43,10 @@ export function getActionTracesMessage(
   data: GetActionTracesMessageData,
   streamOptions: StreamOptions = {}
 ): OutboundMessage<GetActionTracesMessageData> {
-  return createOutboundMessage(
-    OutboundMessageType.GET_ACTION_TRACES,
-    data,
-    { listen: true },
-    streamOptions
-  )
+  return createOutboundMessage(OutboundMessageType.GET_ACTION_TRACES, data, {
+    listen: true,
+    ...streamOptions
+  })
 }
 
 export type GetTableRowsMessageData = {
@@ -60,40 +58,51 @@ export type GetTableRowsMessageData = {
   upper_bound?: string
 }
 
+/**
+ * @deprecated The message factories are deprecated, there is no need to create your
+ *             own message anynore. This will be removed in a future release. The standard
+ *             client does not use this anymore.
+ */
 export function getTableRowsMessage(
   data: GetTableRowsMessageData,
   streamOptions: StreamOptions = {}
 ): OutboundMessage<GetTableRowsMessageData> {
-  return createOutboundMessage(
-    OutboundMessageType.GET_TABLE_ROWS,
-    data,
-    { listen: true },
-    streamOptions
-  )
+  return createOutboundMessage(OutboundMessageType.GET_TABLE_ROWS, data, {
+    listen: true,
+    ...streamOptions
+  })
 }
 
 export type GetTransactionLifecycleMessageData = {
   id: string
 }
 
+/**
+ * @deprecated The message factories are deprecated, there is no need to create your
+ *             own message anynore. This will be removed in a future release. The standard
+ *             client does not use this anymore.
+ */
 export function getTransactionLifecycleMessage(
   data: GetTransactionLifecycleMessageData,
   streamOptions: StreamOptions = {}
 ): OutboundMessage<GetTransactionLifecycleMessageData> {
-  return createOutboundMessage(
-    OutboundMessageType.GET_TRANSACTION_LIFECYCLE,
-    data,
-    { listen: true, fetch: true },
-    streamOptions
-  )
+  return createOutboundMessage(OutboundMessageType.GET_TRANSACTION_LIFECYCLE, data, {
+    listen: true,
+    fetch: true,
+    ...streamOptions
+  })
 }
 
+/**
+ * @deprecated The message factories are deprecated, there is no need to create your
+ *             own message anynore. This will be removed in a future release. The standard
+ *             client does not use this anymore.
+ */
 export function getHeadInfoMessage(streamOptions: StreamOptions = {}): OutboundMessage<{}> {
   return createOutboundMessage(
     OutboundMessageType.GET_HEAD_INFO,
     {},
-    { listen: true },
-    streamOptions
+    { listen: true, ...streamOptions }
   )
 }
 
@@ -101,6 +110,11 @@ export type UnlistenMessageData = {
   req_id: string
 }
 
+/**
+ * @deprecated The message factories are deprecated, there is no need to create your
+ *             own message anynore. This will be removed in a future release. The standard
+ *             client does not use this anymore.
+ */
 export function unlistenMessage(data: UnlistenMessageData) {
   return {
     req_id: data.req_id,
@@ -109,32 +123,37 @@ export function unlistenMessage(data: UnlistenMessageData) {
   }
 }
 
-function createOutboundMessage<T>(
+export type OutboundMessageFactory<T> = (
+  createOutboundMessage: (
+    type: OutboundMessageType,
+    data: T,
+    userOptions: StreamOptions
+  ) => OutboundMessage<T>,
+  withDefaultOptions: (userOptions: StreamOptions) => StreamOptions
+) => OutboundMessage<T>
+
+/**
+ * Exported for consumption from internal packages. This does **not**
+ * have any **Backward compatibility** policy nor documentation attached
+ * to it.
+ *
+ * It will be moved and made private again when message factories
+ * above have been removed.
+ */
+export function createOutboundMessage<T>(
   type: OutboundMessageType,
   data: T,
-  defaultStreamOptions: StreamOptions,
-  streamOptions: StreamOptions
+  options: StreamOptions
 ): OutboundMessage<T> {
-  const req_id = getStreamOption(defaultStreamOptions.req_id, streamOptions.req_id)
+  const req_id = options.req_id
   if (req_id === undefined) {
     throw new DfuseClientError("All outbound message should have a 'req_id' value")
   }
 
   return {
     type,
-    ...streamOptions,
     req_id,
-    listen: getStreamOption(defaultStreamOptions.listen, streamOptions.listen),
-    fetch: getStreamOption(defaultStreamOptions.fetch, streamOptions.fetch),
-    start_block: getStreamOption(defaultStreamOptions.start_block, streamOptions.start_block),
-    with_progress: getStreamOption(defaultStreamOptions.with_progress, streamOptions.with_progress),
-    data
+    data,
+    ...options
   }
-}
-
-function getStreamOption<T>(
-  defaultValue: T | undefined,
-  actualValue: T | undefined
-): T | undefined {
-  return actualValue === undefined ? defaultValue : actualValue
 }

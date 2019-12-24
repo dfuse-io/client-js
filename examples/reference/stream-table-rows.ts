@@ -15,6 +15,11 @@ async function main() {
         return
       }
 
+      if (message.type === InboundMessageType.TABLE_SNAPSHOT) {
+        console.log(prettifyJson(message.data))
+        return
+      }
+
       if (message.type === InboundMessageType.TABLE_DELTA) {
         console.log(prettifyJson(message.data))
         return
@@ -24,7 +29,8 @@ async function main() {
         console.log(prettifyJson(message.data))
         return
       }
-    }
+    },
+    { fetch: true }
   )
 
   await waitFor(15000)

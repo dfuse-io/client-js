@@ -389,7 +389,7 @@ describe("socket", () => {
 
     expect(mockWebSocket.sendMock).toHaveBeenCalledTimes(1)
     expect(mockWebSocket.sendMock).toHaveBeenCalledWith(
-      '{"type":"get_action_traces","req_id":"test","listen":true,"data":{"accounts":"test"}}'
+      '{"type":"get_action_traces","req_id":"test","data":{"accounts":"test"},"listen":true}'
     )
   })
 

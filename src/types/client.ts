@@ -2,7 +2,9 @@ import {
   GetActionTracesMessageData,
   GetTableRowsMessageData,
   StreamOptions,
-  GetTransactionLifecycleMessageData
+  GetTransactionLifecycleMessageData,
+  OutboundMessage,
+  OutboundMessageFactory
 } from "../message/outbound"
 import { ApiTokenInfo, AuthTokenResponse } from "./auth-token"
 import { SearchTransactionsResponse, SearchSortType } from "./search"
@@ -221,6 +223,23 @@ export interface DfuseClient {
    * @see https://docs.dfuse.io/#websocket-based-api-get_head_info
    */
   streamHeadInfo(onMessage: OnStreamMessage, options?: StreamOptions): Promise<Stream>
+
+  /**
+   * While this method is public, it has no **Backward Compatibility** policy
+   * nor documentation attached to it. It could be **removed**, **renamed**,
+   * **modified** on any release without notice.
+   *
+   * This method is used for internal usage, to test out new upcoming features
+   * of dfuse Stream API.
+   *
+   * **Use at your own risk**
+   *
+   * @private
+   */
+  websocketStream<T>(
+    onMessage: OnStreamMessage,
+    initMessageFactory: OutboundMessageFactory<T>
+  ): Promise<Stream>
 
   //
   /// HTTP API

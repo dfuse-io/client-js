@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.5 (December 24, 2019)
+
+- Exposed an internal method for internal (i.e. dfuse) consumption.
+
+- Deprecated `OutboundMessage` message factory functions: `getHeadInfoMessage`,
+  `getTableRowsMessage`, `getActionTracesMessage` and `getTransactionLifecycleMessage`.
+  They will be removed in future releases.
+
 ## 0.3.4 (December 19, 2019)
 
 - Fixed `stream.join()` implementation for GraphQL stream when impossible to re-connect.

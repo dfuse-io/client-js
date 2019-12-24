@@ -6,11 +6,13 @@ import {
   GetTransactionLifecycleMessageData,
   getActionTracesMessage,
   OutboundMessage,
+  OutboundMessageFactory,
   getTableRowsMessage,
   getTransactionLifecycleMessage,
-  getHeadInfoMessage
+  getHeadInfoMessage,
+  createOutboundMessage,
+  OutboundMessageType
 } from "../message/outbound"
-import { InboundMessage } from "../message/inbound"
 import { DfuseClient, RequestIdGenerator, DfuseClientEndpoints } from "../types/client"
 import { SearchSortType, SearchTransactionsResponse } from "../types/search"
 import { AuthTokenResponse, ApiTokenInfo } from "../types/auth-token"
@@ -519,14 +521,13 @@ export class DefaultClient implements DfuseClient {
     onMessage: OnStreamMessage,
     options: StreamOptions = {}
   ): Promise<Stream> {
-    const message = getActionTracesMessage(
-      data,
-      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
-        listen: true
-      })
+    return this.websocketStream(onMessage, (messageCreator, withDefaultOptions) =>
+      messageCreator(
+        OutboundMessageType.GET_ACTION_TRACES,
+        data,
+        withDefaultOptions({ listen: true, ...options })
+      )
     )
-
-    return this.registerStream(message, onMessage)
   }
 
   public async streamTableRows(
@@ -534,14 +535,13 @@ export class DefaultClient implements DfuseClient {
     onMessage: OnStreamMessage,
     options: StreamOptions = {}
   ): Promise<Stream> {
-    const message = getTableRowsMessage(
-      { json: true, ...data },
-      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
-        listen: true
-      })
+    return this.websocketStream(onMessage, (messageCreator, withDefaultOptions) =>
+      messageCreator(
+        OutboundMessageType.GET_TABLE_ROWS,
+        { json: true, ...data },
+        withDefaultOptions({ listen: true, ...options })
+      )
     )
-
-    return this.registerStream(message, onMessage)
   }
 
   public async streamTransaction(
@@ -549,25 +549,36 @@ export class DefaultClient implements DfuseClient {
     onMessage: OnStreamMessage,
     options: StreamOptions = {}
   ): Promise<Stream> {
-    const message = getTransactionLifecycleMessage(
-      data,
-      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
-        fetch: true,
-        listen: true
-      })
+    return this.websocketStream(onMessage, (messageCreator, withDefaultOptions) =>
+      messageCreator(
+        OutboundMessageType.GET_TRANSACTION_LIFECYCLE,
+        data,
+        withDefaultOptions({ listen: true, fetch: true, ...options })
+      )
     )
+  }
+
+  public streamHeadInfo(onMessage: OnStreamMessage, options: StreamOptions = {}): Promise<Stream> {
+    return this.websocketStream(onMessage, (messageCreator, withDefaultOptions) => {
+      return messageCreator(
+        OutboundMessageType.GET_HEAD_INFO,
+        {},
+        withDefaultOptions({ listen: true, ...options })
+      )
+    })
+  }
+
+  public websocketStream<T>(
+    onMessage: OnStreamMessage,
+    initMessageFactory: OutboundMessageFactory<T>
+  ): Promise<Stream> {
+    const message = initMessageFactory(createOutboundMessage, this.withDefaultOptions)
 
     return this.registerStream(message, onMessage)
   }
 
-  public streamHeadInfo(onMessage: OnStreamMessage, options: StreamOptions = {}): Promise<Stream> {
-    const message = getHeadInfoMessage(
-      mergeDefaultsStreamOptions(this.requestIdGenerator, options, {
-        listen: true
-      })
-    )
-
-    return this.registerStream(message, onMessage)
+  private withDefaultOptions = (options: StreamOptions) => {
+    return { req_id: this.requestIdGenerator(), ...options }
   }
 
   //
@@ -889,12 +900,4 @@ function randomReqId() {
   return `dc-${Math.random()
     .toString(16)
     .substr(2)}`
-}
-
-function mergeDefaultsStreamOptions(
-  requestIdGenerator: RequestIdGenerator,
-  userDefinedOptions: StreamOptions,
-  defaultOptions: StreamOptions
-): StreamOptions {
-  return Object.assign({ req_id: requestIdGenerator() }, defaultOptions, userDefinedOptions)
 }

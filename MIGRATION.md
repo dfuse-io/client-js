@@ -232,3 +232,19 @@ message you care about.
 
 If you had a dependency on `Socket` class, the type for `send` and `SocketMessageListener`
 are now looser accepting any type instead of only `dfuse Stream API` types.
+
+### From `@dfuse/client@0.3.x to`next`
+
+The outbound message factory functions were deprecated. There is no replacement
+for this, we assume you don't have to create the outbound messages yourself.
+
+They have little usefulness right now since no public methods on the `DfuseClient`
+accepts directly an outbound message.
+
+Contact us if you would like a revision of this decision. Removed exported
+functions are:
+
+- `getHeadInfoMessage`
+- `getTableRowsMessage`
+- `getActionTracesMessage`
+- `getTransactionLifecycleMessage`
