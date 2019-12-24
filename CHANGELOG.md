@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.6 (December 24, 2019)
+
+- Enhance `Abi` exported types (subtypes were not exported before).
+
 ## 0.3.5 (December 24, 2019)
 
 - Exposed an internal method for internal (i.e. dfuse) consumption.
