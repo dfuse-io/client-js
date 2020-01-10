@@ -52,8 +52,8 @@ export type AbiTable = {
   name: string
   type: string
   index_type: string
-  key_names: string[]
-  key_types: string[]
+  key_names?: string[]
+  key_types?: string[]
 }
 
 export type AbiRicardianClause = {
