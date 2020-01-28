@@ -29,12 +29,15 @@ async function main() {
     },
     graphqlStreamClientOptions: {
       socketOptions: {
-        webSocketFactory
+        // The WebSocket factory used for GraphQL stream must use this special protocols set
+        // We intend on making the library handle this for you automatically in the future,
+        // for now, it's required otherwise, the GraphQL will not connect correctly.
+        webSocketFactory: (url) => webSocketFactory(url, ["graphql-ws"])
       }
     },
     streamClientOptions: {
       socketOptions: {
-        webSocketFactory
+        webSocketFactory: (url) => webSocketFactory(url)
       }
     }
   })
@@ -87,8 +90,8 @@ async function main() {
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket#Parameters
  */
-async function webSocketFactory(url: string) {
-  const webSocket = new WebSocketClient(url, {
+async function webSocketFactory(url: string, protocols: string[] = []) {
+  const webSocket = new WebSocketClient(url, protocols, {
     handshakeTimeout: 30 * 1000, // 30s
     maxPayload: 200 * 1024 * 1000 * 1000 // 200Mb
   })
