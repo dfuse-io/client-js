@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.6 (January 28, 2020)
+
+- Do not try to reconnect when WebSocket error is 1009 (message too big).
+
 ## 0.3.5 (December 24, 2019)
 
 - Exposed an internal method for internal (i.e. dfuse) consumption.

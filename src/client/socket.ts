@@ -464,6 +464,7 @@ class DefaultSocket implements Socket {
 
     if (
       event.code !== 1000 &&
+      event.code !== 1009 &&
       this.disconnectInitiator !== "client" &&
       this.options.autoReconnect
     ) {

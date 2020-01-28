@@ -238,6 +238,23 @@ describe("socket", () => {
     expect(socket.isConnected).toBeFalsy()
   })
 
+  it("doesn't try to reconnect on close code 1009 (message too big)", async () => {
+    const socket = createSocket("any", {
+      webSocketFactory: createWebSocketFactory(mockWebSocket)
+    })
+
+    setTimeout(() => {
+      openConnection(mockWebSocket)
+      closeConnection(mockWebSocket, { code: 1009 })
+    }, 0)
+
+    expect.hasAssertions()
+    await expect(socket.connect(noopListener)).resolves.toBeUndefined()
+    reopenConnection(mockWebSocket)
+
+    expect(socket.isConnected).toBeFalsy()
+  })
+
   it("doesn't try to reconnect on abnormal closure when the client initiated the close call", async () => {
     const socket = createSocket("any", {
       webSocketFactory: createWebSocketFactory(mockWebSocket)
