@@ -8,7 +8,7 @@ async function main() {
   })
 
   const streamTransfer = `subscription($cursor: String) {
-    searchTransactions(query: "method:'transfer(address,uint256)'", cursor: $cursor) {
+    searchTransactions(indexName: CALLS, query: "method:'transfer(address,uint256)'", cursor: $cursor) {
       undo cursor
       node { hash from to value(encoding: ETHER) }
     }

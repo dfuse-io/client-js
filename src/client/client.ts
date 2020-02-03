@@ -4,12 +4,8 @@ import {
   StreamOptions,
   GetTableRowsMessageData,
   GetTransactionLifecycleMessageData,
-  getActionTracesMessage,
   OutboundMessage,
   OutboundMessageFactory,
-  getTableRowsMessage,
-  getTransactionLifecycleMessage,
-  getHeadInfoMessage,
   createOutboundMessage,
   OutboundMessageType
 } from "../message/outbound"

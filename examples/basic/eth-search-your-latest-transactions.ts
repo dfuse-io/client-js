@@ -8,7 +8,7 @@ async function main() {
 
   try {
     const searchTransactions = `query ($limit: Int64!) {
-      searchTransactions(query: "signer:${address}", limit: $limit, sort: DESC) {
+      searchTransactions(indexName: CALLS, query: "signer:${address}", limit: $limit, sort: DESC) {
         edges {
           node { hash block { number } }
         }
@@ -16,7 +16,7 @@ async function main() {
     }`
 
     const response = await client.graphql(searchTransactions, {
-      variables: { limit: 10 }
+      variables: { limit: "10" }
     })
 
     if (response.errors) {
