@@ -41,7 +41,7 @@ export type StateAbiToJsonResponse<T = unknown> = {
 
 export type StateKeyAccountsResponse = {
   block_num: number
-  accounts: string[]
+  account_names: string[]
 }
 
 export type StatePermissionLinksResponse = {

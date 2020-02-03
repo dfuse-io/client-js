@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.7 (February 3, 2020)
+
+- Fix `StateKeyAccountsResponse` type `account_names` field name which was incorrectly
+  named `accounts` before which was not in-sync with server definition.
+
 ## 0.3.6 (January 28, 2020)
 
 - Do not try to reconnect when WebSocket error is 1009 (message too big).
