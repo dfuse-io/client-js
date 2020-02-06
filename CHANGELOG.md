@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.8 (February 6, 2020)
+
+- Enhance `Abi` exported types (subtypes were not exported before).
+
 ## 0.3.7 (February 3, 2020)
 
 - Fix `StateKeyAccountsResponse` type `account_names` field name which was incorrectly

@@ -16,20 +16,64 @@ export type StateAbiResponse = {
  */
 export type Abi = {
   version: string
-  types: Array<{ new_type_name: string; type: string }>
-  structs: Array<{ name: string; base: string; fields: Array<{ name: string; type: string }> }>
-  actions: Array<{ name: string; type: string; ricardian_contract: string }>
-  tables: Array<{
-    name: string
-    type: string
-    index_type: string
-    key_names: string[]
-    key_types: string[]
-  }>
-  ricardian_clauses: Array<{ id: string; body: string }>
-  error_messages: Array<{ error_code: string; error_msg: string }>
-  abi_extensions: Array<{ tag: number; value: string }>
-  variants?: Array<{ name: string; types: string[] }>
+  types: AbiType[]
+  structs: AbiStruct[]
+  actions: AbiAction[]
+  tables: AbiTable[]
+  ricardian_clauses: AbiRicardianClause[]
+  error_messages: AbiErrorMessage[]
+  abi_extensions: AbiExtension[]
+  variants?: AbiVariant[]
+}
+
+export type AbiType = {
+  new_type_name: string
+  type: string
+}
+
+export type AbiStruct = {
+  name: string
+  base: string
+  fields: AbiStructField[]
+}
+
+export type AbiStructField = {
+  name: string
+  type: string
+}
+
+export type AbiAction = {
+  name: string
+  type: string
+  ricardian_contract: string
+}
+
+export type AbiTable = {
+  name: string
+  type: string
+  index_type: string
+  key_names?: string[]
+  key_types?: string[]
+}
+
+export type AbiRicardianClause = {
+  id: string
+  body: string
+}
+
+export type AbiErrorMessage = {
+  error_code: string
+  error_msg: string
+}
+
+export type AbiExtension = {
+  tag: number
+  value: string
+}
+
+export type AbiVariant = {
+  name: string
+  types: string[]
 }
 
 export type StateAbiToJsonResponse<T = unknown> = {
