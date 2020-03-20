@@ -28,7 +28,7 @@ type TransferData = {
  * on receiver `eosio.ram`.
  *
  * We will also show the differences and impacts of having two separate
- * streams, instead of a single one by implementing a signle stream that
+ * streams, instead of a single one by implementing a single stream that
  * listens for both actions in one pass.
  *
  * You will learn how to have multiple active streams, that multiple
