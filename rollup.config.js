@@ -6,6 +6,7 @@ const typescript = require("rollup-plugin-typescript2")
 const json = require("rollup-plugin-json")
 const { terser } = require("rollup-plugin-terser")
 const ignore = require("rollup-plugin-ignore")
+const babel = require("rollup-plugin-babel")
 
 const pkg = require("./package.json")
 
@@ -28,7 +29,6 @@ module.exports = {
         browser: true
       },
       prePlugins: [ignore(builtinModules)],
-      plugins: [commonjs()],
       postPlugins: [terser()]
     })
 }
@@ -48,6 +48,9 @@ function build(options) {
       commonjs(),
       resolve(options.resolve),
       sourceMaps(),
+      babel({
+        exclude: "node_modules/**" // only transpile our source code
+      }),
       ...(options.postPlugins || [])
     ]
   }
