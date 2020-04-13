@@ -28,6 +28,7 @@ module.exports = {
         browser: true
       },
       prePlugins: [ignore(builtinModules)],
+      plugins: [commonjs()],
       postPlugins: [terser()]
     })
 }
