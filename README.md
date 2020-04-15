@@ -114,7 +114,7 @@ easiest way to get started.
 
 It's what the examples in this project do using respectively
 [unfetch](https://ghub.io/unfetch) and
-and [isomorphickws](https://ghub.io/isomorphic-ws) for `fetch` and `WebSocket` respectively.
+and [isomorphic-ws](https://ghub.io/isomorphic-ws) for `fetch` and `WebSocket` respectively.
 
 Installation instructions using Yarn would be:
 
@@ -163,7 +163,7 @@ In the Browser environment, this is the standard `WebSocket` variable that is us
 
 If `window.WebSocket` is undefined, we fallback to check `global.WebSocket` variable.
 This can be set in a Node.js environment to point to a compatible implementation
-of `WebSocket` client, like the one provided by the [ws](https://npmjs.com/package/ws)
+of `WebSocket` client, like the one provided by the [isomorphic-ws](https://ghub.io/isomorphic-ws)
 package.
 
 If none is provided, the library throw an error. To avoid this error, you should pass
@@ -173,7 +173,7 @@ Client. This factory method receives the full url to connect to the remote endpo
 (this will include the API token to use in query parameters of the url) and should
 return a valid `WebSocket` client object.
 
-We highly suggest to use [ws](https://npmjs.com/package/ws) package straight in a
+We highly suggest to use [isomorphic-ws](https://ghub.io/isomorphic-ws) package straight in a
 Node.js environment.
 
 #### API Token Store

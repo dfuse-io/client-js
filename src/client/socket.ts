@@ -116,7 +116,7 @@ export interface SocketOptions {
    * **Important Note**<br><br>
    * The actual `event` object you will receive is different wheter you use
    * the Browser `WebSocket` instance ([ErrorEvent](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event))
-   * or depending on the Node.js library you use (If you use [ws](https://www.npmjs.com/package/ws) package, then it's
+   * or depending on the Node.js library you use (If you use [isomorphic-ws](https://ghub.io/isomorphic-ws) package, then it's
    * [ErrorEvent](https://github.com/websockets/ws/blob/master/lib/event-target.js#L87))
    *
    * @default `() => {}` (noop)
@@ -134,7 +134,7 @@ export interface SocketOptions {
    * **Important Note**<br><br>
    * The actual `event` object you will receive is different wheter you use
    * the Browser `WebSocket` instance ([CloseEvent](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/close_event))
-   * or depending on the Node.js library you use (If you use [ws](https://www.npmjs.com/package/ws) package, then it's
+   * or depending on the Node.js library you use (If you use [isomorphic-ws](https://ghub.io/isomorphic-ws) package, then it's
    * [CloseEvent](https://github.com/websockets/ws/blob/master/lib/event-target.js#L47))
    *
    * @default `() => {}` (noop)
