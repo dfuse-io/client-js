@@ -113,8 +113,8 @@ they are picked automatically by the library. While polluting the global scope, 
 easiest way to get started.
 
 It's what the examples in this project do using respectively
-[unfetch](https://www.npmjs.com/package/unfetch) and
-and [ws](https://www.npmjs.com/package/ws) for `fetch` and `WebSocket` respectively.
+[unfetch](https://ghub.io/unfetch) and
+and [isomorphickws](https://ghub.io/isomorphic-ws) for `fetch` and `WebSocket` respectively.
 
 Installation instructions using Yarn would be:
 
