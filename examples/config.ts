@@ -30,8 +30,8 @@ if (process.env.DEBUG_LEAKED_HANDLES) {
 // Check [Configure Node.js](https://github.com/dfuse-io/client/blob/master/README.md#node-js)
 // section of the read me for further explanation around this topic.
 //
-;(global as any).fetch = require("node-fetch")
-;(global as any).WebSocket = require("ws")
+;(global as any).fetch = require("unfetch")
+;(global as any).WebSocket = require("isomorphic-ws")
 
 // You don't require to have this configuration and the associated import
 // in your own project (of course, feel free to copy it if you think it helps).

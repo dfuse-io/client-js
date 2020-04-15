@@ -113,18 +113,18 @@ they are picked automatically by the library. While polluting the global scope, 
 easiest way to get started.
 
 It's what the examples in this project do using respectively
-[node-fetch](https://www.npmjs.com/package/node-fetch) and
+[unfetch](https://www.npmjs.com/package/unfetch) and
 and [ws](https://www.npmjs.com/package/ws) for `fetch` and `WebSocket` respectively.
 
 Installation instructions using Yarn would be:
 
-    yarn add node-fetch ws
+    yarn add unfetch ws
 
 In the bootstrap phase of your application, prior doing any `@dfuse/client` imports/require,
 put the following code:
 
-    global.fetch = require("node-fetch");
-    global.WebSocket = require("ws");
+    global.fetch = require("unfetch");
+    global.WebSocket = require("isomorphic-ws");
 
 You can check the [Node.js Configuration](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
 example for how to avoid polluting the global scope.
@@ -143,7 +143,7 @@ a function).
 
 If `window.fetch` is undefined, we fallback to check `global.fetch` variable.
 This can be set in a Node.js environment to point to a compatible implementation
-of `fetch`, like the one provided by the [node-fetch](https://npmjs.com/package/node-fetch)
+of `fetch`, like the one provided by the [unfetch](https://npmjs.com/package/unfetch)
 package.
 
 If none is provided, the library throw an error. To avoid this error, you should pass

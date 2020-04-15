@@ -17,8 +17,8 @@ import { IncomingMessage } from "http"
 
 // We add the example imports here to make the example clearer, in your
 // own code, group them with yours.
-import nodeFetch from "node-fetch"
-import WebSocketClient from "ws"
+import nodeFetch from "unfetch"
+import WebSocketClient from "isomorphic-ws"
 
 async function main() {
   const client = createDfuseClient({
