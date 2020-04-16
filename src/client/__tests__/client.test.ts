@@ -956,6 +956,58 @@ the bug to us with the document string used."
   })
 })
 
+describe("DfuseClient without authentication", () => {
+  let httpClient: MockHttpClient
+  let streamClient: MockStreamClient
+  let graphqlStreamClient: MockGraphqlStreamClient
+  let apiTokenStore: MockApiTokenStore
+  let refreshScheduler: MockRefreshScheduler
+  let requestIdGenerator: RequestIdGenerator
+  let client: DfuseClient
+
+  beforeEach(() => {
+    spyOn(Date, "now").and.returnValue(currentDate)
+
+    httpClient = new MockHttpClient()
+    streamClient = new MockStreamClient()
+    graphqlStreamClient = new MockGraphqlStreamClient()
+    apiTokenStore = new MockApiTokenStore()
+    refreshScheduler = new MockRefreshScheduler()
+    requestIdGenerator = mock<string>(() => defaultRequestId)
+
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
+
+    client = createDfuseClient({
+      apiKey: "web_0123456789abcdef",
+      network: "mainnet",
+      authUrl: "null://",
+      httpClient,
+      streamClient,
+      graphqlStreamClient,
+      apiTokenStore,
+      refreshScheduler,
+      requestIdGenerator
+    })
+  })
+
+  it("return a default token and not call auth issuer", async () => {
+    await client.stateAbi("eosio")
+
+    expect(httpClient.authRequestMock).toHaveBeenCalledTimes(0)
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(0)
+    expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
+
+    expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
+      "a.b.c",
+      "/v0/state/abi",
+      "GET",
+      { account: "eosio", block_num: undefined, json: true },
+      undefined,
+      undefined
+    )
+  })
+})
+
 describe("networkToEndpoint", () => {
   const testCases = [
     { network: "mainnet", endpoint: "mainnet.eos.dfuse.io" },

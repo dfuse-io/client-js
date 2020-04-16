@@ -23,7 +23,11 @@ import {
   StatePermissionLinksResponse,
   StateTableRowResponse
 } from "../types/state"
-import { ApiTokenManager, createApiTokenManager } from "./api-token-manager"
+import {
+  ApiTokenManager,
+  createApiTokenManager,
+  createNoopApiTokenManager
+} from "./api-token-manager"
 import { createHttpClient, HttpClientOptions } from "./http-client"
 import {
   V1_AUTH_ISSUE,
@@ -397,13 +401,17 @@ export class DefaultClient implements DfuseClient {
     this.graphqlStreamClient = graphqlStreamClient
     this.requestIdGenerator = requestIdGenerator
 
-    this.apiTokenManager = createApiTokenManager(
-      () => this.authIssue(this.apiKey),
-      this.onTokenRefresh,
-      0.95,
-      apiTokenStore,
-      refreshScheduler
-    )
+    if (this.endpoints.authUrl.startsWith("null://")) {
+      this.apiTokenManager = createNoopApiTokenManager("a.b.c")
+    } else {
+      this.apiTokenManager = createApiTokenManager(
+        () => this.authIssue(this.apiKey),
+        this.onTokenRefresh,
+        0.95,
+        apiTokenStore,
+        refreshScheduler
+      )
+    }
   }
 
   public release(): void {

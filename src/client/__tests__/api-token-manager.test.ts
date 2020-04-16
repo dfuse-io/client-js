@@ -1,4 +1,9 @@
-import { ApiTokenManager, createApiTokenManager, isApiTokenExpired } from "../api-token-manager"
+import {
+  ApiTokenManager,
+  createApiTokenManager,
+  createNoopApiTokenManager,
+  isApiTokenExpired
+} from "../api-token-manager"
 import { MockApiTokenStore, MockRefreshScheduler, mock } from "./mocks"
 import { ApiTokenInfo } from "../../types/auth-token"
 
@@ -11,6 +16,7 @@ const nonExpiredJustBeforeApiTokenInfo = { token: "non-expired-just-before", exp
 const expiredTokenInfo = { token: "expired-far", expires_at: 100 }
 const expiredRightOnApiTokenInfo = { token: "expired-right-on", expires_at: 1000 }
 const expiredJustAfterApiTokenInfo = { token: "expired-just-after", expires_at: 999 }
+const noopApiTokenInfo = { token: "aa.bb.cc", expires_at: 0 }
 
 const defaultFetchApiTokenInfo = nonExpiredApiTokenInfo
 
@@ -155,6 +161,21 @@ describe("ApiTokenManager", () => {
     manager.release()
     expect(apiTokenStore.releaseMock).toHaveBeenCalledTimes(1)
     expect(refreshScheduler.releaseMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("NoopApiTokenManager", () => {
+  let manager: ApiTokenManager
+
+  beforeEach(() => {
+    spyOn(Date, "now").and.returnValue(currentDate)
+
+    manager = createNoopApiTokenManager("aa.bb.cc")
+  })
+
+  it("should return hardwired token", async () => {
+    const result = await manager.getTokenInfo()
+    expect(result).toEqual(noopApiTokenInfo)
   })
 })
 
