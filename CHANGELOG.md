@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.9 (April 16, 2020)
+
+- Added the ability to run the client without authentication. By passing the `authURL` option
+  as `null://....` it will not retrieve a authentication token. Especially useful when running [dfuse for EOSIO](https://github.com/dfuse-io/dfuse-eosio)
+
 ## 0.3.8 (February 6, 2020)
 
 - Enhance `Abi` exported types (subtypes were not exported before).
