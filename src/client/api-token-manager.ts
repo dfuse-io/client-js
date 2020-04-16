@@ -42,6 +42,26 @@ export function createApiTokenManager(
 }
 
 /**
+ * This is the authentication URL that will be reach to issue
+ * new API token.
+ *
+ * @default `https://auth.dfuse.io`
+ */
+
+/**
+ * Create the Noop [[ApiTokenManager]] interface that will manage all the lifecycle
+ * of a token.
+ *
+ * @param token The hardwired token value,
+ *        @default `a.b.c`
+ *
+ * @kind Factories
+ */
+export function createNoopApiTokenManager(token: string): ApiTokenManager {
+  return new NoopApiTokenManager(token)
+}
+
+/**
  * Check wheter the received [[ApiTokenInfo]] parameter is expired or near its
  * expiration.
  */
@@ -159,5 +179,25 @@ class DefaultApiTokenManager implements ApiTokenManager {
     })
 
     return this.fetchTokenPromise
+  }
+}
+
+class NoopApiTokenManager implements ApiTokenManager {
+  private token: string
+  private expiresAt: number
+  private debug: IDebugger
+
+  constructor(token: string) {
+    this.token = token || "a.b.c"
+    this.expiresAt = 0
+    this.debug = debugFactory("dfuse:token-manager-noop")
+  }
+
+  public release(): void {
+    this.debug("Releasing default API token manager")
+  }
+
+  public async getTokenInfo(): Promise<ApiTokenInfo> {
+    return { token: this.token, expires_at: this.expiresAt }
   }
 }
