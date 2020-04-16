@@ -42,18 +42,10 @@ export function createApiTokenManager(
 }
 
 /**
- * This is the authentication URL that will be reach to issue
- * new API token.
- *
- * @default `https://auth.dfuse.io`
- */
-
-/**
  * Create the Noop [[ApiTokenManager]] interface that will manage all the lifecycle
  * of a token.
  *
- * @param token The hardwired token value,
- *        @default `a.b.c`
+ * @param token The hardwired token value (default value -> `a.b.c`)
  *
  * @kind Factories
  */
