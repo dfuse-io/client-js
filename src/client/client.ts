@@ -267,12 +267,10 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const apiTokenStore = options.apiTokenStore || inferApiTokenStore(options.apiKey)
   const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
 
-  clientInstanceId++
-
-  const instanceId = clientInstanceId
   const requestIdGenerator = options.requestIdGenerator || randomReqId
 
   return new DefaultClient(
+    clientInstanceId++,
     options.apiKey,
     endpoints,
     httpClient,
@@ -280,7 +278,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
     graphqlStreamClient,
     apiTokenStore,
     refreshScheduler,
-    () => `${requestIdGenerator()}-${instanceId}`
+    requestIdGenerator
   )
 }
 
@@ -381,6 +379,7 @@ export function networkToEndpoint(network: string): string {
 export class DefaultClient implements DfuseClient {
   public readonly endpoints: DfuseClientEndpoints
 
+  protected id: number
   protected apiKey: string
   protected apiTokenManager: ApiTokenManager
   protected httpClient: HttpClient
@@ -391,6 +390,7 @@ export class DefaultClient implements DfuseClient {
   protected debug: IDebugger = debugFactory("dfuse:client")
 
   constructor(
+    id: number,
     apiKey: string,
     endpoints: DfuseClientEndpoints,
     httpClient: HttpClient,
@@ -400,6 +400,7 @@ export class DefaultClient implements DfuseClient {
     refreshScheduler: RefreshScheduler,
     requestIdGenerator: RequestIdGenerator
   ) {
+    this.id = id
     this.apiKey = apiKey
     this.endpoints = endpoints
     this.httpClient = httpClient
@@ -468,7 +469,7 @@ export class DefaultClient implements DfuseClient {
         this.graphqlStreamClient.setApiToken(apiTokenInfo.token)
 
         return this.graphqlStreamClient.registerStream(
-          this.requestIdGenerator(),
+          `${this.requestIdGenerator()}-${this.id}`,
           // FIXME: Turn the document if a GraphQL document into a proper document string
           document,
           options.variables,
@@ -588,7 +589,7 @@ export class DefaultClient implements DfuseClient {
   }
 
   private withDefaultOptions = (options: StreamOptions) => {
-    return { req_id: this.requestIdGenerator(), ...options }
+    return { req_id: `${this.requestIdGenerator()}-${this.id}`, ...options }
   }
 
   //

@@ -14,7 +14,8 @@ import { DfuseError } from "../../types/error"
 import { OnGraphqlStreamMessage } from "../../types/graphql-stream-client"
 import { Deferred } from "../../helpers/promises"
 
-const defaultRequestId = "dc-123"
+const mockRequestId = "dc-123"
+const expectedRequestId = "dc-123-1"
 
 // In milliseconds
 const currentDate = 1000000
@@ -39,7 +40,7 @@ describe("DfuseClient", () => {
     graphqlStreamClient = new MockGraphqlStreamClient()
     apiTokenStore = new MockApiTokenStore()
     refreshScheduler = new MockRefreshScheduler()
-    requestIdGenerator = mock<string>(() => defaultRequestId)
+    requestIdGenerator = mock<string>(() => mockRequestId)
 
     apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
 
@@ -53,6 +54,9 @@ describe("DfuseClient", () => {
       refreshScheduler,
       requestIdGenerator
     })
+
+    // @ts-ignore For testing purposes, this exists on the client
+    client.id = 1
   })
 
   it("releases http and stream clients on release", () => {
@@ -248,7 +252,7 @@ the bug to us with the document string used."
           type: OutboundMessageType.GET_ACTION_TRACES,
           data: { accounts: "test" },
           listen: true,
-          req_id: defaultRequestId
+          req_id: expectedRequestId
         },
         onMessage
       )
@@ -300,7 +304,7 @@ the bug to us with the document string used."
           type: OutboundMessageType.GET_TABLE_ROWS,
           data: { code: "test", table: "eosio", scope: "eosio", json: true },
           listen: true,
-          req_id: defaultRequestId
+          req_id: expectedRequestId
         },
         onMessage
       )
@@ -354,7 +358,7 @@ the bug to us with the document string used."
           data: { id: "123" },
           fetch: true,
           listen: true,
-          req_id: defaultRequestId
+          req_id: expectedRequestId
         },
         onMessage
       )
@@ -403,7 +407,7 @@ the bug to us with the document string used."
           type: OutboundMessageType.GET_HEAD_INFO,
           data: {},
           listen: true,
-          req_id: defaultRequestId
+          req_id: expectedRequestId
         },
         onMessage
       )
@@ -973,7 +977,7 @@ describe("DfuseClient without authentication", () => {
     graphqlStreamClient = new MockGraphqlStreamClient()
     apiTokenStore = new MockApiTokenStore()
     refreshScheduler = new MockRefreshScheduler()
-    requestIdGenerator = mock<string>(() => defaultRequestId)
+    requestIdGenerator = mock<string>(() => mockRequestId)
 
     apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
 
@@ -988,6 +992,9 @@ describe("DfuseClient without authentication", () => {
       refreshScheduler,
       requestIdGenerator
     })
+
+    // @ts-ignore For testing purposes, this exists on the client
+    client.id = 1
   })
 
   it("return a default token and not call auth issuer", async () => {
