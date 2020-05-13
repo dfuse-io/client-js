@@ -219,6 +219,9 @@ export interface DfuseClientOptions {
   refreshScheduler?: RefreshScheduler
 }
 
+// Small module wide variable incremented each time a client instance is created
+let clientInstanceId = 0
+
 /**
  * The main entry point of the library, use it to create the standard [[DfuseClient]]
  * instance.
@@ -264,6 +267,9 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const apiTokenStore = options.apiTokenStore || inferApiTokenStore(options.apiKey)
   const refreshScheduler = options.refreshScheduler || createRefreshScheduler()
 
+  clientInstanceId++
+
+  const instanceId = clientInstanceId
   const requestIdGenerator = options.requestIdGenerator || randomReqId
 
   return new DefaultClient(
@@ -274,7 +280,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
     graphqlStreamClient,
     apiTokenStore,
     refreshScheduler,
-    requestIdGenerator
+    () => `${requestIdGenerator()}-${instanceId}`
   )
 }
 

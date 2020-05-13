@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.10 (May 12, 2020)
+
+- Added client instance id generated stream id.
+
 ## 0.3.9 (April 16, 2020)
 
 - Added the ability to run the client without authentication. By passing the `authURL` option
