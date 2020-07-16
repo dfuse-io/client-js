@@ -93,7 +93,7 @@ export interface DfuseClientOptions {
    *
    * @see https://docs.dfuse.io/#endpoints
    */
-  network: "mainnet" | "jungle" | "kylin" | "worbli" | string
+  network: "mainnet" | "kylin" | string
 
   /**
    * You dfuse API key to interact with the dfuse API service. You
