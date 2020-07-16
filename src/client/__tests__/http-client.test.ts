@@ -1,6 +1,6 @@
 import { HttpClient, Fetch, HttpResponse, RequestInit } from "../../types/http-client"
 import { createHttpClient } from "../http-client"
-import { DfuseApiError, DfuseClientError } from "../../types/error"
+import { DfuseApiError, DfuseClientError, DfuseGenericApiError } from "../../types/error"
 
 describe("HttpClient", () => {
   let fetch: jest.Mock<ReturnType<Fetch>, ArgsType<Fetch>>
@@ -213,6 +213,35 @@ describe("HttpClient", () => {
       expect(error.trace_id).toEqual(errorData.trace_id)
       expect(error.message).toEqual(errorData.message)
       expect(error.details).toEqual(errorData.details)
+    }
+  })
+
+  it("throws a DfuseApiError when body is valid JSON and has no trace_id nor details", async () => {
+    const errorData = { code: "test", message: "wrong" }
+    fetch.mockReturnValue(Promise.resolve(koResponse(errorData)))
+
+    try {
+      await client.apiRequest("token", "/", "GET")
+      fail("should have failed")
+    } catch (error) {
+      expect(error).toBeInstanceOf(DfuseApiError)
+      expect(error.code).toEqual(errorData.code)
+      expect(error.trace_id).toBeUndefined()
+      expect(error.message).toEqual(errorData.message)
+      expect(error.details).toBeUndefined()
+    }
+  })
+
+  it("throws a DfuseGenericApiError when body is valid JSON but does not fit API format", async () => {
+    const errorData = { code: "test", trace_id: "0", message: "wrong", details: {}, other: {} }
+    fetch.mockReturnValue(Promise.resolve(koResponse(errorData)))
+
+    try {
+      await client.apiRequest("token", "/", "GET")
+      fail("should have failed")
+    } catch (error) {
+      expect(error).toBeInstanceOf(DfuseGenericApiError)
+      expect(error.data).toEqual(errorData)
     }
   })
 

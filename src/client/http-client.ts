@@ -1,4 +1,4 @@
-import { DfuseError, DfuseClientError, DfuseApiError } from "../types/error"
+import { DfuseError, DfuseClientError, DfuseApiError, DfuseGenericApiError } from "../types/error"
 import {
   Fetch,
   HttpResponse,
@@ -232,13 +232,35 @@ class DefaultHttpClient {
     const body = await response.text()
 
     try {
-      return new DfuseApiError(JSON.parse(body))
+      const data = JSON.parse(body)
+      if (!this.isDfuseApiError(data)) {
+        return new DfuseGenericApiError(data)
+      }
+
+      return new DfuseApiError(data)
     } catch (error) {
       return new DfuseClientError(
         `The returned body shall have been a valid JSON object, got '${body}'`,
         error
       )
     }
+  }
+
+  private isDfuseApiError(data: any): boolean {
+    if (!data.code || !data.message) {
+      return false
+    }
+
+    // API chain are known to contain an `error` field
+    if (data.error) {
+      return false
+    }
+
+    // Ensure that every field are exactly those we expect from a dfuse error
+    return Object.getOwnPropertyNames(data).every(
+      (field) =>
+        field === "code" || field === "message" || field === "trace_id" || field === "details"
+    )
   }
 
   private queryParams(params: HttpQueryParameters) {
