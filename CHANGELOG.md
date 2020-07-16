@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.11 (July 16, 2020)
+
+- Removed `worbli` support and make it clear it's not supported by dfuse anymore.
+- Removed `jungle` support and make it clear it's not supported by dfuse anymore.
+- Deprecated shortcut endpoint value for `DfuseClientOptions` (when using for example
+  `createDfuseClient`). This means that possibility to pass only `mainnet` or `kylin`
+  will be removed in a future version (in `0.4.0`) and should be replaced by the fully
+  qualified name, so `mainnet` should be converted to `mainnet.eos.dfuse.io` and
+  `kylin` to `kylin.eos.dfuse.io`.
+
 ## 0.3.10 (May 12, 2020)
 
 - Added client instance id generated stream id.

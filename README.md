@@ -35,7 +35,10 @@ See [examples/graphql-stream-transfers.ts](./examples/basic/graphql-stream-trans
 
 ```js
 const { createDfuseClient } = require("@dfuse/client")
-const client = createDfuseClient({ apiKey: "<Paste your API key here>", network: "mainnet" })
+const client = createDfuseClient({
+  apiKey: "<Paste your API key here>",
+  network: "mainnet.eos.dfuse.io"
+})
 
 const streamTransfer = `subscription($cursor: String!) {
   searchTransactionsForward(query: "receiver:eosio.token action:transfer", cursor: $cursor) {

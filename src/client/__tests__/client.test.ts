@@ -46,7 +46,7 @@ describe("DfuseClient", () => {
 
     client = createDfuseClient({
       apiKey: "web_0123456789abcdef",
-      network: "mainnet",
+      network: "mainnet.eos.dfuse.io",
       httpClient,
       streamClient,
       graphqlStreamClient,
@@ -71,7 +71,7 @@ describe("DfuseClient", () => {
     expect(() => {
       createDfuseClient({
         apiKey: "WEB_0123456789ABCDEF",
-        network: "mainnet",
+        network: "mainnet.eos.dfuse.io",
         httpClient,
         streamClient,
         apiTokenStore,
@@ -83,7 +83,7 @@ describe("DfuseClient", () => {
 
   it("correctly checks API key (in createDfuseClient)", () => {
     try {
-      createDfuseClient({ apiKey: "web_!!!!!!", network: "mainnet" })
+      createDfuseClient({ apiKey: "web_!!!!!!", network: "mainnet.eos.dfuse.io" })
       fail("Should have thrown a DfuseError")
     } catch (error) {
       expect(error).toBeInstanceOf(DfuseError)
@@ -95,7 +95,7 @@ describe("DfuseClient", () => {
 
   it("correctly checks API key, handling invalid API token (in createDfuseClient)", () => {
     try {
-      createDfuseClient({ apiKey: "eye.1hash17.values", network: "mainnet" })
+      createDfuseClient({ apiKey: "eye.1hash17.values", network: "mainnet.eos.dfuse.io" })
       fail("Should have thrown a DfuseError")
     } catch (error) {
       expect(error).toBeInstanceOf(DfuseError)
@@ -983,7 +983,7 @@ describe("DfuseClient without authentication", () => {
 
     client = createDfuseClient({
       apiKey: "web_0123456789abcdef",
-      network: "mainnet",
+      network: "mainnet.eos.dfuse.io",
       authUrl: "null://",
       httpClient,
       streamClient,
@@ -1016,18 +1016,15 @@ describe("DfuseClient without authentication", () => {
 })
 
 describe("networkToEndpoint", () => {
-  const testCases = [
-    { network: "mainnet", endpoint: "mainnet.eos.dfuse.io" },
-    { network: "jungle", endpoint: "jungle.eos.dfuse.io" },
-    { network: "kylin", endpoint: "kylin.eos.dfuse.io" },
-    { network: "worbli", endpoint: "worbli.eos.dfuse.io" },
-    { network: "other", endpoint: "other" },
-    { network: "something.eos.dfuse.io", endpoint: "something.eos.dfuse.io" }
-  ]
+  const unsupportedTestCases = ["jungle.eos.dfuse.io", "jungle", "worbli", "worbli.eos.dfuse.io"]
 
-  testCases.forEach((testCase) => {
-    it(`should pass test case ${testCase.network}`, () => {
-      expect(networkToEndpoint(testCase.network)).toEqual(testCase.endpoint)
+  unsupportedTestCases.forEach((network) => {
+    it(`should pass test case ${network}`, () => {
+      expect(() => networkToEndpoint(network)).toThrowError(
+        new DfuseError(
+          `The dfuse service has been shut down for network ${network}, please specify a different endpoint`
+        )
+      )
     })
   })
 })

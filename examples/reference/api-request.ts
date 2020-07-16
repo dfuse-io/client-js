@@ -14,7 +14,7 @@ import { createDfuseClient } from "@dfuse/client"
 async function main() {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: "mainnet"
+    network: "mainnet.eos.dfuse.io"
   })
 
   try {

@@ -23,7 +23,7 @@ import WebSocketClient from "ws"
 async function main() {
   const client = createDfuseClient({
     apiKey: process.env.DFUSE_API_KEY!,
-    network: process.env.DFUSE_API_NETWORK || "mainnet",
+    network: process.env.DFUSE_API_NETWORK || "mainnet.eos.dfuse.io",
     httpClientOptions: {
       fetch: nodeFetch
     },

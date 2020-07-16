@@ -43,7 +43,7 @@ if (process.env.DEBUG_LEAKED_HANDLES) {
 dotenv.config({ path: path.join(__dirname, "..", ".env") })
 
 export const DFUSE_API_KEY = process.env.DFUSE_API_KEY || ""
-export const DFUSE_API_NETWORK = process.env.DFUSE_API_NETWORK || "mainnet"
+export const DFUSE_API_NETWORK = process.env.DFUSE_API_NETWORK || "mainnet.eos.dfuse.io"
 
 if (!DFUSE_API_KEY) {
   const messages = [

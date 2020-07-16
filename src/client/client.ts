@@ -350,11 +350,23 @@ function inferApiTokenStore(apiKey: string) {
 
 export function networkToEndpoint(network: string): string {
   if (
-    network === "mainnet" ||
     network === "jungle" ||
-    network === "kylin" ||
-    network === "worbli"
+    network === "jungle.eos.dfuse.io" ||
+    network === "worbli" ||
+    network === "worbli.eos.dfuse.io"
   ) {
+    throw new DfuseError(
+      `The dfuse service has been shut down for network ${network}, please specify a different endpoint`
+    )
+  }
+
+  const shortNames = ["mainnet", "kylin"]
+  if (shortNames.includes(network)) {
+    const mappings = shortNames.map((name) => `${name} to ${name}.eos.dfuse.io`).join(", ")
+    console.warn(
+      `Deprecation notice: using a shortcut endpoint as value of client 'network' option is not supported anymore, please convert your code to use fully a qualified endpoint (${mappings})`
+    )
+
     return `${network}.eos.dfuse.io`
   }
 

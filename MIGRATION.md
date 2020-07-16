@@ -7,6 +7,7 @@ Table of contents:
 - [From `@dfuse/client@0.2.2` to `@dfuse/client@0.2.3`](#from-dfuseclient022-to-dfuseclient023)
 - [From `@dfuse/client@0.2.3` to `@dfuse/client@0.2.4`](#from-dfuseclient023-to-dfuseclient024)
 - [From `@dfuse/client@0.2.x` to `@dfuse/client@0.3.0`](#from-dfuseclient02x-to-dfuseclient030)
+- [From `@dfuse/client@0.3.x` to `@dfuse/client@0.4.0`](#from-dfuseclient02x-to-dfuseclient040)
 
 The on-going list of breaking changes from current major to next one
 can be consulted at the end of the document. You are encourage to fix
@@ -248,3 +249,11 @@ functions are:
 - `getTableRowsMessage`
 - `getActionTracesMessage`
 - `getTransactionLifecycleMessage`
+
+Using a shortcut value in `DfuseClientOptions` `endpoint` field is now deprecated and
+will not work correctly in this version.
+
+You should replace it with the fully qualified endpoint value:
+
+- `mainnet` becomes `mainnet.eos.dfuse.io`
+- `kylin` becomes `kylin.eos.dfuse.dfuse.io`
