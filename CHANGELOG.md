@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.12 (July 16, 2020)
+
+- Fixed issue where API error returned by external entities that are actually proxyed via dfuse API
+  where truncated because assumed to be standard dfuse API error. This was the case for example
+  when using `client.apiRequest` for EOSIO Chain API calls.
+
 ## 0.3.11 (July 16, 2020)
 
 - Removed `worbli` support and make it clear it's not supported by dfuse anymore.
