@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.13 (July 17, 2020)
+
+- Made the deprecation notice about `network` shortcut option even clearer.
+
 ## 0.3.12 (July 16, 2020)
 
 - Fixed issue where API error returned by external entities that are actually proxyed via dfuse API

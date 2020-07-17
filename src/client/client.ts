@@ -362,7 +362,9 @@ export function networkToEndpoint(network: string): string {
 
   const shortNames = ["mainnet", "kylin"]
   if (shortNames.includes(network)) {
-    const mappings = shortNames.map((name) => `${name} to ${name}.eos.dfuse.io`).join(", ")
+    const mappings = shortNames
+      .map((name) => `'network: "${name}"' to 'network: "${name}.eos.dfuse.io"'`)
+      .join(", ")
     console.warn(
       `Deprecation notice: using a shortcut endpoint as value of client 'network' option is not supported anymore, please convert your code to use fully a qualified endpoint (${mappings})`
     )
