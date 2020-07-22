@@ -36,9 +36,12 @@ export class DfuseApiError extends DfuseError implements ErrorData {
 // DfuseGenericApiError represents API requests error for calls that are proxyed to external entities
 // like `nodeos` or does not respect standard dfuse API error format.
 export class DfuseGenericApiError extends DfuseError {
+  public code: number
   public data: unknown
+  public body: string
+  public headers: any
 
-  constructor(data: unknown, cause?: Error) {
+  constructor(code: number, body: string, data: unknown, headers?: any, cause?: Error) {
     let message = "Failed to execute API call"
     if (data && typeof data === "object" && (data as any).message) {
       message = (data as any).message
@@ -46,7 +49,10 @@ export class DfuseGenericApiError extends DfuseError {
 
     super(message, cause)
 
+    this.code = code
     this.data = data
+    this.body = body
+    this.headers = headers
   }
 }
 

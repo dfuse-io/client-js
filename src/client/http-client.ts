@@ -212,6 +212,7 @@ class DefaultHttpClient {
       this.debug("Turning response body into response result")
       return await this.bodyToResponse<T>(response)
     } catch (error) {
+      this.debug("Failed to executed HTTP request %o", error)
       if (error instanceof DfuseError) {
         throw error
       }
@@ -234,13 +235,19 @@ class DefaultHttpClient {
     try {
       const data = JSON.parse(body)
       if (!this.isDfuseApiError(data)) {
-        return new DfuseGenericApiError(data)
+        return new DfuseGenericApiError(response.status, body, data, response.headers)
       }
 
       return new DfuseApiError(data)
     } catch (error) {
-      return new DfuseClientError(
-        `The returned body shall have been a valid JSON object, got '${body}'`,
+      return new DfuseApiError(
+        {
+          code: response.status.toString(),
+          message: "An unknown HTTP error occurred",
+          details: {
+            body
+          }
+        },
         error
       )
     }

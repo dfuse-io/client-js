@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.14 (July 22, 2020)
+
+- Improved the `DfuseApiError` returned from HTTP call when the body is not JSON.
+
 ## 0.3.13 (July 17, 2020)
 
 - Made the deprecation notice about `network` shortcut option even clearer.

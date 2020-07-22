@@ -234,18 +234,20 @@ describe("HttpClient", () => {
 
   it("throws a DfuseGenericApiError when body is valid JSON but does not fit API format", async () => {
     const errorData = { code: "test", trace_id: "0", message: "wrong", details: {}, other: {} }
-    fetch.mockReturnValue(Promise.resolve(koResponse(errorData)))
+    fetch.mockReturnValue(Promise.resolve(koResponse(errorData, { out: "value" }, 502)))
 
     try {
       await client.apiRequest("token", "/", "GET")
       fail("should have failed")
     } catch (error) {
       expect(error).toBeInstanceOf(DfuseGenericApiError)
+      expect(error.code).toEqual(502)
+      expect(error.headers).toEqual({ out: "value" })
       expect(error.data).toEqual(errorData)
     }
   })
 
-  it("throws a DfuseClientError when error response with invalid JSON body", async () => {
+  it("throws a generic DfuseApiError when error response with invalid JSON body", async () => {
     fetch.mockReturnValue(
       Promise.resolve(
         rawResponse(
@@ -263,11 +265,11 @@ describe("HttpClient", () => {
       await client.apiRequest("token", "/", "GET")
       fail("should have failed")
     } catch (error) {
-      expect(error).toBeInstanceOf(DfuseClientError)
-      expect(error.message).toEqual(
-        "The returned body shall have been a valid JSON object, got '{'"
-      )
+      expect(error).toBeInstanceOf(DfuseApiError)
+      expect(error.code).toEqual("500")
+      expect(error.message).toEqual("An unknown HTTP error occurred")
       expect(error.cause).toEqual(new SyntaxError("Unexpected end of JSON input"))
+      expect(error.details).toEqual({ body: "{" })
     }
   })
 
