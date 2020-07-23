@@ -1,10 +1,7 @@
 import { createSocket } from "../socket"
 import { InboundMessage, InboundMessageType } from "../../message/inbound"
 import { getActionTracesMessage } from "../../message/outbound"
-import { WebSocketFactory } from "../../types/socket"
-import { CLOSED } from "ws"
 import { MockSocket, MockWebSocket } from "./mocks"
-import { doesNotReject } from "assert"
 import { Deferred } from "../../helpers/promises"
 
 describe("socket", () => {

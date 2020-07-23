@@ -63,8 +63,6 @@
     "@types/dotenv": "^4.0.3",
     "@types/jest": "^23.3.9",
     "@types/jest-expect-message": "^1.0.0",
-    "@types/node-fetch": "^2.1.6",
-    "@types/ws": "^6.0.1",
     "dotenv": "^6.1.0",
     "graphql": "^14.5.3",
     "graphql-tag": "^2.10.1",
@@ -73,7 +71,6 @@
     "jest-expect-message": "^1.0.2",
     "leaked-handles": "^5.2.0",
     "lint-staged": "^7.3.0",
-    "node-fetch": "^2.3.0",
     "patch-package": "^6.0.7",
     "postinstall-postinstall": "^2.0.0",
     "prettier": "^1.14.3",
@@ -96,11 +93,12 @@
     "typedoc": "^0.14.2",
     "typedoc-default-themes-extension": "^0.0.3",
     "typedoc-plugin-toc-group": "^0.0.4",
-    "typescript": "^3.6.3",
-    "ws": "^7.0.1"
+    "typescript": "^3.6.3"
   },
   "dependencies": {
     "@types/debug": "^0.0.31",
-    "debug": "^4.1.0"
+    "debug": "^4.1.0",
+    "isomorphic-ws": "^4.0.1",
+    "unfetch": "^4.1.0"
   }
 }

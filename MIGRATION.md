@@ -77,12 +77,12 @@ const client = createDfuseClient({
 
 If you are in a Node.js environment, you will have to provide
 a `fetch` compatible function an a `WebSocket` client. We suggest
-the `node-fetch` and `ws` libraries. For a quick configuration path,
+the [`unfetch`](https://ghub.io/unfetch) and [`isomorphic-ws`](https://ghub.io/isomorphic-ws) libraries. For a quick configuration path,
 simply define the following on the global scope:
 
 ```js
-global.fetch = require("node-fetch")
-global.WebSocket = require("ws")
+global.fetch = require("unfetch")
+global.WebSocket = require("isomorphic-ws")
 ```
 
 **Note** Don't forget to add those libraries to your package if
