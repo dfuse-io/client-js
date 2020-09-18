@@ -4,13 +4,13 @@ import {
   InboundMessage,
   InboundMessageType,
   waitFor,
-  TableDeltaData
+  TableDeltaData,
 } from "@dfuse/client"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   const stream = await client.streamTableRows(
@@ -18,7 +18,7 @@ async function main() {
     (message: InboundMessage) => {
       if (message.type === InboundMessageType.TABLE_DELTA) {
         const { dbop, block_num } = message.data as TableDeltaData
-        const { total_ram_stake, total_unpaid_blocks } = dbop.new!.json!
+        const { total_ram_stake, total_unpaid_blocks } = dbop.new?.json
 
         console.log(
           `Global state change @ #${block_num} [Total RAM Stake ${total_ram_stake}, Total Unpaid Block Count ${total_unpaid_blocks}]`

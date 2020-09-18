@@ -1,9 +1,9 @@
-import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
+import { DFUSE_API_KEY, runMain } from "../config"
 import { createDfuseClient } from "@dfuse/client"
 
 const address = "0x09aC08243f91A0dA89995F9B7af96Ef985aA5807"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: "mainnet.eth.dfuse.io" })
 
   try {
@@ -16,7 +16,7 @@ async function main() {
     }`
 
     const response = await client.graphql(searchTransactions, {
-      variables: { limit: "10" }
+      variables: { limit: "10" },
     })
 
     if (response.errors) {
@@ -43,7 +43,7 @@ async function main() {
   client.release()
 }
 
-function buildEthqLink(transactionId: string) {
+function buildEthqLink(transactionId: string): string {
   return `https://ethq.app/tx/${transactionId}`
 }
 

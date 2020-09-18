@@ -7,7 +7,7 @@ import {
   dynamicMessageDispatcher,
   ProgressInboundMessage,
   ActionTraceInboundMessage,
-  Action
+  Action,
 } from "@dfuse/client"
 
 /**
@@ -29,15 +29,15 @@ import {
  *
  * @see https://docs.dfuse.io/#websocket-based-api-never-missing-a-beat
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
     network: DFUSE_API_NETWORK,
     streamClientOptions: {
       socketOptions: {
-        reconnectDelayInMs: 250
-      }
-    }
+        reconnectDelayInMs: 250,
+      },
+    },
   })
 
   const engine = new Engine(client)
@@ -61,7 +61,7 @@ class Engine {
   private stream?: Stream
 
   private pendingActions: Action<KarmaTransfer>[] = []
-  private lastCommittedBlockNum: number = 0
+  private lastCommittedBlockNum = 0
 
   private committedActions: Action<KarmaTransfer>[] = []
 
@@ -69,18 +69,18 @@ class Engine {
     this.client = client
   }
 
-  public async start() {
+  public async start(): Promise<void> {
     const dispatcher = dynamicMessageDispatcher({
       listening: this.onListening,
       action_trace: this.onAction,
-      progress: this.onProgress
+      progress: this.onProgress,
     })
 
     console.log("Engine starting")
     this.stream = await this.client.streamActionTraces(
       {
         accounts: "therealkarma",
-        action_names: "transfer"
+        action_names: "transfer",
       },
       dispatcher,
       {
@@ -88,7 +88,7 @@ class Engine {
         // actions at least each 10 blocks. This is useful if your stream
         // is low traffic so you don't need to wait until the next
         // action to commit all changes.
-        with_progress: 10
+        with_progress: 10,
       }
     )
 
@@ -106,11 +106,11 @@ class Engine {
     console.log("Stream connected, ready to receive messages")
   }
 
-  private onListening = () => {
+  private onListening = (): void => {
     console.log("Stream is now listening for action(s)")
   }
 
-  private onProgress = (message: ProgressInboundMessage) => {
+  private onProgress = (message: ProgressInboundMessage): void => {
     const { block_id, block_num } = message.data
 
     /**
@@ -122,7 +122,7 @@ class Engine {
     this.commit(block_id, block_num)
   }
 
-  private onAction = (message: ActionTraceInboundMessage<KarmaTransfer>) => {
+  private onAction = (message: ActionTraceInboundMessage<KarmaTransfer>): void => {
     /**
      * Once a message from a block ahead of the last committed block is seen,
      * commit all changes up to this point.
@@ -145,7 +145,7 @@ class Engine {
     this.pendingActions.push(message.data.trace.act)
   }
 
-  private commit(blockId: string, blockNum: number) {
+  private commit(blockId: string, blockNum: number): void {
     console.log(`Committing all actions up to block ${printBlock(blockId, blockNum)}`)
 
     if (this.pendingActions.length > 0) {
@@ -181,12 +181,12 @@ class Engine {
    * Since we mark after commit, anything currently in pending was not committed.
    * As such, let's flush all pending actions. The dfuse Stream API will stream them back.
    */
-  public async flushPending() {
+  public flushPending(): void {
     console.log("Flushing pending action(s) due to refresh")
     this.pendingActions = []
   }
 
-  public async stop() {
+  public async stop(): Promise<void> {
     await this.ensureStream().close()
 
     console.log("Committed actions")

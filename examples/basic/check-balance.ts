@@ -4,10 +4,10 @@ import { createDfuseClient, DfuseClient } from "@dfuse/client"
 const account = "eoscanadacom"
 const blockNum = 42_500_250
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   try {
@@ -26,7 +26,7 @@ async function main() {
 async function fetchBalance(
   client: DfuseClient,
   atBlock?: number
-): Promise<{ balance: string; blockNum: number }> {
+): Promise<{ balance?: string; blockNum: number }> {
   const options = { blockNum: atBlock === undefined ? undefined : atBlock }
   const response = await client.stateTable<AccountTableRow>(
     "eosio.token",
@@ -35,7 +35,7 @@ async function fetchBalance(
     options
   )
 
-  return { balance: response.rows[0].json!.balance, blockNum: response.up_to_block_num || blockNum }
+  return { balance: response.rows[0].json?.balance, blockNum: response.up_to_block_num || blockNum }
 }
 
 type AccountTableRow = {

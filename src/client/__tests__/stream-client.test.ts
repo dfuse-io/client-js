@@ -4,18 +4,17 @@ import { StreamClient } from "../../types/stream-client"
 import { mock, MockSocket, createSocketController, SocketController } from "./mocks"
 import { OutboundMessageType, OutboundMessage } from "../../message/outbound"
 import { DfuseClientError } from "../../types/error"
-import { SocketMessageListener, SocketConnectOptions } from "../../types/socket"
 
 const message1: OutboundMessage = {
   type: OutboundMessageType.GET_HEAD_INFO,
   req_id: "1",
-  data: {}
+  data: {},
 }
 
 const message2: OutboundMessage = {
   type: OutboundMessageType.GET_HEAD_INFO,
   req_id: "2",
-  data: {}
+  data: {},
 }
 
 describe("StreamClient", () => {
@@ -31,7 +30,7 @@ describe("StreamClient", () => {
     socketController.setDisconnected()
 
     client = createStreamClient("any", {
-      socket
+      socket,
     })
   })
 
@@ -45,16 +44,11 @@ describe("StreamClient", () => {
   it("does not allow to stream to register with same id", async () => {
     await client.registerStream(message1, jest.fn())
 
-    try {
-      await client.registerStream(message1, jest.fn())
-      fail("Should failed due to same req_id being used while one still active")
-    } catch (error) {
-      expect(error).toEqual(
-        new DfuseClientError(
-          "A stream with id '1' is already registered, cannot register another one with the same id"
-        )
+    await expect(client.registerStream(message1, jest.fn())).rejects.toThrowError(
+      new DfuseClientError(
+        "A stream with id '1' is already registered, cannot register another one with the same id"
       )
-    }
+    )
   })
 
   it("allow to stream to register with previous id when not active anymore", async () => {
@@ -62,7 +56,7 @@ describe("StreamClient", () => {
     await stream.close()
 
     // Just the fact that it did not throw is good enough here
-    await client.registerStream(message1, jest.fn())
+    await expect(client.registerStream(message1, jest.fn())).resolves.toBeDefined()
   })
 
   it("calls socket send with message when unregistering stream", async () => {
@@ -73,7 +67,7 @@ describe("StreamClient", () => {
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
       data: { req_id: "1" },
       req_id: "1",
-      type: "unlisten"
+      type: "unlisten",
     })
   })
 
@@ -85,7 +79,7 @@ describe("StreamClient", () => {
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, {
       data: { req_id: "1" },
       req_id: "1",
-      type: "unlisten"
+      type: "unlisten",
     })
   })
 
@@ -174,13 +168,13 @@ describe("StreamClient", () => {
     const sentMessage1 = {
       type: InboundMessageType.PROGRESS,
       req_id: message1.req_id,
-      data: { field: 1 }
+      data: { field: 1 },
     }
 
     const sentMessage2 = {
       type: InboundMessageType.PROGRESS,
       req_id: message2.req_id,
-      data: { field: 2 }
+      data: { field: 2 },
     }
 
     socketController.send(sentMessage1)
@@ -237,7 +231,7 @@ describe("StreamClient", () => {
   it("manual restart possible when auto restart is off", async () => {
     client = createStreamClient("any", {
       socket,
-      autoRestartStreamsOnReconnect: false
+      autoRestartStreamsOnReconnect: false,
     })
 
     const streamOnMessage = mock<InboundMessage>()
@@ -262,7 +256,7 @@ describe("StreamClient", () => {
       data: {},
       req_id: "1",
       type: "get_head_info",
-      start_block: 10
+      start_block: 10,
     })
   })
 
@@ -280,7 +274,7 @@ describe("StreamClient", () => {
       data: {},
       req_id: "1",
       type: "get_head_info",
-      start_block: 50
+      start_block: 50,
     })
   })
 
@@ -299,7 +293,7 @@ describe("StreamClient", () => {
       data: {},
       req_id: "1",
       type: "get_head_info",
-      start_block: 100
+      start_block: 100,
     })
   })
 
@@ -332,9 +326,9 @@ describe("StreamClient", () => {
       "Only non-zero & positive `atBlockNum` markers are accepted for this operation"
     )
 
-    expect(stream.restart({ cursor: "" })).rejects.toThrowError(expectedError)
-    expect(stream.restart({ atBlockNum: 0 })).rejects.toThrowError(expectedError)
-    expect(stream.restart({ atBlockNum: -1 })).rejects.toThrowError(expectedError)
+    await expect(stream.restart({ cursor: "" })).rejects.toThrowError(expectedError)
+    await expect(stream.restart({ atBlockNum: 0 })).rejects.toThrowError(expectedError)
+    await expect(stream.restart({ atBlockNum: -1 })).rejects.toThrowError(expectedError)
   })
 
   it("throws when trying to restart a stream that was closed", async () => {

@@ -80,7 +80,7 @@ class DefaultStreamClient {
     })
   }
 
-  public setApiToken(apiToken: string) {
+  public setApiToken(apiToken: string): void {
     this.socket.setApiToken(apiToken)
   }
 
@@ -101,8 +101,8 @@ class DefaultStreamClient {
     }
 
     this.debug("Registering stream [%s] with message %o.", id, message)
-    const streamExists = (streamId: string) => this.streams[streamId] !== undefined
-    const unregisterStream = (streamId: string) => this.unregisterStream(streamId)
+    const streamExists = (streamId: string): boolean => this.streams[streamId] !== undefined
+    const unregisterStream = (streamId: string): Promise<void> => this.unregisterStream(streamId)
     const stream = new DefaultStream(
       id,
       message,
@@ -151,7 +151,7 @@ class DefaultStreamClient {
     }
   }
 
-  private handleMessage = (rawMessage: unknown) => {
+  private handleMessage = (rawMessage: unknown): void => {
     const message = rawMessage as InboundMessage
 
     if (message.type === "ping") {
@@ -185,7 +185,7 @@ class DefaultStreamClient {
     stream.onMessage(message, stream)
   }
 
-  private handleReconnection = () => {
+  private handleReconnection = (): void => {
     if (this.autoRestartStreamsOnReconnect === false) {
       return
     }
@@ -244,9 +244,7 @@ class DefaultStream implements Stream {
 
     if (!this.streamExists(this.id)) {
       throw new DfuseClientError(
-        `Trying to restart a stream '${
-          this.id
-        }' that is not registered anymore or was never registered`
+        `Trying to restart a stream '${this.id}' that is not registered anymore or was never registered`
       )
     }
 
@@ -277,7 +275,7 @@ class DefaultStream implements Stream {
     return this.activeJoiner.promise()
   }
 
-  public mark(marker: StreamMarker) {
+  public mark(marker: StreamMarker): void {
     this.activeMarker = this.checkMarker(marker)
   }
 
@@ -290,6 +288,7 @@ class DefaultStream implements Stream {
           } else {
             this.resolve()
           }
+          return
         })
         // FIXME: We should probably return a MultiError of some kind to report both error if `options.error` exists
         .catch(this.reject)
@@ -310,7 +309,7 @@ class DefaultStream implements Stream {
     return marker
   }
 
-  private resolve = () => {
+  private resolve = (): void => {
     if (this.activeJoiner) {
       this.debug("Resolving joiner promise.")
       this.activeJoiner.resolve()
@@ -318,7 +317,7 @@ class DefaultStream implements Stream {
     }
   }
 
-  private reject = (error: Error) => {
+  private reject = (error: Error): void => {
     if (this.activeJoiner) {
       this.debug("Rejecting joiner promise with error %o.", error)
       this.activeJoiner.reject(error)

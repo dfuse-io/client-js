@@ -10,7 +10,7 @@ const document2 = "{ doc2 }"
 const document1Start: GraphqlStartOutboundMessage = {
   id: "1",
   payload: { query: "{ doc1 }", variables: { cursor: "" } },
-  type: "start"
+  type: "start",
 }
 
 describe("GraphqlStreamClient", () => {
@@ -34,7 +34,7 @@ describe("GraphqlStreamClient", () => {
     })
 
     client = createGraphqlStreamClient("any", {
-      socket
+      socket,
     })
     client.setApiToken("123")
   })
@@ -47,7 +47,7 @@ describe("GraphqlStreamClient", () => {
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
       type: "connection_init",
-      payload: { Authorization: "123" }
+      payload: { Authorization: "123" },
     })
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, document1Start)
   })
@@ -60,13 +60,13 @@ describe("GraphqlStreamClient", () => {
     const customStart: GraphqlStartOutboundMessage = {
       id: "1",
       payload: { query: "{ doc1 }", variables: { cursor: "abc", another: "one" } },
-      type: "start"
+      type: "start",
     }
 
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
       type: "connection_init",
-      payload: { Authorization: "123" }
+      payload: { Authorization: "123" },
     })
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, customStart)
   })
@@ -88,24 +88,18 @@ describe("GraphqlStreamClient", () => {
   it("does not allow to stream to register with same id", async () => {
     await client.registerStream("1", document1, undefined, jest.fn())
 
-    try {
-      await client.registerStream("1", document1, undefined, jest.fn())
-      fail("Should failed due to same req_id being used while one still active")
-    } catch (error) {
-      expect(error).toEqual(
-        new DfuseClientError(
-          "A stream with id '1' is already registered, cannot register another one with the same id"
-        )
+    await expect(client.registerStream("1", document1, undefined, jest.fn())).rejects.toThrowError(
+      new DfuseClientError(
+        "A stream with id '1' is already registered, cannot register another one with the same id"
       )
-    }
+    )
   })
 
   it("allow to stream to register with previous id when not active anymore", async () => {
     const stream = await client.registerStream("1", document1, undefined, jest.fn())
     await stream.close()
 
-    // Just the fact that it did not throw is good enough here
-    await client.registerStream("1", document1, undefined, jest.fn())
+    await expect(client.registerStream("1", document1, undefined, jest.fn())).toBeTruthy()
   })
 
   it("calls socket send with message when unregistering stream", async () => {
@@ -115,7 +109,7 @@ describe("GraphqlStreamClient", () => {
     expect(socket.sendMock).toHaveBeenCalledTimes(3)
     expect(socket.sendMock).toHaveBeenNthCalledWith(3, {
       id: "1",
-      type: "stop"
+      type: "stop",
     })
   })
 
@@ -126,7 +120,7 @@ describe("GraphqlStreamClient", () => {
     expect(socket.sendMock).toHaveBeenCalledTimes(3)
     expect(socket.sendMock).toHaveBeenNthCalledWith(3, {
       id: "1",
-      type: "stop"
+      type: "stop",
     })
   })
 
@@ -181,7 +175,7 @@ describe("GraphqlStreamClient", () => {
   it("keeps socket alive when no more stream present via close but keep socet open sets to true", async () => {
     client = createGraphqlStreamClient("any", {
       socket,
-      autoDisconnectSocket: false
+      autoDisconnectSocket: false,
     })
 
     const stream = await client.registerStream("1", document1, undefined, jest.fn())
@@ -218,7 +212,7 @@ describe("GraphqlStreamClient", () => {
     socketController.send({
       type: "data",
       id: "1",
-      payload: { errors: ["first error", "second error"] }
+      payload: { errors: ["first error", "second error"] },
     })
 
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
@@ -226,7 +220,7 @@ describe("GraphqlStreamClient", () => {
       {
         type: "error",
         errors: ["first error", "second error"],
-        terminal: false
+        terminal: false,
       },
       stream
     )
@@ -239,7 +233,7 @@ describe("GraphqlStreamClient", () => {
     socketController.send({
       type: "error",
       id: "1",
-      payload: "an error"
+      payload: "an error",
     })
 
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
@@ -247,7 +241,7 @@ describe("GraphqlStreamClient", () => {
       {
         type: "error",
         errors: ["an error"],
-        terminal: true
+        terminal: true,
       },
       stream
     )
@@ -259,13 +253,13 @@ describe("GraphqlStreamClient", () => {
 
     socketController.send({
       type: "complete",
-      id: "1"
+      id: "1",
     })
 
     expect(streamOnMessage).toHaveBeenCalledTimes(1)
     expect(streamOnMessage).toHaveBeenCalledWith(
       {
-        type: "complete"
+        type: "complete",
       },
       stream
     )
@@ -319,13 +313,13 @@ describe("GraphqlStreamClient", () => {
     expect(socket.sendMock).toHaveBeenCalledTimes(4)
     expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
       type: "connection_init",
-      payload: { Authorization: "123" }
+      payload: { Authorization: "123" },
     })
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, document1Start)
 
     expect(socket.sendMock).toHaveBeenNthCalledWith(3, {
       type: "connection_init",
-      payload: { Authorization: "123" }
+      payload: { Authorization: "123" },
     })
     expect(socket.sendMock).toHaveBeenNthCalledWith(4, document1Start)
   })
@@ -333,7 +327,7 @@ describe("GraphqlStreamClient", () => {
   it("manual restart possible when auto restart is off", async () => {
     client = createGraphqlStreamClient("any", {
       socket,
-      autoRestartStreamsOnReconnect: false
+      autoRestartStreamsOnReconnect: false,
     })
 
     const streamOnMessage = mock<OnGraphqlStreamMessage>()
@@ -349,7 +343,7 @@ describe("GraphqlStreamClient", () => {
   it("change cursor when restart marker is used to restart", async () => {
     client = createGraphqlStreamClient("any", {
       socket,
-      autoRestartStreamsOnReconnect: false
+      autoRestartStreamsOnReconnect: false,
     })
 
     const streamOnMessage = mock<OnGraphqlStreamMessage>()
@@ -365,9 +359,9 @@ describe("GraphqlStreamClient", () => {
       payload: {
         query: "{ doc1 }",
         variables: {
-          cursor: "abc"
-        }
-      }
+          cursor: "abc",
+        },
+      },
     })
   })
 
@@ -386,9 +380,9 @@ describe("GraphqlStreamClient", () => {
       payload: {
         query: "{ doc1 }",
         variables: {
-          cursor: "def"
-        }
-      }
+          cursor: "def",
+        },
+      },
     })
   })
 
@@ -408,9 +402,9 @@ describe("GraphqlStreamClient", () => {
       payload: {
         query: "{ doc1 }",
         variables: {
-          cursor: "abc"
-        }
-      }
+          cursor: "abc",
+        },
+      },
     })
   })
 
@@ -443,9 +437,9 @@ describe("GraphqlStreamClient", () => {
       "Only non-empty `cursor` markers are accepted for this operation"
     )
 
-    expect(stream.restart({ atBlockNum: 0 })).rejects.toThrowError(expectedError)
-    expect(stream.restart({ atBlockNum: -0, cursor: "" })).rejects.toThrowError(expectedError)
-    expect(stream.restart({ cursor: "" })).rejects.toThrowError(expectedError)
+    await expect(stream.restart({ atBlockNum: 0 })).rejects.toThrowError(expectedError)
+    await expect(stream.restart({ atBlockNum: -0, cursor: "" })).rejects.toThrowError(expectedError)
+    await expect(stream.restart({ cursor: "" })).rejects.toThrowError(expectedError)
   })
 
   it("throws when trying to restart a stream that was closed", async () => {
@@ -472,7 +466,7 @@ describe("GraphqlStreamClient", () => {
     expect(socket.sendMock).toHaveBeenCalledTimes(2)
     expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
       type: "connection_init",
-      payload: { Authorization: "123" }
+      payload: { Authorization: "123" },
     })
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, document1Start)
 
@@ -482,7 +476,7 @@ describe("GraphqlStreamClient", () => {
   it("automatically restarts stream by default on error message", async () => {
     client = createGraphqlStreamClient("any", {
       socket,
-      restartOnErrorDelayInMs: 0
+      restartOnErrorDelayInMs: 0,
     })
     client.setApiToken("123")
 
@@ -498,7 +492,7 @@ describe("GraphqlStreamClient", () => {
     expect(socket.sendMock).toHaveBeenCalledTimes(3)
     expect(socket.sendMock).toHaveBeenNthCalledWith(1, {
       type: "connection_init",
-      payload: { Authorization: "123" }
+      payload: { Authorization: "123" },
     })
     expect(socket.sendMock).toHaveBeenNthCalledWith(2, document1Start)
     expect(socket.sendMock).toHaveBeenNthCalledWith(3, document1Start)
@@ -507,7 +501,7 @@ describe("GraphqlStreamClient", () => {
   it("reception of an error message does correctly terminate it when autoRestartOnError is off", async () => {
     client = createGraphqlStreamClient("any", {
       socket,
-      autoRestartStreamsOnError: false
+      autoRestartStreamsOnError: false,
     })
 
     const streamOnMessage = jest.fn()

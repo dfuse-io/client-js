@@ -33,7 +33,11 @@ class DefaultRefreshScheduler {
     return this.renewalTimeout !== undefined
   }
 
-  public schedule(delayInSeconds: number, job: ScheduleJob, onJobFailed?: (error: any) => void) {
+  public schedule(
+    delayInSeconds: number,
+    job: ScheduleJob,
+    onJobFailed?: (error: any) => void
+  ): void {
     if (delayInSeconds <= 0) {
       this.debug("Delay in seconds should be greater than 0")
       return
@@ -59,7 +63,7 @@ class DefaultRefreshScheduler {
     }, delayInSeconds * 1000)
   }
 
-  private clearRefreshTimeout() {
+  private clearRefreshTimeout(): void {
     clearTimeout(this.renewalTimeout)
     this.renewalTimeout = undefined
   }

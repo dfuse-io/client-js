@@ -3,13 +3,13 @@ import { createDfuseClient, SearchTransactionRow } from "@dfuse/client"
 
 const account = "eoscanadacom"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   try {
     const response = await client.searchTransactions(`auth:${account}`, {
       limit: 10,
-      sort: "desc"
+      sort: "desc",
     })
 
     console.log()
@@ -24,7 +24,7 @@ async function main() {
     transactions.forEach((result: SearchTransactionRow) => {
       console.log(
         `- ${buildEosqLink(result.lifecycle.id)} (Block #${
-          result.lifecycle.execution_trace!.block_num
+          result.lifecycle.execution_trace?.block_num
         })`
       )
     })
@@ -36,7 +36,7 @@ async function main() {
   client.release()
 }
 
-function buildEosqLink(transactionId: string) {
+function buildEosqLink(transactionId: string): string {
   let suffix = ""
   if (["jungle", "kylin", "worbli"].includes(DFUSE_API_NETWORK)) {
     suffix = `.${DFUSE_API_NETWORK}`

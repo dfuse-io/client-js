@@ -130,7 +130,10 @@ class DefaultApiTokenManager implements ApiTokenManager {
     return tokenInfo
   }
 
-  private maybeScheduleNextRefresh(tokenInfo: ApiTokenInfo, options: { forceRefresh: boolean }) {
+  private maybeScheduleNextRefresh(
+    tokenInfo: ApiTokenInfo,
+    options: { forceRefresh: boolean }
+  ): void {
     if (!options.forceRefresh && this.refreshScheduler.hasScheduledJob()) {
       return
     }
@@ -147,7 +150,7 @@ class DefaultApiTokenManager implements ApiTokenManager {
     this.refreshScheduler.schedule(delayInSeconds, () => this.refreshToken())
   }
 
-  private getRefreshDelayInSeconds(tokenInfo: ApiTokenInfo) {
+  private getRefreshDelayInSeconds(tokenInfo: ApiTokenInfo): number {
     const nowInSeconds = Math.floor(Date.now() / 1000)
 
     return (tokenInfo.expires_at - nowInSeconds) * this.delayBuffer
@@ -163,6 +166,7 @@ class DefaultApiTokenManager implements ApiTokenManager {
         .then((apiTokenInfo: ApiTokenInfo) => {
           this.fetchTokenPromise = undefined
           resolve(apiTokenInfo)
+          return
         })
         .catch((error: any) => {
           this.fetchTokenPromise = undefined

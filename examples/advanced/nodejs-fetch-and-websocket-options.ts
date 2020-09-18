@@ -19,30 +19,31 @@ import { IncomingMessage } from "http"
 // own code, group them with yours.
 import nodeFetch from "node-fetch"
 import WebSocketClient from "ws"
+import { runMain } from "../config"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
-    apiKey: process.env.DFUSE_API_KEY!,
+    apiKey: process.env.DFUSE_API_KEY || "",
     network: process.env.DFUSE_API_NETWORK || "mainnet.eos.dfuse.io",
     httpClientOptions: {
-      fetch: nodeFetch
+      fetch: nodeFetch,
     },
     graphqlStreamClientOptions: {
       socketOptions: {
         // The WebSocket factory used for GraphQL stream must use this special protocols set
         // We intend on making the library handle this for you automatically in the future,
         // for now, it's required otherwise, the GraphQL will not connect correctly.
-        webSocketFactory: (url) => webSocketFactory(url, ["graphql-ws"])
-      }
+        webSocketFactory: (url) => webSocketFactory(url, ["graphql-ws"]),
+      },
     },
     streamClientOptions: {
       socketOptions: {
-        webSocketFactory: (url) => webSocketFactory(url)
-      }
-    }
+        webSocketFactory: (url) => webSocketFactory(url),
+      },
+    },
   })
 
-  const onMessage = (message: InboundMessage) => {
+  const onMessage = (message: InboundMessage): void => {
     if (message.type === InboundMessageType.LISTENING) {
       console.log("Stream is now listening.")
     }
@@ -51,7 +52,7 @@ async function main() {
   const stream = await client.streamActionTraces(
     {
       accounts: "eosio.token",
-      action_names: "issue"
+      action_names: "issue",
     },
     onMessage
   )
@@ -90,13 +91,13 @@ async function main() {
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket#Parameters
  */
-async function webSocketFactory(url: string, protocols: string[] = []) {
+async function webSocketFactory(url: string, protocols: string[] = []): Promise<WebSocketClient> {
   const webSocket = new WebSocketClient(url, protocols, {
     handshakeTimeout: 30 * 1000, // 30s
-    maxPayload: 200 * 1024 * 1000 * 1000 // 200Mb
+    maxPayload: 200 * 1024 * 1000 * 1000, // 200Mb
   })
 
-  const onUpgrade = (response: IncomingMessage) => {
+  const onUpgrade = (response: IncomingMessage): void => {
     console.log("Socket upgrade response status code.", response.statusCode)
 
     // You need to remove the listener at some point since this factory
@@ -109,12 +110,4 @@ async function webSocketFactory(url: string, protocols: string[] = []) {
   return webSocket
 }
 
-main()
-  .then(() => {
-    console.log("Example completed.")
-    process.exit(0)
-  })
-  .catch((error) => {
-    console.log("An untrapped error occurred.", error)
-    process.exit(1)
-  })
+runMain(main)

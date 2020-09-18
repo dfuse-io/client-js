@@ -5,8 +5,7 @@ import {
   InboundMessageType,
   waitFor,
   SocketOptions,
-  Stream,
-  GraphqlStreamMessage
+  GraphqlStreamMessage,
 } from "@dfuse/client"
 
 /**
@@ -28,12 +27,12 @@ import {
  *
  * The example also show all cases that can happen with both streaming methods.
  */
-async function main() {
+async function main(): Promise<void> {
   const socketOptions: SocketOptions = {
     onError(event: any) {
       console.log("Socket emitted an error event.", {
         message: event.message,
-        error: event.error
+        error: event.error,
       })
     },
 
@@ -43,18 +42,18 @@ async function main() {
 
     onReconnect() {
       console.log("Socket has been reconnected with remote server.")
-    }
+    },
   }
 
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
     network: DFUSE_API_NETWORK,
     streamClientOptions: {
-      socketOptions
+      socketOptions,
     },
     graphqlStreamClientOptions: {
-      socketOptions
-    }
+      socketOptions,
+    },
   })
 
   const graphqlOperation = `subscription($cursor: String!) {

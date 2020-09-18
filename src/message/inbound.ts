@@ -24,31 +24,18 @@ export enum InboundMessageType {
   UNLISTENED = "unlistened",
   TABLE_DELTA = "table_delta",
   TABLE_SNAPSHOT = "table_snapshot",
-  TRANSACTION_LIFECYCLE = "transaction_lifecycle"
+  TRANSACTION_LIFECYCLE = "transaction_lifecycle",
 }
 
-export interface ActionTraceInboundMessage<T = Record<string, any>>
-  extends InboundMessage<ActionTraceData<T>> {}
-export interface ErrorInboundMessage extends InboundMessage<ErrorData> {}
-export interface ListeningInboundMessage extends InboundMessage<ListeningData> {}
-export interface HeadInfoInboundMessage extends InboundMessage<HeadInfoData> {}
-export interface PingInboundMessage extends InboundMessage<{}> {}
-export interface ProgressInboundMessage extends InboundMessage<ProgressData> {}
-export interface UnlistenedInboundMessage extends InboundMessage<{}> {}
-export interface TableDeltaInboundMessage<T = Record<string, any>>
-  extends InboundMessage<TableDeltaData<T>> {}
-export interface TableSnapshotInboundMessage<T = Record<string, any>>
-  extends InboundMessage<TableSnapshotData<T>> {}
-export interface TransactionLifecycleInboundMessage
-  extends InboundMessage<TransactionLifecycleData> {}
-
-// export type InboundMessageType = "action_trace"
-//                                | "error"
-//                                | "listening"
-//                                | "head_info"
-//                                | "ping"
-//                                | "progress"
-//                                | "unlistened"
-//                                | "table_delta"
-//                                | "table_snapshot"
-//                                | "transaction_lifecycle"
+export type ActionTraceInboundMessage<T = Record<string, any>> = InboundMessage<ActionTraceData<T>>
+export type ErrorInboundMessage = InboundMessage<ErrorData>
+export type ListeningInboundMessage = InboundMessage<ListeningData>
+export type HeadInfoInboundMessage = InboundMessage<HeadInfoData>
+export type PingInboundMessage = InboundMessage
+export type ProgressInboundMessage = InboundMessage<ProgressData>
+export type UnlistenedInboundMessage = InboundMessage
+export type TableDeltaInboundMessage<T = Record<string, any>> = InboundMessage<TableDeltaData<T>>
+export type TableSnapshotInboundMessage<T = Record<string, any>> = InboundMessage<
+  TableSnapshotData<T>
+>
+export type TransactionLifecycleInboundMessage = InboundMessage<TransactionLifecycleData>

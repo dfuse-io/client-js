@@ -6,7 +6,7 @@ import {
   MockApiTokenStore,
   MockRefreshScheduler,
   mock,
-  MockGraphqlStreamClient
+  MockGraphqlStreamClient,
 } from "./mocks"
 import { OutboundMessageType } from "../../message/outbound"
 import { Stream } from "../../types/stream"
@@ -33,7 +33,7 @@ describe("DfuseClient", () => {
   let client: DfuseClient
 
   beforeEach(() => {
-    spyOn(Date, "now").and.returnValue(currentDate)
+    jest.spyOn(Date, "now").mockReturnValue(currentDate)
 
     httpClient = new MockHttpClient()
     streamClient = new MockStreamClient()
@@ -52,7 +52,7 @@ describe("DfuseClient", () => {
       graphqlStreamClient,
       apiTokenStore,
       refreshScheduler,
-      requestIdGenerator
+      requestIdGenerator,
     })
 
     // @ts-ignore For testing purposes, this exists on the client
@@ -76,25 +76,27 @@ describe("DfuseClient", () => {
         streamClient,
         apiTokenStore,
         refreshScheduler,
-        requestIdGenerator
+        requestIdGenerator,
       })
     }).not.toThrow()
   })
 
   it("correctly checks API key (in createDfuseClient)", () => {
-    try {
+    const triggerCheck = (): DfuseClient =>
       createDfuseClient({ apiKey: "web_!!!!!!", network: "mainnet.eos.dfuse.io" })
-      fail("Should have thrown a DfuseError")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseError)
 
-      // Let's just check how many lines there is an not the actual message
-      expect(error.message.split("\n").length, error.message).toEqual(5)
-    }
+    expect(triggerCheck).toThrowError(DfuseError)
+    expect(triggerCheck).toThrowErrorMatchingInlineSnapshot(`
+      "The provided API key is not in the right format, expecting it
+      to start with either \`mobile_\`, \`server_\` or \`web_\` followed
+      by a series of hexadecimal character (i.e.) \`web_0123456789abcdef\`)
+
+      Input received: web_!!!!!!"
+    `)
   })
 
   it("correctly checks API key when authentication is explicitely true (in createDfuseClient)", () => {
-    try {
+    const triggerCheck = (): DfuseClient =>
       createDfuseClient({
         network: "mainnet.eos.dfuse.io",
         authentication: true,
@@ -102,27 +104,38 @@ describe("DfuseClient", () => {
         streamClient,
         apiTokenStore,
         refreshScheduler,
-        requestIdGenerator
+        requestIdGenerator,
       })
-      fail("Should have thrown a DfuseError")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseError)
 
-      // Let's just check how many lines there is and not the actual message
-      expect(error.message.split("\n").length, error.message).toEqual(4)
-    }
+    expect(triggerCheck).toThrowError(DfuseError)
+    expect(triggerCheck).toThrowErrorMatchingInlineSnapshot(`
+      "The client must be configured with an API key via the 
+      \`apiKey\` config options.
+
+      Received nothing."
+    `)
   })
 
   it("correctly checks API key, handling invalid API token (in createDfuseClient)", () => {
-    try {
+    const triggerCheck = (): DfuseClient =>
       createDfuseClient({ apiKey: "eye.1hash17.values", network: "mainnet.eos.dfuse.io" })
-      fail("Should have thrown a DfuseError")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseError)
 
-      // Let's just check how many lines there is and not the actual message
-      expect(error.message.split("\n").length, error.message).toEqual(13)
-    }
+    expect(triggerCheck).toThrowError(DfuseError)
+    expect(triggerCheck).toThrowErrorMatchingInlineSnapshot(`
+      "The provided API key is not in the right format, expecting it
+      to start with either \`mobile_\`, \`server_\` or \`web_\` followed
+      by a series of hexadecimal character (i.e.) \`web_0123456789abcdef\`)
+
+      It seems your providing directly a API token (JWT) instead
+      of an API key and are using your previous authentication protocol.
+      Please refer to http://docs.dfuse.io/#authentication for
+      all the details about API key and how to generate an API token
+      from it.
+
+      And you can visit https://app.dfuse.io to obtain your free API key
+
+      Input received: eye.1hash17.values"
+    `)
   })
 
   it("accepts undefined API key if authentication is false only (in createDfuseClient)", () => {
@@ -134,7 +147,7 @@ describe("DfuseClient", () => {
         streamClient,
         apiTokenStore,
         refreshScheduler,
-        requestIdGenerator
+        requestIdGenerator,
       })
     }).not.toThrow()
   })
@@ -197,28 +210,17 @@ describe("DfuseClient", () => {
       await expect(client.graphql("subscription { doc }", streamOnMessage)).resolves.toEqual(stream)
     })
 
-    it("correctly pass subscription operation type document through WebSocket", async () => {
-      const stream: Stream = { id: "any", close: () => Promise.resolve() } as any
-      graphqlStreamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
-
-      const streamOnMessage = mock<OnGraphqlStreamMessage>()
-      await expect(client.graphql("subscription { doc }", streamOnMessage)).resolves.toEqual(stream)
-    })
-
     it("is an error to have subscription document without providing the onMesage options", async () => {
       const stream: Stream = { id: "any", close: () => Promise.resolve() } as any
       graphqlStreamClient.registerStreamMock.mockReturnValue(Promise.resolve(stream))
 
-      await expect(
-        client.graphql("subscription { doc }")
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `
-"The \`options.onMessage\` parameter is required for 'subscription' document.
-If your document is not a 'subscription' type, this is probably a bug with the library.
-You can provide the \`options.operationType\` option to workaroundthe problem and report
-the bug to us with the document string used."
-`
-      )
+      await expect(client.graphql("subscription { doc }")).rejects
+        .toThrowErrorMatchingInlineSnapshot(`
+              "The \`options.onMessage\` parameter is required for 'subscription' document.
+              If your document is not a 'subscription' type, this is probably a bug with the library.
+              You can provide the \`options.operationType\` option to workaroundthe problem and report
+              the bug to us with the document string used."
+            `)
     })
 
     it("correctly validates the operation type when provided", async () => {
@@ -286,7 +288,7 @@ the bug to us with the document string used."
           type: OutboundMessageType.GET_ACTION_TRACES,
           data: { accounts: "test" },
           listen: true,
-          req_id: expectedRequestId
+          req_id: expectedRequestId,
         },
         onMessage
       )
@@ -299,7 +301,7 @@ the bug to us with the document string used."
         fetch: true,
         listen: false,
         start_block: 10,
-        with_progress: 1
+        with_progress: 1,
       })
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
@@ -311,7 +313,7 @@ the bug to us with the document string used."
           listen: false,
           req_id: "dc-fixed",
           start_block: 10,
-          with_progress: 1
+          with_progress: 1,
         },
         onMessage
       )
@@ -338,7 +340,7 @@ the bug to us with the document string used."
           type: OutboundMessageType.GET_TABLE_ROWS,
           data: { code: "test", table: "eosio", scope: "eosio", json: true },
           listen: true,
-          req_id: expectedRequestId
+          req_id: expectedRequestId,
         },
         onMessage
       )
@@ -354,7 +356,7 @@ the bug to us with the document string used."
           fetch: true,
           listen: false,
           start_block: 10,
-          with_progress: 1
+          with_progress: 1,
         }
       )
 
@@ -367,7 +369,7 @@ the bug to us with the document string used."
           listen: false,
           req_id: "dc-fixed",
           start_block: 10,
-          with_progress: 1
+          with_progress: 1,
         },
         onMessage
       )
@@ -392,7 +394,7 @@ the bug to us with the document string used."
           data: { id: "123" },
           fetch: true,
           listen: true,
-          req_id: expectedRequestId
+          req_id: expectedRequestId,
         },
         onMessage
       )
@@ -405,7 +407,7 @@ the bug to us with the document string used."
         fetch: false,
         listen: false,
         start_block: 10,
-        with_progress: 1
+        with_progress: 1,
       })
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
@@ -417,7 +419,7 @@ the bug to us with the document string used."
           listen: false,
           req_id: "dc-fixed",
           start_block: 10,
-          with_progress: 1
+          with_progress: 1,
         },
         onMessage
       )
@@ -441,7 +443,7 @@ the bug to us with the document string used."
           type: OutboundMessageType.GET_HEAD_INFO,
           data: {},
           listen: true,
-          req_id: expectedRequestId
+          req_id: expectedRequestId,
         },
         onMessage
       )
@@ -454,7 +456,7 @@ the bug to us with the document string used."
         fetch: true,
         listen: false,
         start_block: 10,
-        with_progress: 1
+        with_progress: 1,
       })
 
       expect(streamClient.registerStreamMock).toHaveBeenCalledTimes(1)
@@ -466,7 +468,7 @@ the bug to us with the document string used."
           listen: false,
           req_id: "dc-fixed",
           start_block: 10,
-          with_progress: 1
+          with_progress: 1,
         },
         onMessage
       )
@@ -488,7 +490,7 @@ the bug to us with the document string used."
         "POST",
         undefined,
         {
-          api_key: "123"
+          api_key: "123",
         },
         undefined
       )
@@ -570,7 +572,7 @@ the bug to us with the document string used."
         "GET",
         {
           block_count: 2147483647,
-          q: "123"
+          q: "123",
         },
         undefined,
         undefined
@@ -587,7 +589,7 @@ the bug to us with the document string used."
         limit: 1,
         sort: "desc",
         startBlock: 10,
-        withReversible: true
+        withReversible: true,
       })
 
       expect(result).toEqual(data)
@@ -604,7 +606,7 @@ the bug to us with the document string used."
           q: "123",
           sort: "desc",
           start_block: 10,
-          with_reversible: true
+          with_reversible: true,
         },
         undefined,
         undefined
@@ -636,7 +638,7 @@ the bug to us with the document string used."
       httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
       const result = await client.stateAbi("eosio", {
         blockNum: 10,
-        json: false
+        json: false,
       })
 
       expect(result).toEqual(data)
@@ -676,7 +678,7 @@ the bug to us with the document string used."
 
       httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
       const result = await client.stateAbiBinToJson("eosio", "table", ["01"], {
-        blockNum: 10
+        blockNum: 10,
       })
 
       expect(result).toEqual(data)
@@ -716,7 +718,7 @@ the bug to us with the document string used."
 
       httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
       const result = await client.stateKeyAccounts("pubKey", {
-        blockNum: 10
+        blockNum: 10,
       })
 
       expect(result).toEqual(data)
@@ -756,7 +758,7 @@ the bug to us with the document string used."
 
       httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
       const result = await client.statePermissionLinks("eosio", {
-        blockNum: 10
+        blockNum: 10,
       })
 
       expect(result).toEqual(data)
@@ -796,7 +798,7 @@ the bug to us with the document string used."
 
       httpClient.apiRequestMock.mockReturnValue(Promise.resolve(data))
       const result = await client.stateTableScopes("eosio", "table", {
-        blockNum: 10
+        blockNum: 10,
       })
 
       expect(result).toEqual(data)
@@ -840,7 +842,7 @@ the bug to us with the document string used."
         json: false,
         keyType: "hex_be",
         withAbi: true,
-        withBlockNum: false
+        withBlockNum: false,
       })
 
       expect(result).toEqual(data)
@@ -858,7 +860,7 @@ the bug to us with the document string used."
           scope: "scope",
           table: "table",
           with_abi: true,
-          with_block_num: false
+          with_block_num: false,
         },
         undefined,
         undefined
@@ -893,7 +895,7 @@ the bug to us with the document string used."
         json: false,
         keyType: "hex_be",
         withAbi: true,
-        withBlockNum: false
+        withBlockNum: false,
       })
 
       expect(result).toEqual(data)
@@ -912,7 +914,7 @@ the bug to us with the document string used."
           scope: "scope",
           table: "table",
           with_abi: true,
-          with_block_num: false
+          with_block_num: false,
         },
         { "Content-Type": "application/x-www-form-urlencoded" }
       )
@@ -946,7 +948,7 @@ the bug to us with the document string used."
         json: false,
         keyType: "hex_be",
         withAbi: true,
-        withBlockNum: false
+        withBlockNum: false,
       })
 
       expect(result).toEqual(data)
@@ -965,7 +967,7 @@ the bug to us with the document string used."
           scopes: "scope|second",
           table: "table",
           with_abi: true,
-          with_block_num: false
+          with_block_num: false,
         },
         { "Content-Type": "application/x-www-form-urlencoded" }
       )
@@ -987,7 +989,7 @@ the bug to us with the document string used."
         { param: 1 },
         "body",
         {
-          Custom: "true"
+          Custom: "true",
         }
       )
     })
@@ -1004,7 +1006,7 @@ describe("DfuseClient without authentication", () => {
   let client: DfuseClient
 
   beforeEach(() => {
-    spyOn(Date, "now").and.returnValue(currentDate)
+    jest.spyOn(Date, "now").mockReturnValue(currentDate)
 
     httpClient = new MockHttpClient()
     streamClient = new MockStreamClient()
@@ -1024,7 +1026,7 @@ describe("DfuseClient without authentication", () => {
       graphqlStreamClient,
       apiTokenStore,
       refreshScheduler,
-      requestIdGenerator
+      requestIdGenerator,
     })
 
     // @ts-ignore For testing purposes, this exists on the client

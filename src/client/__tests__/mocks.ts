@@ -7,7 +7,6 @@ import { StreamClient, OnStreamMessage } from "../../types/stream-client"
 import { HttpClient, HttpQueryParameters, HttpHeaders } from "../../types/http-client"
 import { Stream } from "../../types/stream"
 import { GraphqlStreamClient, OnGraphqlStreamMessage } from "../../types/graphql-stream-client"
-import { regExpLiteral } from "@babel/types"
 import { GraphqlDocument, GraphqlVariables } from "../../types/graphql"
 
 export function mock<T>(implementation?: (...args: any) => T): jest.Mock<T, any> {
@@ -51,7 +50,7 @@ export class MockHttpClient implements HttpClient {
 
 export class MockGraphqlStreamClient implements GraphqlStreamClient {
   public releaseMock = mock<void>()
-  public setApiTokenMock = jest.fn<void, [string]>((_apiToken: string) => {
+  public setApiTokenMock = jest.fn<void, [string]>((/*apiToken: string*/) => {
     return
   })
 
@@ -62,7 +61,7 @@ export class MockGraphqlStreamClient implements GraphqlStreamClient {
     this.releaseMock()
   }
 
-  public setApiToken(apiToken: string) {
+  public setApiToken(apiToken: string): void {
     this.setApiTokenMock(apiToken)
   }
 
@@ -82,7 +81,7 @@ export class MockGraphqlStreamClient implements GraphqlStreamClient {
 
 export class MockStreamClient implements StreamClient {
   public releaseMock = mock<void>()
-  public setApiTokenMock = jest.fn<void, [string]>((_apiToken: string) => {
+  public setApiTokenMock = jest.fn<void, [string]>((/*apiToken: string*/) => {
     return
   })
 
@@ -93,7 +92,7 @@ export class MockStreamClient implements StreamClient {
     this.releaseMock()
   }
 
-  public setApiToken(apiToken: string) {
+  public setApiToken(apiToken: string): void {
     this.setApiTokenMock(apiToken)
   }
 
@@ -125,12 +124,14 @@ export class MockSocket implements Socket {
   ): Promise<void> {
     return this.connectMock(listener, options).then(() => {
       this.isConnectedMock.mockReturnValue(true)
+      return
     })
   }
 
   public disconnect(): Promise<void> {
     return this.disconnectMock().then(() => {
       this.isConnectedMock.mockReturnValue(false)
+      return
     })
   }
 
@@ -168,11 +169,11 @@ export class MockWebSocket implements WebSocket {
     this.url = url
   }
 
-  public close() {
+  public close(): void {
     this.closeMock()
   }
 
-  public send(data: string | ArrayBufferLike | Blob | ArrayBufferView) {
+  public send(data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
     this.sendMock(data)
   }
 }
@@ -290,6 +291,6 @@ export const createSocketController = (socket: MockSocket): SocketController => 
 
     setDisconnected() {
       socket.isConnectedMock.mockReturnValue(false)
-    }
+    },
   }
 }

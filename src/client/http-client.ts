@@ -4,7 +4,7 @@ import {
   HttpResponse,
   HttpQueryParameters,
   HttpClient,
-  HttpHeaders
+  HttpHeaders,
 } from "../types/http-client"
 import debugFactory, { IDebugger } from "debug"
 
@@ -95,7 +95,7 @@ function inferFetch(fetch?: Fetch): Fetch {
     "",
     "We invite you to read our documentation to learn more about this problem.",
     "",
-    "See https://github.com/dfuse-io/client-js#nodejs"
+    "See https://github.com/dfuse-io/client-js#nodejs",
   ]
 
   throw new DfuseClientError(messages.join("\n"))
@@ -193,7 +193,7 @@ class DefaultHttpClient {
       const response = await this.fetch(url, {
         headers: mergedHeaders,
         method,
-        body: transformedBody
+        body: transformedBody,
       })
 
       this.debug(
@@ -245,8 +245,8 @@ class DefaultHttpClient {
           code: response.status.toString(),
           message: "An unknown HTTP error occurred",
           details: {
-            body
-          }
+            body,
+          },
         },
         error
       )
@@ -270,7 +270,7 @@ class DefaultHttpClient {
     )
   }
 
-  private queryParams(params: HttpQueryParameters) {
+  private queryParams(params: HttpQueryParameters): string {
     const entries = []
     for (const key of Object.keys(params)) {
       const value = params[key]

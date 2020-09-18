@@ -6,9 +6,10 @@ import dotenv from "dotenv"
 // do not need this in your own project (but don't hesitate to use it if you
 // find it useful though).
 if (process.env.DEBUG_LEAKED_HANDLES) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   require("leaked-handles").set({
     fullStack: true,
-    debugSockets: true
+    debugSockets: true,
   })
 }
 
@@ -49,13 +50,13 @@ if (!DFUSE_API_KEY) {
   const messages = [
     "You must define a DFUSE_API_KEY environment variable containing your dfuse API Key.",
     "",
-    "Visit https://app.dfuse.io to register for a free API Key."
+    "Visit https://app.dfuse.io to register for a free API Key.",
   ]
 
   throw new Error(messages.join("\n"))
 }
 
-export function runMain(runner: () => Promise<void>) {
+export function runMain(runner: () => Promise<void>): void {
   /**
    * Helper to display `unhandledRejection` rejection errors.
    */
@@ -69,7 +70,7 @@ export function runMain(runner: () => Promise<void>) {
       "using `DEBUG='dfuse:*' yarn run:example ...`.",
       "",
       "Read about unhandle rejection error https://stackoverflow.com/q/40500490/697930",
-      ""
+      "",
     ]
 
     console.error(messages.join("\n"))
@@ -79,6 +80,7 @@ export function runMain(runner: () => Promise<void>) {
   })
 
   runner()
+    // eslint-disable-next-line promise/always-return
     .then(() => {
       console.log("Example completed.")
       process.exit(0)

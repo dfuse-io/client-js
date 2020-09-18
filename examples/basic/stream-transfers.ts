@@ -4,13 +4,13 @@ import {
   InboundMessage,
   InboundMessageType,
   waitFor,
-  ActionTraceData
+  ActionTraceData,
 } from "@dfuse/client"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   const stream = await client.streamActionTraces(

@@ -3,13 +3,13 @@ import { createHttpClient } from "../http-client"
 import { DfuseApiError, DfuseClientError, DfuseGenericApiError } from "../../types/error"
 
 describe("HttpClient", () => {
-  let fetch: jest.Mock<ReturnType<Fetch>, ArgsType<Fetch>>
+  let fetch: jest.Mock<ReturnType<Fetch>, jest.ArgsType<Fetch>>
   let client: HttpClient
 
   beforeEach(() => {
-    fetch = jest.fn<ReturnType<Fetch>, ArgsType<Fetch>>(() => Promise.resolve(okResponse()))
+    fetch = jest.fn<ReturnType<Fetch>, jest.ArgsType<Fetch>>(() => Promise.resolve(okResponse()))
     client = createHttpClient("auth", "api", {
-      fetch
+      fetch,
     })
   })
 
@@ -46,7 +46,7 @@ describe("HttpClient", () => {
       undefined,
       { complex: [{ struct: 0 }] },
       {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       }
     )
 
@@ -62,7 +62,7 @@ describe("HttpClient", () => {
       undefined,
       { complex: "field1", second: "harder" },
       {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
       }
     )
 
@@ -72,7 +72,7 @@ describe("HttpClient", () => {
 
   it("correctly sets body as raw string on api request with Content-Type header", async () => {
     await client.apiRequest("token", "/", "POST", undefined, "raw { untransformed as is body }", {
-      "Content-Type": "custom/body"
+      "Content-Type": "custom/body",
     })
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -159,12 +159,12 @@ describe("HttpClient", () => {
   it("overrides defaults headers when on api request", async () => {
     await client.apiRequest("token", "/", "GET", undefined, undefined, {
       Authorization: "custom",
-      More: "true"
+      More: "true",
     })
 
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(calledFetchHttpRequest()).toMatchObject({
-      headers: { Authorization: "custom", More: "true" }
+      headers: { Authorization: "custom", More: "true" },
     })
   })
 
@@ -190,61 +190,46 @@ describe("HttpClient", () => {
       )
     )
 
-    try {
-      await client.apiRequest("token", "/", "GET")
-      fail("should have failed")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseClientError)
-      expect(error.message).toEqual("The returned body shall have been a valid JSON object")
-      expect(error.cause).toEqual("error")
-    }
+    await expect(client.apiRequest("token", "/", "GET")).rejects.toThrowError(
+      new DfuseClientError("The returned body shall have been a valid JSON object", "error" as any)
+    )
   })
 
   it("throws a DfuseApiError when body is valid JSON", async () => {
     const errorData = { code: "test", trace_id: "0", message: "wrong", details: {} }
     fetch.mockReturnValue(Promise.resolve(koResponse(errorData)))
 
-    try {
-      await client.apiRequest("token", "/", "GET")
-      fail("should have failed")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseApiError)
-      expect(error.code).toEqual(errorData.code)
-      expect(error.trace_id).toEqual(errorData.trace_id)
-      expect(error.message).toEqual(errorData.message)
-      expect(error.details).toEqual(errorData.details)
-    }
+    await expect(client.apiRequest("token", "/", "GET")).rejects.toThrowError(
+      new DfuseApiError({
+        code: errorData.code,
+        trace_id: errorData.trace_id,
+        message: errorData.message,
+        details: errorData.details,
+      })
+    )
   })
 
   it("throws a DfuseApiError when body is valid JSON and has no trace_id nor details", async () => {
     const errorData = { code: "test", message: "wrong" }
     fetch.mockReturnValue(Promise.resolve(koResponse(errorData)))
 
-    try {
-      await client.apiRequest("token", "/", "GET")
-      fail("should have failed")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseApiError)
-      expect(error.code).toEqual(errorData.code)
-      expect(error.trace_id).toBeUndefined()
-      expect(error.message).toEqual(errorData.message)
-      expect(error.details).toBeUndefined()
-    }
+    await expect(client.apiRequest("token", "/", "GET")).rejects.toThrowError(
+      new DfuseApiError({
+        code: errorData.code,
+        trace_id: undefined,
+        message: errorData.message,
+        details: undefined,
+      })
+    )
   })
 
   it("throws a DfuseGenericApiError when body is valid JSON but does not fit API format", async () => {
     const errorData = { code: "test", trace_id: "0", message: "wrong", details: {}, other: {} }
     fetch.mockReturnValue(Promise.resolve(koResponse(errorData, { out: "value" }, 502)))
 
-    try {
-      await client.apiRequest("token", "/", "GET")
-      fail("should have failed")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseGenericApiError)
-      expect(error.code).toEqual(502)
-      expect(error.headers).toEqual({ out: "value" })
-      expect(error.data).toEqual(errorData)
-    }
+    await expect(client.apiRequest("token", "/", "GET")).rejects.toThrowError(
+      new DfuseGenericApiError(502, "", errorData, { out: "value" })
+    )
   })
 
   it("throws a generic DfuseApiError when error response with invalid JSON body", async () => {
@@ -261,16 +246,16 @@ describe("HttpClient", () => {
       )
     )
 
-    try {
-      await client.apiRequest("token", "/", "GET")
-      fail("should have failed")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseApiError)
-      expect(error.code).toEqual("500")
-      expect(error.message).toEqual("An unknown HTTP error occurred")
-      expect(error.cause).toEqual(new SyntaxError("Unexpected end of JSON input"))
-      expect(error.details).toEqual({ body: "{" })
-    }
+    await expect(client.apiRequest("token", "/", "GET")).rejects.toThrowError(
+      new DfuseApiError(
+        {
+          code: "500",
+          message: "An unknown HTTP error occurred",
+          details: { body: "{" },
+        },
+        new SyntaxError("Unexpected end of JSON input")
+      )
+    )
   })
 
   it("throws a DfuseClientError when error response and text rejects", async () => {
@@ -287,14 +272,9 @@ describe("HttpClient", () => {
       )
     )
 
-    try {
-      await client.apiRequest("token", "/", "GET")
-      fail("should have failed")
-    } catch (error) {
-      expect(error).toBeInstanceOf(DfuseClientError)
-      expect(error.message).toEqual("Unable to perform HTTP request correctly")
-      expect(error.cause).toEqual("error")
-    }
+    await expect(client.apiRequest("token", "/", "GET")).rejects.toThrowError(
+      new DfuseClientError("Unable to perform HTTP request correctly", "error" as any)
+    )
   })
 
   function calledFetchUrl(call?: number): string {
@@ -346,6 +326,6 @@ function rawResponse(
     headers,
     url: "/",
     json,
-    text
+    text,
   }
 }

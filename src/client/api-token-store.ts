@@ -97,7 +97,7 @@ export class LocalStorageApiTokenStore implements ApiTokenStore {
         "If you provided the instance yourself, you should read our documentation to better",
         "understand what you should provide here.",
         "",
-        "See https://github.com/dfuse-io/client-js"
+        "See https://github.com/dfuse-io/client-js",
       ]
 
       throw new DfuseClientError(messages.join("\n"))
@@ -217,7 +217,7 @@ async function writeData(filePath: string, data: string): Promise<void> {
   })
 }
 
-async function mkdirpSync(directory: string) {
+async function mkdirpSync(directory: string): Promise<void> {
   if (!path.isAbsolute(directory)) {
     return
   }

@@ -1,4 +1,4 @@
-import { DFUSE_API_KEY, runMain, prettifyJson, DFUSE_API_NETWORK } from "../config"
+import { DFUSE_API_KEY, runMain, prettifyJson } from "../config"
 import { createDfuseClient } from "@dfuse/client"
 
 /**
@@ -11,10 +11,10 @@ import { createDfuseClient } from "@dfuse/client"
  * are not built-in to the client for us to avoid having to support them directly
  * with types and all.
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: "mainnet.eos.dfuse.io"
+    network: "mainnet.eos.dfuse.io",
   })
 
   try {

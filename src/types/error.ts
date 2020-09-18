@@ -41,6 +41,7 @@ export class DfuseGenericApiError extends DfuseError {
   public body: string
   public headers: any
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   constructor(code: number, body: string, data: unknown, headers?: any, cause?: Error) {
     let message = "Failed to execute API call"
     if (data && typeof data === "object" && (data as any).message) {

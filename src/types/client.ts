@@ -3,8 +3,7 @@ import {
   GetTableRowsMessageData,
   StreamOptions,
   GetTransactionLifecycleMessageData,
-  OutboundMessage,
-  OutboundMessageFactory
+  OutboundMessageFactory,
 } from "../message/outbound"
 import { ApiTokenInfo, AuthTokenResponse } from "./auth-token"
 import { SearchTransactionsResponse, SearchSortType } from "./search"
@@ -20,7 +19,7 @@ import {
   MultiStateResponse,
   StateKeyType,
   StateTableScopesResponse,
-  StateTableRowResponse
+  StateTableRowResponse,
 } from "./state"
 import { Stream } from "./stream"
 import { HttpQueryParameters, HttpHeaders } from "./http-client"

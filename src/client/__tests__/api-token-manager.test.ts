@@ -2,7 +2,7 @@ import {
   ApiTokenManager,
   createApiTokenManager,
   createNoopApiTokenManager,
-  isApiTokenExpired
+  isApiTokenExpired,
 } from "../api-token-manager"
 import { MockApiTokenStore, MockRefreshScheduler, mock } from "./mocks"
 import { ApiTokenInfo } from "../../types/auth-token"
@@ -28,7 +28,7 @@ describe("ApiTokenManager", () => {
   let manager: ApiTokenManager
 
   beforeEach(() => {
-    spyOn(Date, "now").and.returnValue(currentDate)
+    jest.spyOn(Date, "now").mockReturnValue(currentDate)
 
     fetchApiToken = mock<Promise<ApiTokenInfo>>(() => Promise.resolve(defaultFetchApiTokenInfo))
     onTokenRefresh = mock()
@@ -100,6 +100,7 @@ describe("ApiTokenManager", () => {
     expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(0)
   })
 
+  // eslint-disable-next-line jest/no-done-callback
   it("schedules a refresh when refresh schedule callback is called, even when schedule exists", async (done) => {
     apiTokenStore.getMock.mockReturnValue(Promise.resolve(expiredTokenInfo))
 
@@ -141,6 +142,7 @@ describe("ApiTokenManager", () => {
     expect(onTokenRefresh).toHaveBeenCalledTimes(0)
   })
 
+  // eslint-disable-next-line jest/no-done-callback
   it("notifies onTokenRefresh when refresh schedule callback is called", async (done) => {
     apiTokenStore.getMock.mockReturnValue(Promise.resolve(expiredTokenInfo))
 
@@ -168,7 +170,7 @@ describe("NoopApiTokenManager", () => {
   let manager: ApiTokenManager
 
   beforeEach(() => {
-    spyOn(Date, "now").and.returnValue(currentDate)
+    jest.spyOn(Date, "now").mockReturnValue(currentDate)
 
     manager = createNoopApiTokenManager("aa.bb.cc")
   })
@@ -185,12 +187,12 @@ describe("isApiTokenExpired", () => {
     { token: nonExpiredJustBeforeApiTokenInfo, isExpired: false },
     { token: expiredTokenInfo, isExpired: true },
     { token: expiredRightOnApiTokenInfo, isExpired: true },
-    { token: expiredJustAfterApiTokenInfo, isExpired: true }
+    { token: expiredJustAfterApiTokenInfo, isExpired: true },
   ]
 
   testCases.forEach((testCase) => {
     it(`should pass test case ${testCase.token.token}`, () => {
-      spyOn(Date, "now").and.returnValue(currentDate)
+      jest.spyOn(Date, "now").mockReturnValue(currentDate)
 
       expect(isApiTokenExpired(testCase.token)).toEqual(testCase.isExpired)
     })

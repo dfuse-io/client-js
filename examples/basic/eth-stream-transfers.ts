@@ -1,10 +1,10 @@
 import { DFUSE_API_KEY, runMain } from "../config"
 import { createDfuseClient, waitFor } from "@dfuse/client"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: "mainnet.eth.dfuse.io"
+    network: "mainnet.eth.dfuse.io",
   })
 
   const streamTransfer = `subscription($cursor: String) {

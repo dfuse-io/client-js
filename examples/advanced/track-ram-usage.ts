@@ -5,7 +5,7 @@ import {
   RamOp,
   DfuseClient,
   flattenActionTraces,
-  waitFor
+  waitFor,
 } from "@dfuse/client"
 
 const account = "eoscanadacom"
@@ -23,7 +23,7 @@ const maxResults = 500
  * This is usually what most people expect to have from the API (the
  * actions of the transaction that matched the search criteria).
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
   const query = `(ram.released:${account} OR ram.consumed:${account})`
 
@@ -76,6 +76,7 @@ async function main() {
         //  */
         // const actionTraces = matchingActionTraces(result)
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         result.lifecycle.ramops!.forEach((ramOp: RamOp) => {
           // FIXME: Right logic for RAM op!
 
@@ -139,16 +140,16 @@ type Page = {
 async function fetchPage(client: DfuseClient, query: string, cursor?: string): Promise<Page> {
   const searchResult = await client.searchTransactions(query, {
     limit: resultPerPage,
-    cursor
+    cursor,
   })
 
   return {
     cursor: searchResult.cursor,
-    transactions: searchResult.transactions || []
+    transactions: searchResult.transactions || [],
   }
 }
 
-function inferEosqHost() {
+function inferEosqHost(): string {
   if (DFUSE_API_NETWORK === "mainnet") {
     return "eosq.app"
   }

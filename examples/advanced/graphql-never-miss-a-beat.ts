@@ -22,15 +22,15 @@ import * as path from "path"
  */
 const LAST_CURSOR_FILENAME = "last_cursor.txt"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
     network: DFUSE_API_NETWORK,
     graphqlStreamClientOptions: {
       socketOptions: {
-        reconnectDelayInMs: 250
-      }
-    }
+        reconnectDelayInMs: 250,
+      },
+    },
   })
 
   const engine = new Engine(client)
@@ -73,7 +73,7 @@ class Engine {
     this.client = client
   }
 
-  public async run() {
+  public async run(): Promise<void> {
     console.log("Engine starting")
 
     /**
@@ -149,8 +149,8 @@ class Engine {
            * once and overriden later on by the library. Other variables, if any, are left intact
            * and only the cursor is updated to reflect the current marker state.
            */
-          cursor: lastPersistedCursor
-        }
+          cursor: lastPersistedCursor,
+        },
       }
     )
 
@@ -180,7 +180,7 @@ class Engine {
     await this.stream.join()
   }
 
-  private onProgress = (blockId: string, blockNum: number, cursor: string) => {
+  private onProgress = (blockId: string, blockNum: number, cursor: string): void => {
     console.log(`Live marker received @ ${printBlock(blockId, blockNum)}`)
 
     // We commit also on progress. The reasoning is that we have now move 10 blocks
@@ -192,7 +192,7 @@ class Engine {
     this.commit(cursor)
   }
 
-  private onResult = (message: Message<KarmaTransfer>) => {
+  private onResult = (message: Message<KarmaTransfer>): void => {
     const data = message.searchTransactionsForward
     const { id: blockId, num: blockNum } = data.block
 
@@ -215,7 +215,7 @@ class Engine {
     this.commit(data.cursor)
   }
 
-  private onError = (errors: Error[], terminal: boolean) => {
+  private onError = (errors: Error[], terminal: boolean): void => {
     console.log("Received an 'error' message", prettifyJson(errors))
 
     if (terminal) {
@@ -225,11 +225,11 @@ class Engine {
     }
   }
 
-  private onComplete = () => {
+  private onComplete = (): void => {
     console.log("Received a 'complete' message, no more results for this stream")
   }
 
-  private commit(cursor: string) {
+  private commit(cursor: string): void {
     if (this.pendingActions.length > 0) {
       console.log(`Committing all actions up to cursor ${cursor}`)
 

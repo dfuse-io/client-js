@@ -1,10 +1,10 @@
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK, prettifyJson } from "../config"
 import { createDfuseClient, InboundMessage, InboundMessageType, waitFor } from "@dfuse/client"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   const stream = await client.streamActionTraces(
@@ -16,7 +16,7 @@ async function main() {
       with_ramops: true,
 
       // Don't confuse with `dbops`, this one streams smart contract's table creation/removal, not changes to rows!
-      with_tableops: true
+      with_tableops: true,
     },
     (message: InboundMessage<any>) => {
       if (message.type === InboundMessageType.LISTENING) {

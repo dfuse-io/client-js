@@ -7,13 +7,13 @@ import { Stream, StreamMarker } from "../types/stream"
 import {
   GraphqlStreamClient,
   OnGraphqlStreamMessage,
-  OnGraphqlStreamRestart
+  OnGraphqlStreamRestart,
 } from "../types/graphql-stream-client"
 import {
   GraphqlDocument,
   GraphqlVariables,
   GraphqlInboundMessage,
-  GraphqlStartOutboundMessage
+  GraphqlStartOutboundMessage,
 } from "../types/graphql"
 import { waitFor } from "../helpers/time"
 
@@ -97,7 +97,7 @@ export function createGraphqlStreamClient(
       createSocket(wsUrl, {
         id: "graphql",
         webSocketProtocols: "graphql-ws",
-        ...options.socketOptions
+        ...options.socketOptions,
       }),
     options.autoRestartStreamsOnReconnect === undefined
       ? true
@@ -150,7 +150,7 @@ class DefaultGrahqlStreamClient {
     })
   }
 
-  public setApiToken(apiToken: string) {
+  public setApiToken(apiToken: string): void {
     this.apiToken = apiToken
   }
 
@@ -163,6 +163,7 @@ class DefaultGrahqlStreamClient {
     if (!this.socket.isConnected) {
       this.debug("Socket is not connected, connecting socket first.")
       await this.socket.connect(this.handleMessage, { onReconnect: this.handleReconnection })
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await this.connectionEstablisher.establish(this.apiToken!, this.socket)
     }
 
@@ -173,8 +174,8 @@ class DefaultGrahqlStreamClient {
     }
 
     this.debug("Registering stream [%s]", id)
-    const streamExists = (streamId: string) => this.streams[streamId] !== undefined
-    const unregisterStream = (streamId: string) => this.unregisterStream(streamId)
+    const streamExists = (streamId: string): boolean => this.streams[streamId] !== undefined
+    const unregisterStream = (streamId: string): Promise<void> => this.unregisterStream(streamId)
     const stream = new DefaultGraphqlStream(
       id,
       document,
@@ -232,7 +233,7 @@ class DefaultGrahqlStreamClient {
     }
   }
 
-  private handleMessage = async (rawMessage: unknown) => {
+  private handleMessage = async (rawMessage: unknown): Promise<void> => {
     const message = rawMessage as GraphqlInboundMessage
     if (message.type === "ka") {
       this.debug("Discarding 'ka' (Keep Alive) message from reaching the underlying stream(s).")
@@ -271,7 +272,7 @@ class DefaultGrahqlStreamClient {
       return
     }
 
-    const onStreamCloseError = (error: any) => {
+    const onStreamCloseError = (error: any): void => {
       // FIXME: We shall pass this error somewhere, to some kind of notifier or event
       //        emitter but there is no such stuff right now.
       this.debug(
@@ -294,6 +295,7 @@ class DefaultGrahqlStreamClient {
         await waitFor(this.restartOnErrorDelayInMs)
         await stream.restart().catch((error) => {
           // Can only happen if the socket does not auto-reconnect and connection lost, in which, stream is screwed anyway
+          // eslint-disable-next-line promise/no-nesting
           stream.close({ error }).catch(onStreamCloseError)
         })
 
@@ -314,24 +316,26 @@ class DefaultGrahqlStreamClient {
     stream.close({ error: closeError }).catch(onStreamCloseError)
   }
 
-  private handleReconnection = () => {
+  private handleReconnection = (): void => {
     this.debug("Handling re-connection notification from socket.")
     if (this.autoRestartStreamsOnReconnect === false) {
       return
     }
 
     this.connectionEstablisher
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       .establish(this.apiToken!, this.socket)
       .then(() => {
         return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].restart()))
       })
       .catch(async (error) => {
-        const finalizer = () => {
+        const finalizer = (): void => {
           // FIXME: We shall pass this error somewhere, to some kind of notifier or event
           //        emitter but there is no such stuff right now.
           this.debug("The re-connection failed to re-establish the GraphQL connection %O", error)
         }
 
+        // eslint-disable-next-line promise/no-nesting
         return Promise.all(Object.keys(this.streams).map((id) => this.streams[id].close({ error })))
           .then(finalizer)
           .catch(finalizer)
@@ -394,15 +398,16 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
 
   public async start(): Promise<void> {
     const message = await this.createStartMessage()
-    if (message.payload!.variables !== undefined) {
-      message.payload!.variables = {
+    if (message.payload && message.payload.variables !== undefined) {
+      message.payload.variables = {
         cursor: "",
-        ...message.payload!.variables
+        ...message.payload.variables,
       }
     }
 
     return this.socket.send(message).then(() => {
       this.active = true
+      return
     })
   }
 
@@ -412,9 +417,7 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
 
     if (!this.streamExists(this.id)) {
       throw new DfuseClientError(
-        `Trying to restart a stream '${
-          this.id
-        }' that is not registered anymore or was never registered`
+        `Trying to restart a stream '${this.id}' that is not registered anymore or was never registered`
       )
     }
 
@@ -428,12 +431,13 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
       message.payload.variables = {
         ...(message.payload.variables || {}),
         // @ts-ignore The `cursor` field is the only possibility here, it's just TypeScript can't discriminate it
-        cursor: activeMarker.cursor
+        cursor: activeMarker.cursor,
       }
     }
 
     await this.socket.send(message).then(() => {
       this.active = true
+      return
     })
 
     if (this.onPostRestart) {
@@ -457,9 +461,9 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
         query: this.registrationDocument,
         variables: {
           cursor: "",
-          ...((resolvedVariables as (Record<string, unknown> | undefined)) || {})
-        }
-      }
+          ...((resolvedVariables as Record<string, unknown> | undefined) || {}),
+        },
+      },
     }
   }
 
@@ -473,7 +477,7 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
     return this.activeJoiner.promise()
   }
 
-  public mark(marker: StreamMarker) {
+  public mark(marker: StreamMarker): void {
     this.activeMarker = this.checkMarker(marker)
   }
 
@@ -498,7 +502,7 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
   // Public only for the stream client to be able to call us directly. Not best practice but since
   // the client and his streams are tighly coupled, cohesion makes sense here. Will never be seen
   // by a consumer anyway and this method is not part of any backward compatibility policy.
-  public onUnregister(unregisterError?: Error) {
+  public onUnregister(unregisterError?: Error): void {
     // FIXME: We should probably return a MultiError of some kind to report both of
     //        `unregisterError` and `this.closeError` if they are both set.
 
@@ -511,14 +515,14 @@ class DefaultGraphqlStream<T = unknown> implements Stream {
     }
   }
 
-  private resolve = () => {
+  private resolve = (): void => {
     if (this.activeJoiner) {
       this.debug("Resolving joiner promise for stream [%s].", this.id)
       this.activeJoiner.resolve()
     }
   }
 
-  private reject = (error: Error) => {
+  private reject = (error: Error): void => {
     if (this.activeJoiner) {
       this.debug("Rejecting joiner promise for stream [%s] with error %o.", this.id, error)
       this.activeJoiner.reject(error)
@@ -548,14 +552,14 @@ class GraphqlConnectionEstablisher {
     socket.send({
       type: "connection_init",
       payload: {
-        Authorization: apiToken
-      }
+        Authorization: apiToken,
+      },
     })
 
     return this.activeDeferred.promise()
   }
 
-  public onMessage(message: GraphqlInboundMessage) {
+  public onMessage(message: GraphqlInboundMessage): void {
     if (this.activeDeferred === undefined) {
       return
     }
@@ -568,7 +572,7 @@ class GraphqlConnectionEstablisher {
 
     if (message.type === "connection_error") {
       this.debug("Received connection_error message %O, rejecting active promise", message.payload)
-      this.reject(message.payload! as Error)
+      this.reject(message.payload)
       return
     }
 
@@ -578,7 +582,7 @@ class GraphqlConnectionEstablisher {
     )
   }
 
-  private resolve() {
+  private resolve(): void {
     if (this.activeDeferred === undefined) {
       return
     }
@@ -588,8 +592,8 @@ class GraphqlConnectionEstablisher {
     this.activeDeferred = undefined
   }
 
-  private reject(error: Error) {
-    const complete = () => {
+  private reject(error: Error): void {
+    const complete = (): void => {
       if (this.activeDeferred !== undefined) {
         this.debug("Rejecting connection establisher deferred promise.")
         this.activeDeferred.reject(error)
@@ -598,10 +602,8 @@ class GraphqlConnectionEstablisher {
     }
 
     if (this.activeSocket && this.activeSocket.isConnected) {
-      this.activeSocket
-        .disconnect()
-        .then(complete)
-        .catch(complete)
+      // eslint-disable-next-line promise/no-promise-in-callback
+      this.activeSocket.disconnect().then(complete).catch(complete)
     } else {
       complete()
     }

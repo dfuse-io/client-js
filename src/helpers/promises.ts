@@ -14,11 +14,11 @@ export class Deferred<T> {
     return this.activePromise
   }
 
-  public resolve(value?: T | PromiseLike<T>) {
+  public resolve(value?: T | PromiseLike<T>): void {
     this.resolver(value)
   }
 
-  public reject(reason?: any) {
+  public reject(reason?: any): void {
     this.rejecter(reason)
   }
 }

@@ -1,5 +1,5 @@
 import { DFUSE_API_KEY, runMain, prettifyJson, DFUSE_API_NETWORK } from "../config"
-import { createDfuseClient, waitFor, Stream, GraphqlResponse } from "@dfuse/client"
+import { createDfuseClient, GraphqlResponse } from "@dfuse/client"
 import gql from "graphql-tag"
 import { print as printGraphqlDocument } from "graphql/language/printer"
 
@@ -30,15 +30,15 @@ type Message = {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   try {
     const response = (await client.graphql(printGraphqlDocument(searchTransferQuery), {
-      variables: { limit: 10 }
+      variables: { limit: 10 },
     })) as GraphqlResponse<Message>
 
     console.log(prettifyJson(response))

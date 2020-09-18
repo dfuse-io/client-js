@@ -21,16 +21,16 @@ import { createDfuseClient, InboundMessage, waitFor, Stream } from "@dfuse/clien
  * example that showcases how to implement a bulletproof data integrity pattern and ensure
  * you never miss or skip an important message by mistake.
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   const stream: Stream = await client.streamActionTraces(
     {
       accounts: "eosio.token",
-      action_names: "create"
+      action_names: "create",
     },
     onMessage
   )
@@ -47,7 +47,7 @@ async function main() {
   client.release()
 }
 
-function onMessage(message: InboundMessage) {
+function onMessage(message: InboundMessage): void {
   if (message.type === "listening") {
     // You should see this message a second time when restart of stream occurs
     console.log("Stream is now listening.")

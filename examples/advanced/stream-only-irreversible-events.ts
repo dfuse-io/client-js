@@ -4,7 +4,7 @@ import {
   InboundMessage,
   InboundMessageType,
   waitFor,
-  ActionTraceData
+  ActionTraceData,
 } from "@dfuse/client"
 
 /**
@@ -16,10 +16,10 @@ import {
  * `irreversible_only` flag for now. If you try on anything else, you
  * will still receive reversible notifications, be aware!
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   const stream = await client.streamActionTraces(
@@ -30,7 +30,7 @@ async function main() {
        * Request to only obtain irreversible notifications by specifying this
        * common flag and setting its value to true.
        */
-      irreversible_only: true
+      irreversible_only: true,
     }
   )
 
@@ -40,7 +40,7 @@ async function main() {
   client.release()
 }
 
-function onMessage(message: InboundMessage) {
+function onMessage(message: InboundMessage): void {
   if (message.type !== InboundMessageType.ACTION_TRACE) {
     return
   }

@@ -5,16 +5,16 @@ type AccountTableRow = {
   balance: string
 }
 
-async function main() {
+async function main(): Promise<void> {
   // Here what you need to connect to the dfuse Community Edition hosted by EOS Nation
   const client = createDfuseClient({
     network: "kylin.dfuse.eosnation.io",
-    authentication: false
+    authentication: false,
   })
 
   try {
     const response = await client.stateTable<AccountTableRow>("eosio.token", "eosio", "accounts")
-    const balance = response.rows[0].json!.balance
+    const balance = response.rows[0].json?.balance
     const atBlockNum = response.up_to_block_num
 
     console.log(`Your balance at block ${atBlockNum} is ${balance}`)

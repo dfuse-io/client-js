@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
 import {
   createDfuseClient,
@@ -6,7 +7,7 @@ import {
   DfuseClient,
   dynamicMessageDispatcher,
   TableDeltaInboundMessage,
-  TableSnapshotInboundMessage
+  TableSnapshotInboundMessage,
 } from "@dfuse/client"
 
 /**
@@ -36,10 +37,10 @@ import {
  *
  * @see https://docs.dfuse.io/#websocket-based-api-navigating-forks
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   const engine = new Engine(client)
@@ -67,38 +68,38 @@ class Engine {
     this.client = client
   }
 
-  public async start() {
+  public async start(): Promise<void> {
     console.log("Engine starting")
     this.stream = await this.client.streamTableRows(
       {
         code: "eosio",
         table: "global",
-        scope: "eosio"
+        scope: "eosio",
       },
       dynamicMessageDispatcher({
         listening: this.onListening,
         table_delta: this.onTableDelta,
         table_snapshot: this.onTableSnapshot,
-        progress: this.onProgress
+        progress: this.onProgress,
       }),
       {
         listen: true,
         fetch: true,
         // We use progress to display the current state of the table at a regular interval
-        with_progress: 50
+        with_progress: 50,
       }
     )
   }
 
-  private onListening = () => {
+  private onListening = (): void => {
     console.log("Stream is now listening for action(s)")
   }
 
-  private onProgress = () => {
+  private onProgress = (): void => {
     printUpdates(this.updates)
   }
 
-  private onTableSnapshot = (message: TableSnapshotInboundMessage<EosioGlobalRow>) => {
+  private onTableSnapshot = (message: TableSnapshotInboundMessage<EosioGlobalRow>): void => {
     console.log("Initializing first update to initial state of table")
 
     // We expect a single row to exist on this table
@@ -107,7 +108,7 @@ class Engine {
     printUpdates(this.updates, "")
   }
 
-  private onTableDelta = (message: TableDeltaInboundMessage<EosioGlobalRow>) => {
+  private onTableDelta = (message: TableDeltaInboundMessage<EosioGlobalRow>): void => {
     switch (message.data.step) {
       case "new":
         this.pushUpdate(message.data.dbop.new!.json!)
@@ -125,20 +126,20 @@ class Engine {
     }
   }
 
-  public async stop() {
+  public async stop(): Promise<void> {
     await this.ensureStream().close()
 
     console.log("Current last 5 updates")
     printUpdates(this.updates)
   }
 
-  private popUpdate() {
+  private popUpdate(): void {
     if (this.updates.length >= 1) {
       this.updates = [...this.updates.slice(0, 4)]
     }
   }
 
-  private pushUpdate(update: EosioGlobalRow) {
+  private pushUpdate(update: EosioGlobalRow): void {
     if (this.updates.length >= 5) {
       this.updates = [...this.updates.slice(1), update]
     } else {
@@ -155,7 +156,7 @@ class Engine {
   }
 }
 
-function printUpdates(updates: EosioGlobalRow[], header?: string) {
+function printUpdates(updates: EosioGlobalRow[], header?: string): void {
   if (header !== "") {
     console.log("5 last updates (or less)")
   }

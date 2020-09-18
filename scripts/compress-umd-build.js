@@ -1,7 +1,5 @@
 const fs = require("fs")
-const stream = require("stream")
 const zlib = require("zlib")
-const util = require("util")
 
 const directory = "dist"
 const filePattern = `${directory}/dfuse-client.umd`

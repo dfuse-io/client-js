@@ -1,7 +1,7 @@
-import { DFUSE_API_KEY, runMain, prettifyJson, DFUSE_API_NETWORK } from "../config"
-import { createDfuseClient, DfuseClient, DfuseError, DfuseApiError } from "@dfuse/client"
+import { DFUSE_API_KEY, runMain, DFUSE_API_NETWORK } from "../config"
+import { createDfuseClient, DfuseClient } from "@dfuse/client"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   console.log("Does 'eoscanadacom' exist?", await hasAccount(client, "eoscanadacom"))

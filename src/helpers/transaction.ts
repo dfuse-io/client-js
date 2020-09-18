@@ -66,7 +66,7 @@ export function flattenActionTraces(transaction: TransactionLifecycle): ActionTr
 
   const state = {
     index: -1,
-    actions: []
+    actions: [],
   }
 
   transaction.execution_trace.action_traces.forEach((actionTrace) => {
@@ -76,7 +76,10 @@ export function flattenActionTraces(transaction: TransactionLifecycle): ActionTr
   return state.actions
 }
 
-function walkFlattenedActionTraces(rootActionTrace: ActionTrace<any>, state: WalkActionsState) {
+function walkFlattenedActionTraces(
+  rootActionTrace: ActionTrace<any>,
+  state: WalkActionsState
+): void {
   state.index++
   state.actions.push(rootActionTrace)
 
@@ -114,7 +117,7 @@ export function matchingActionTraces(searchRow: SearchTransactionRow): ActionTra
   const matchingActionIndexes = searchRow.action_idx
   const state = {
     index: -1,
-    actions: []
+    actions: [],
   }
 
   searchRow.lifecycle.execution_trace.action_traces.forEach((actionTrace) => {
@@ -128,7 +131,7 @@ function walkMatchingActionTraces(
   rootActionTrace: ActionTrace<any>,
   matchingActionIndexes: number[],
   state: WalkActionsState
-) {
+): void {
   state.index++
   if (matchingActionIndexes.includes(state.index)) {
     state.actions.push(rootActionTrace)

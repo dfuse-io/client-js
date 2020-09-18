@@ -16,7 +16,7 @@ export enum OutboundMessageType {
   GET_TABLE_ROWS = "get_table_rows",
   GET_TRANSACTION_LIFECYCLE = "get_transaction_lifecycle",
   GET_HEAD_INFO = "get_head_info",
-  UNLISTEN = "unlisten"
+  UNLISTEN = "unlisten",
 }
 
 export type StreamOptions = {
@@ -45,7 +45,7 @@ export function getActionTracesMessage(
 ): OutboundMessage<GetActionTracesMessageData> {
   return createOutboundMessage(OutboundMessageType.GET_ACTION_TRACES, data, {
     listen: true,
-    ...streamOptions
+    ...streamOptions,
   })
 }
 
@@ -69,7 +69,7 @@ export function getTableRowsMessage(
 ): OutboundMessage<GetTableRowsMessageData> {
   return createOutboundMessage(OutboundMessageType.GET_TABLE_ROWS, data, {
     listen: true,
-    ...streamOptions
+    ...streamOptions,
   })
 }
 
@@ -89,7 +89,7 @@ export function getTransactionLifecycleMessage(
   return createOutboundMessage(OutboundMessageType.GET_TRANSACTION_LIFECYCLE, data, {
     listen: true,
     fetch: true,
-    ...streamOptions
+    ...streamOptions,
   })
 }
 
@@ -98,7 +98,7 @@ export function getTransactionLifecycleMessage(
  *             own message anynore. This will be removed in a future release. The standard
  *             client does not use this anymore.
  */
-export function getHeadInfoMessage(streamOptions: StreamOptions = {}): OutboundMessage<{}> {
+export function getHeadInfoMessage(streamOptions: StreamOptions = {}): OutboundMessage {
   return createOutboundMessage(
     OutboundMessageType.GET_HEAD_INFO,
     {},
@@ -115,11 +115,11 @@ export type UnlistenMessageData = {
  *             own message anynore. This will be removed in a future release. The standard
  *             client does not use this anymore.
  */
-export function unlistenMessage(data: UnlistenMessageData) {
+export function unlistenMessage(data: UnlistenMessageData): OutboundMessage<UnlistenMessageData> {
   return {
     req_id: data.req_id,
     type: OutboundMessageType.UNLISTEN,
-    data
+    data,
   }
 }
 
@@ -154,6 +154,6 @@ export function createOutboundMessage<T>(
     type,
     req_id,
     data,
-    ...options
+    ...options,
   }
 }

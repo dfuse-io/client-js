@@ -7,7 +7,7 @@ import {
   OutboundMessage,
   OutboundMessageFactory,
   createOutboundMessage,
-  OutboundMessageType
+  OutboundMessageType,
 } from "../message/outbound"
 import { DfuseClient, RequestIdGenerator, DfuseClientEndpoints } from "../types/client"
 import { SearchSortType, SearchTransactionsResponse } from "../types/search"
@@ -21,12 +21,12 @@ import {
   StateResponse,
   MultiStateResponse,
   StatePermissionLinksResponse,
-  StateTableRowResponse
+  StateTableRowResponse,
 } from "../types/state"
 import {
   ApiTokenManager,
   createApiTokenManager,
-  createNoopApiTokenManager
+  createNoopApiTokenManager,
 } from "./api-token-manager"
 import { createHttpClient, HttpClientOptions } from "./http-client"
 import {
@@ -45,7 +45,7 @@ import {
   HttpHeaders,
   V0_FETCH_TRANSACTION,
   V0_FETCH_BLOCK_ID_BY_TIME,
-  V0_STATE_TABLE_ROW
+  V0_STATE_TABLE_ROW,
 } from "../types/http-client"
 import { DfuseClientError, DfuseError } from "../types/error"
 import { createStreamClient, StreamClientOptions } from "./stream-client"
@@ -57,7 +57,7 @@ import {
   InMemoryApiTokenStore,
   LocalStorageApiTokenStore,
   NoOpApiTokenStore,
-  OnDiskApiTokenStore
+  OnDiskApiTokenStore,
 } from "./api-token-store"
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
 import { Stream } from "../types/stream"
@@ -68,7 +68,7 @@ import {
   GraphqlVariables,
   GraphqlOperationType,
   GraphqlDocument,
-  GraphqlResponse
+  GraphqlResponse,
 } from "../types/graphql"
 
 const MAX_UINT32_INTEGER = 2147483647
@@ -272,7 +272,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
     graphqlQueryUrl: `${restUrl}/graphql`,
     graphqlStreamUrl: `${websocketUrl}/graphql`,
     restUrl,
-    websocketUrl
+    websocketUrl,
   }
 
   const httpClient =
@@ -305,7 +305,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 
 // Even though higher the type say it cannot be empty, this is usually provided
 // by the user and as such, as assume it could be undefined.
-function checkApiKey(apiKey: string | undefined, authentication: boolean | undefined) {
+function checkApiKey(apiKey: string | undefined, authentication: boolean | undefined): void {
   if (authentication !== undefined && authentication === false) {
     return
   }
@@ -315,7 +315,7 @@ function checkApiKey(apiKey: string | undefined, authentication: boolean | undef
       "The client must be configured with an API key via the ",
       "`apiKey` config options.",
       "",
-      "Received nothing."
+      "Received nothing.",
     ]
 
     throw new DfuseError(messages.join("\n"))
@@ -326,7 +326,7 @@ function checkApiKey(apiKey: string | undefined, authentication: boolean | undef
       "The provided API key is not in the right format, expecting it",
       "to start with either `mobile_`, `server_` or `web_` followed",
       "by a series of hexadecimal character (i.e.) `web_0123456789abcdef`)",
-      ""
+      "",
     ]
 
     // Assume it's an API token if looks (roughly) like a JWT token
@@ -349,7 +349,7 @@ function checkApiKey(apiKey: string | undefined, authentication: boolean | undef
   }
 }
 
-function inferApiTokenStore(apiKey: string | undefined) {
+function inferApiTokenStore(apiKey: string | undefined): ApiTokenStore {
   const debug = debugFactory("dfuse:client")
   if (!apiKey) {
     debug("No authentication is necessary, using `NoOpApiTokenStore` concrete implementation")
@@ -455,6 +455,7 @@ export class DefaultClient implements DfuseClient {
       this.apiTokenManager = createNoopApiTokenManager("a.b.c")
     } else {
       this.apiTokenManager = createApiTokenManager(
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         () => this.authIssue(this.apiKey!),
         this.onTokenRefresh,
         0.95,
@@ -499,9 +500,7 @@ export class DefaultClient implements DfuseClient {
 
     if (options.operationType && !isValidDocumentType(options.operationType)) {
       throw new DfuseError(
-        `The 'options.operationType' value '${
-          options.operationType
-        }' is invalid, it must be either 'query', 'mutation' or 'subscription').`
+        `The 'options.operationType' value '${options.operationType}' is invalid, it must be either 'query', 'mutation' or 'subscription').`
       )
     }
 
@@ -540,7 +539,7 @@ export class DefaultClient implements DfuseClient {
         "Valid `options.operationType` values are either 'query', 'mutation' or 'subscription'.",
         "",
         "You can also force usage of WebSocket transport by providing the `options.onMessage` which",
-        "forces the usage of the WebSocket transport."
+        "forces the usage of the WebSocket transport.",
       ]
 
       throw new DfuseError(messages.join("\n"))
@@ -551,7 +550,7 @@ export class DefaultClient implements DfuseClient {
         "The `options.onMessage` parameter is required for 'subscription' document.",
         "If your document is not a 'subscription' type, this is probably a bug with the library.",
         "You can provide the `options.operationType` option to workaroundthe problem and report",
-        "the bug to us with the document string used."
+        "the bug to us with the document string used.",
       ]
 
       throw new DfuseError(messages.join("\n"))
@@ -631,7 +630,7 @@ export class DefaultClient implements DfuseClient {
     return this.registerStream(message, onMessage)
   }
 
-  private withDefaultOptions = (options: StreamOptions) => {
+  private withDefaultOptions = (options: StreamOptions): StreamOptions => {
     return { req_id: `${this.requestIdGenerator()}-${this.id}`, ...options }
   }
 
@@ -641,7 +640,7 @@ export class DefaultClient implements DfuseClient {
 
   public async authIssue(apiKey: string): Promise<AuthTokenResponse> {
     return this.httpClient.authRequest<AuthTokenResponse>(V1_AUTH_ISSUE, "POST", undefined, {
-      api_key: apiKey
+      api_key: apiKey,
     })
   }
 
@@ -656,7 +655,7 @@ export class DefaultClient implements DfuseClient {
 
     return this.apiRequest<BlockIdByTimeResponse>(V0_FETCH_BLOCK_ID_BY_TIME, "GET", {
       time: timeString,
-      comparator
+      comparator,
     })
   }
 
@@ -683,7 +682,7 @@ export class DefaultClient implements DfuseClient {
       block_count: options.blockCount === undefined ? MAX_UINT32_INTEGER : options.blockCount,
       limit: options.limit,
       cursor: options.cursor,
-      with_reversible: options.withReversible
+      with_reversible: options.withReversible,
     })
   }
 
@@ -694,7 +693,7 @@ export class DefaultClient implements DfuseClient {
     return this.apiRequest<StateAbiResponse>(V0_STATE_ABI, "GET", {
       account,
       block_num: options.blockNum,
-      json: options.json === undefined ? true : options.json
+      json: options.json === undefined ? true : options.json,
     })
   }
 
@@ -708,7 +707,7 @@ export class DefaultClient implements DfuseClient {
       account,
       table,
       hex_rows: hexRows,
-      block_num: options.blockNum
+      block_num: options.blockNum,
     })
   }
 
@@ -718,7 +717,7 @@ export class DefaultClient implements DfuseClient {
   ): Promise<StateKeyAccountsResponse> {
     return this.apiRequest<StateKeyAccountsResponse>(V0_STATE_KEY_ACCOUNTS, "GET", {
       public_key: publicKey,
-      block_num: options.blockNum
+      block_num: options.blockNum,
     })
   }
 
@@ -728,7 +727,7 @@ export class DefaultClient implements DfuseClient {
   ): Promise<StatePermissionLinksResponse> {
     return this.apiRequest<StatePermissionLinksResponse>(V0_STATE_PERMISSION_LINKS, "GET", {
       account,
-      block_num: options.blockNum
+      block_num: options.blockNum,
     })
   }
 
@@ -740,7 +739,7 @@ export class DefaultClient implements DfuseClient {
     return this.apiRequest<StateTableScopesResponse>(V0_STATE_TABLE_SCOPES, "GET", {
       account,
       table,
-      block_num: options.blockNum
+      block_num: options.blockNum,
     })
   }
 
@@ -764,7 +763,7 @@ export class DefaultClient implements DfuseClient {
       json: options.json === undefined ? true : options.json,
       key_type: options.keyType,
       with_block_num: options.withBlockNum,
-      with_abi: options.withAbi
+      with_abi: options.withAbi,
     })
   }
 
@@ -790,7 +789,7 @@ export class DefaultClient implements DfuseClient {
       json: options.json === undefined ? true : options.json,
       key_type: options.keyType,
       with_block_num: options.withBlockNum,
-      with_abi: options.withAbi
+      with_abi: options.withAbi,
     })
   }
 
@@ -818,10 +817,10 @@ export class DefaultClient implements DfuseClient {
         json: options.json === undefined ? true : options.json,
         key_type: options.keyType,
         with_block_num: options.withBlockNum,
-        with_abi: options.withAbi
+        with_abi: options.withAbi,
       },
       {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
       }
     )
   }
@@ -850,10 +849,10 @@ export class DefaultClient implements DfuseClient {
         json: options.json === undefined ? true : options.json,
         key_type: options.keyType,
         with_block_num: options.withBlockNum,
-        with_abi: options.withAbi
+        with_abi: options.withAbi,
       },
       {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
       }
     )
   }
@@ -935,7 +934,7 @@ export class DefaultClient implements DfuseClient {
     return undefined
   }
 
-  private onTokenRefresh = (apiToken: string) => {
+  private onTokenRefresh = (apiToken: string): void => {
     // Ensure we update the API token to have it at its latest value
     this.streamClient.setApiToken(apiToken)
     this.graphqlStreamClient.setApiToken(apiToken)
@@ -950,8 +949,6 @@ function isValidDocumentType(type?: string): boolean {
   return type === "subscription" || type === "query" || type === "mutation"
 }
 
-function randomReqId() {
-  return `dc-${Math.random()
-    .toString(16)
-    .substr(2)}`
+function randomReqId(): string {
+  return `dc-${Math.random().toString(16).substr(2)}`
 }

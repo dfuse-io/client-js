@@ -10,11 +10,11 @@ import { createDfuseClient, waitFor } from "@dfuse/client"
  * (https://github.com/dfuse-io/dfuse-eosio#getting-started) using the standard
  * configuration.
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     network: "localhost:8080",
     authentication: false,
-    secure: false
+    secure: false,
   })
 
   const streamTransfer = `subscription($cursor: String!) {
@@ -37,7 +37,7 @@ async function main() {
 
       actions.forEach(({ json }: any) => {
         const {
-          header: { timestamp: timeSlot, producer }
+          header: { timestamp: timeSlot, producer },
         } = json
         console.log(`Action [${producer} @ ${timeSlot}]`)
       })

@@ -18,7 +18,7 @@ import { createDfuseClient } from "@dfuse/client"
  * The example below show the actual implementation of the algorithm
  * outlined above.
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   const operation = `{

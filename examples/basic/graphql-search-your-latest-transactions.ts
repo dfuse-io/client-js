@@ -3,7 +3,7 @@ import { createDfuseClient } from "@dfuse/client"
 
 const account = "eoscanadacom"
 
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({ apiKey: DFUSE_API_KEY, network: DFUSE_API_NETWORK })
 
   const searchTransactions = `query ($limit: Int64!) {
@@ -17,7 +17,7 @@ async function main() {
 
   try {
     const response = await client.graphql(searchTransactions, {
-      variables: { limit: 10 }
+      variables: { limit: 10 },
     })
 
     console.log()
@@ -40,7 +40,7 @@ async function main() {
   client.release()
 }
 
-function buildEosqLink(transactionId: string) {
+function buildEosqLink(transactionId: string): string {
   let suffix = ""
   if (["jungle", "kylin", "worbli"].includes(DFUSE_API_NETWORK)) {
     suffix = `.${DFUSE_API_NETWORK}`

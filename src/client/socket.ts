@@ -5,7 +5,7 @@ import {
   Socket,
   SocketMessageListener,
   WebSocketFactory,
-  SocketConnectOptions
+  SocketConnectOptions,
 } from "../types/socket"
 
 export interface SocketOptions {
@@ -121,7 +121,7 @@ export interface SocketOptions {
    *
    * @default `() => {}` (noop)
    */
-  onError?: (event: object) => void
+  onError?: (event: any) => void
 
   /**
    * A callback that can be provided to be notified when the [[Socket]] receives a
@@ -139,7 +139,7 @@ export interface SocketOptions {
    *
    * @default `() => {}` (noop)
    */
-  onClose?: (event: object) => void
+  onClose?: (event: any) => void
 }
 
 // @deprecated Please use SocketConnectOptions instead, will be removed eventually
@@ -164,7 +164,7 @@ export function createSocket(url: string, options: SocketOptions = {}): Socket {
       options.webSocketProtocols,
       options.webSocketFactory
     ),
-    ...options
+    ...options,
   })
 }
 
@@ -203,13 +203,13 @@ function inferWebSocketFactory(
     "",
     "We invite you to read our documentation to learn more about this problem.",
     "",
-    "See https://github.com/dfuse-io/client-js#nodejs"
+    "See https://github.com/dfuse-io/client-js#nodejs",
   ]
 
   throw new DfuseClientError(messages.join("\n"))
 }
 
-const noop = () => {
+const noop = (): void => {
   return
 }
 
@@ -224,7 +224,7 @@ class DefaultSocket implements Socket {
   private apiToken?: string
   private options: SocketOptions
 
-  public isConnected: boolean = false
+  public isConnected = false
   public disconnectInitiator?: "client" | "server"
   public socket?: WebSocket
 
@@ -324,13 +324,13 @@ class DefaultSocket implements Socket {
       await this.reconnect()
     }
 
-    if (!this.isConnected) {
+    if (!this.isConnected || !this.socket) {
       this.debug("Socket not connected, unable to send message correctly.")
       throw new DfuseSocketError("Socket not connected, unable to send message correctly.")
     }
 
     this.debug("Sending message %o through socket.", message)
-    this.socket!.send(JSON.stringify(message))
+    this.socket.send(JSON.stringify(message))
   }
 
   private async createAnOpenSocket(
@@ -343,6 +343,7 @@ class DefaultSocket implements Socket {
 
     this.debug("Starting connection handshake with remote url %s.", url)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const socket: WebSocket = await this.options.webSocketFactory!(url)
 
       socket.onopen = onSocketOpen
@@ -386,7 +387,7 @@ class DefaultSocket implements Socket {
   private onSocketReconnectOpenFactory = (resolve: Resolver<boolean>) => () => {
     this.debug(
       "Received `onopen` (via reconnect) notification from socket with ready state %d.",
-      this.socket!.readyState
+      this.socket?.readyState
     )
     this.isConnected = true
     this.connectionPromise = undefined
@@ -424,7 +425,7 @@ class DefaultSocket implements Socket {
     this.onError(event)
   }
 
-  private onSocketCloseFactory = () => {
+  private onSocketCloseFactory = (): ((event: CloseEvent) => void) => {
     return this.commonOnSocketCloseFactory("connect", () => {
       this.reconnect().catch((error) => {
         this.debug("The re-connection never succeed, will not retry anymore.", error)
@@ -432,7 +433,10 @@ class DefaultSocket implements Socket {
     })
   }
 
-  private onSocketReconnectCloseFactory = (resolve: Resolver<void>, reject: Rejecter) => {
+  private onSocketReconnectCloseFactory = (
+    resolve: Resolver<void>,
+    reject: Rejecter
+  ): ((event: CloseEvent) => void) => {
     return this.commonOnSocketCloseFactory("reconnect", () => {
       this.tryReconnect(resolve, reject)
     })
@@ -441,7 +445,7 @@ class DefaultSocket implements Socket {
   private commonOnSocketCloseFactory = (
     tag: "connect" | "reconnect",
     reconnectWorker: () => void
-  ) => (event: CloseEvent) => {
+  ) => (event: CloseEvent): void => {
     this.debug("Received `onclose` (via %s) notification from socket.", tag)
     this.isConnected = false
     this.connectionPromise = undefined
@@ -485,7 +489,7 @@ class DefaultSocket implements Socket {
     }
   }
 
-  private onSocketMessage = (event: MessageEvent) => {
+  private onSocketMessage = (event: MessageEvent): void => {
     let message: any
     try {
       message = JSON.parse(event.data) as { [key: string]: any }
@@ -499,7 +503,7 @@ class DefaultSocket implements Socket {
     }
   }
 
-  private registerKeepAliveHandler() {
+  private registerKeepAliveHandler(): void {
     const keepAliveInterval =
       this.options.keepAliveIntervalInMs || DEFAULT_KEEP_ALIVE_INTERVAL_IN_MS
 
@@ -514,7 +518,7 @@ class DefaultSocket implements Socket {
     }, keepAliveInterval)
   }
 
-  private unregisterKeepAliveHandler() {
+  private unregisterKeepAliveHandler(): void {
     if (this.intervalHandler === undefined) {
       return
     }
@@ -544,7 +548,7 @@ class DefaultSocket implements Socket {
     return new Promise<boolean>(this.tryReconnect)
   }
 
-  private tryReconnect = (resolve: any, reject: any) => {
+  private tryReconnect = (resolve: any, reject: any): void => {
     let reconnectDelay = this.options.reconnectDelayInMs
     if (reconnectDelay === undefined) {
       reconnectDelay = DEFAULT_RECONNECT_DELAY_IN_MS
@@ -561,7 +565,7 @@ class DefaultSocket implements Socket {
     }, reconnectDelay)
   }
 
-  private cleanSocket() {
+  private cleanSocket(): void {
     if (this.intervalHandler !== undefined) {
       this.unregisterKeepAliveHandler()
     }
@@ -585,18 +589,18 @@ class DefaultSocket implements Socket {
    *
    * Those are two different listeners and must be both sent when possible.
    */
-  private onReconnect() {
+  private onReconnect(): void {
     // Let's call the `connect` `onReconnectListener` first then followed
     // by the one the consumer of the socket passed
     if (this.onReconnectListener) this.onReconnectListener()
     if (this.options.onReconnect) this.options.onReconnect()
   }
 
-  private onClose(message: any) {
+  private onClose(message: any): void {
     if (this.options.onClose) this.options.onClose(message)
   }
 
-  private onError(message: any) {
+  private onError(message: any): void {
     if (this.options.onError) this.options.onError(message)
   }
 

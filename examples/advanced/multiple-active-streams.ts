@@ -5,7 +5,7 @@ import {
   Stream,
   dynamicMessageDispatcher,
   ActionTraceInboundMessage,
-  OnStreamMessage
+  OnStreamMessage,
 } from "@dfuse/client"
 
 type BuyRamBytesData = {
@@ -40,10 +40,10 @@ type TransferData = {
  * a pool of possibilities. Having a single stream will always guarantee the
  * ordering of messages.
  */
-async function main() {
+async function main(): Promise<void> {
   const client = createDfuseClient({
     apiKey: DFUSE_API_KEY,
-    network: DFUSE_API_NETWORK
+    network: DFUSE_API_NETWORK,
   })
 
   const buyRamData = { accounts: "eosio", action_names: "buyrambytes" }
@@ -51,7 +51,7 @@ async function main() {
     buyRamData,
     dynamicMessageDispatcher({
       listening: onListeningFactory("buy_ram"),
-      action_trace: onBuyRamAction
+      action_trace: onBuyRamAction,
     })
   )
 
@@ -60,7 +60,7 @@ async function main() {
     ramData,
     dynamicMessageDispatcher({
       listening: onListeningFactory("ram_transfer"),
-      action_trace: onTransferToEosioRamAction
+      action_trace: onTransferToEosioRamAction,
     })
   )
 
@@ -76,13 +76,13 @@ async function main() {
   const mergedData = {
     accounts: "eosio|eosio.token",
     action_names: "buyrambytes|transfer",
-    receivers: "eosio|eosio.token|eosio.ram"
+    receivers: "eosio|eosio.token|eosio.ram",
   }
   const mergedStream: Stream = await client.streamActionTraces(
     mergedData,
     dynamicMessageDispatcher({
       listening: onListeningFactory("merged"),
-      action_trace: onMergedAction
+      action_trace: onMergedAction,
     })
   )
 
@@ -101,12 +101,12 @@ function onListeningFactory(tag: string): OnStreamMessage {
   }
 }
 
-function onBuyRamAction(message: ActionTraceInboundMessage<BuyRamBytesData>) {
+function onBuyRamAction(message: ActionTraceInboundMessage<BuyRamBytesData>): void {
   const data = message.data.trace.act.data
   console.log(`Buy RAM: ${data.payer} pays ${data.bytes} bytes to ${data.receiver}`)
 }
 
-function onTransferToEosioRamAction(message: ActionTraceInboundMessage<TransferData>) {
+function onTransferToEosioRamAction(message: ActionTraceInboundMessage<TransferData>): void {
   const data = message.data.trace.act.data
   console.log(`RAM cost: ${data.from} pays ${data.quantity} for the RAM`)
 }
@@ -126,7 +126,7 @@ function onTransferToEosioRamAction(message: ActionTraceInboundMessage<TransferD
  * current `newaccount` action is implemented, might be different in
  * the future on a different side/siste chain).
  */
-function onMergedAction(message: ActionTraceInboundMessage) {
+function onMergedAction(message: ActionTraceInboundMessage): void {
   const action = message.data.trace.act
   if (action.account === "eosio" && action.name === "buyrambytes") {
     onBuyRamAction(message as ActionTraceInboundMessage<BuyRamBytesData>)
