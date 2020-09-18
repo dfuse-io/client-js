@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.15 (September 18, 2020)
+
+- Added `authentication` option to `createDfuseClient` so it's much easier to disable authentication on the client instance. Use this when connecting to a dfuse for EOSIO local instance or to a dfuse Community Edition.
+
 ## 0.3.14 (July 22, 2020)
 
 - Improved the `DfuseApiError` returned from HTTP call when the body is not JSON.

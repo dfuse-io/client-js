@@ -56,6 +56,7 @@ import {
   ApiTokenStore,
   InMemoryApiTokenStore,
   LocalStorageApiTokenStore,
+  NoOpApiTokenStore,
   OnDiskApiTokenStore
 } from "./api-token-store"
 import { RefreshScheduler, createRefreshScheduler } from "./refresh-scheduler"
@@ -100,22 +101,41 @@ export interface DfuseClientOptions {
    * can obtain and manage your API keys at `https://app.dfuse.io`.
    * This is the self-management portal where all information
    * about your account can be found.
+   *
+   * If you are connecting to a `dfuse for EOSIO` instance
+   * (or a local instance of our other supported chains) or if you are
+   * connection to a dfuse Community Edition, you can leave this value
+   * blank but you need to also set `authentication: false` otherwise
+   * the client factory function will complain that `apiKey` is required.
    */
-  apiKey: string
+  apiKey?: string
 
   /**
    * Whether to use secure protocols or unsecure ones. This will
    * control final URL constructed using this parameter value and
    * the actual hostname as defined by the [[DfuseClientOptions.network]]
    * value.
+   *
+   * @default true
    */
   secure?: boolean
 
   /**
-   * This is the authentication URL that will be reach to issue
-   * new API token.
+   * Whether authentication mechanism should be used for this client
+   * instance. If you are connecting to a `dfuse for EOSIO` instance
+   * (or a local instance of our other supported chains) or if you are
+   * connection to a dfuse Community Edition, set this value to `false`
+   * so authentication will be disabled altogether.
    *
-   * @default `https://auth.dfuse.io`
+   * @default true
+   */
+  authentication?: boolean
+
+  /**
+   * This is the authentication URL that will be reach to issue
+   * new API token if `authentication` is set to `true`.
+   *
+   * @default 'https://auth.dfuse.io' if `authentication: true`, 'null://' otherwise
    */
   authUrl?: string
 
@@ -237,12 +257,13 @@ let clientInstanceId = 0
  * @kind Factories
  */
 export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
-  checkApiKey(options.apiKey)
+  checkApiKey(options.apiKey, options.authentication)
 
   const endpoint = networkToEndpoint(options.network)
   const secureEndpoint = options.secure === undefined ? true : options.secure
+  const authentication = options.authentication === undefined ? true : options.authentication
 
-  const authUrl = options.authUrl || "https://auth.dfuse.io"
+  const authUrl = options.authUrl || (authentication ? "https://auth.dfuse.io" : "null://")
   const restUrl = secureEndpoint ? `https://${endpoint}` : `http://${endpoint}`
   const websocketUrl = secureEndpoint ? `wss://${endpoint}` : `ws://${endpoint}`
 
@@ -284,7 +305,11 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 
 // Even though higher the type say it cannot be empty, this is usually provided
 // by the user and as such, as assume it could be undefined.
-function checkApiKey(apiKey: string | undefined) {
+function checkApiKey(apiKey: string | undefined, authentication: boolean | undefined) {
+  if (authentication !== undefined && authentication === false) {
+    return
+  }
+
   if (apiKey == null) {
     const messages = [
       "The client must be configured with an API key via the ",
@@ -324,8 +349,12 @@ function checkApiKey(apiKey: string | undefined) {
   }
 }
 
-function inferApiTokenStore(apiKey: string) {
+function inferApiTokenStore(apiKey: string | undefined) {
   const debug = debugFactory("dfuse:client")
+  if (!apiKey) {
+    debug("No authentication is necessary, using `NoOpApiTokenStore` concrete implementation")
+    return new NoOpApiTokenStore()
+  }
 
   debug("Inferring API token store default concrete implementation to use")
   if (typeof window !== "undefined" && window.localStorage != null) {
@@ -394,7 +423,7 @@ export class DefaultClient implements DfuseClient {
   public readonly endpoints: DfuseClientEndpoints
 
   protected id: number
-  protected apiKey: string
+  protected apiKey: string | undefined
   protected apiTokenManager: ApiTokenManager
   protected httpClient: HttpClient
   protected streamClient: StreamClient
@@ -405,7 +434,7 @@ export class DefaultClient implements DfuseClient {
 
   constructor(
     id: number,
-    apiKey: string,
+    apiKey: string | undefined,
     endpoints: DfuseClientEndpoints,
     httpClient: HttpClient,
     streamClient: StreamClient,
@@ -426,7 +455,7 @@ export class DefaultClient implements DfuseClient {
       this.apiTokenManager = createNoopApiTokenManager("a.b.c")
     } else {
       this.apiTokenManager = createApiTokenManager(
-        () => this.authIssue(this.apiKey),
+        () => this.authIssue(this.apiKey!),
         this.onTokenRefresh,
         0.95,
         apiTokenStore,

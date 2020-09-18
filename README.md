@@ -24,9 +24,10 @@ What you get by using this library:
 ## Quick Start
 
 _Notice_ You should replace the sequence of characters `Paste your API key here`
-in the script above with your actual API key obtain from https://app.dfuse.io. A
-valid API key starts with either `mobile_`, `server_` or `web_` followed by a series of
-hexadecimal character (i.e.) `web_0123456789abcdef`).
+in the script above with your actual API key obtained from https://app.dfuse.io. You are
+connecting to a local dfuse for EOSIO instance or to a dfuse Community Edition? Replace
+`apiKey: "<Paste your API key here>"` with `authentication: false` so authentication is
+disabled.
 
 ### EOS
 
@@ -41,7 +42,7 @@ const client = createDfuseClient({
 })
 
 const streamTransfer = `subscription($cursor: String!) {
-  searchTransactionsForward(query: "receiver:eosio.token action:transfer", cursor: $cursor) {
+  searchTransactionsForward(query: "receiver:eosio.token action:transfer -data.quantity:'0.0001 EOS'", cursor: $cursor) {
     undo cursor
     trace {
       matchingActions { json }
@@ -298,6 +299,9 @@ for production grade details on efficiently use `@dfuse/client`
 - [Search Your Latest Transactions](./examples/basic/search-your-latest-transactions.ts)
 - [Stream Transfers](./examples/basic/stream-transfers.ts)
 - [Stream Global State](./examples/basic/stream-global-state.ts)
+
+- [dfuse Community Edition](./examples/basic/community-edition.ts)
+- [dfuse for EOSIO](./examples/basic/dfuse-for-eosio.ts)
 
 #### Advanced
 

@@ -231,3 +231,22 @@ async function mkdirpSync(directory: string) {
     fs.mkdirSync(directory)
   }
 }
+
+/**
+ * Represents an no-op token storage concrete implementation. All operations
+ * are no-op and this should be used when no authentication is required for a given
+ * instance.
+ */
+export class NoOpApiTokenStore {
+  public release(): void {
+    return
+  }
+
+  public async get(): Promise<ApiTokenInfo | undefined> {
+    return undefined
+  }
+
+  public async set(): Promise<void> {
+    return
+  }
+}

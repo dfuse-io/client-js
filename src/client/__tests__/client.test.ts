@@ -93,6 +93,26 @@ describe("DfuseClient", () => {
     }
   })
 
+  it("correctly checks API key when authentication is explicitely true (in createDfuseClient)", () => {
+    try {
+      createDfuseClient({
+        network: "mainnet.eos.dfuse.io",
+        authentication: true,
+        httpClient,
+        streamClient,
+        apiTokenStore,
+        refreshScheduler,
+        requestIdGenerator
+      })
+      fail("Should have thrown a DfuseError")
+    } catch (error) {
+      expect(error).toBeInstanceOf(DfuseError)
+
+      // Let's just check how many lines there is and not the actual message
+      expect(error.message.split("\n").length, error.message).toEqual(4)
+    }
+  })
+
   it("correctly checks API key, handling invalid API token (in createDfuseClient)", () => {
     try {
       createDfuseClient({ apiKey: "eye.1hash17.values", network: "mainnet.eos.dfuse.io" })
@@ -100,9 +120,23 @@ describe("DfuseClient", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(DfuseError)
 
-      // Let's just check how many lines there is an not the actual message
+      // Let's just check how many lines there is and not the actual message
       expect(error.message.split("\n").length, error.message).toEqual(13)
     }
+  })
+
+  it("accepts undefined API key if authentication is false only (in createDfuseClient)", () => {
+    expect(() => {
+      createDfuseClient({
+        network: "mainnet.eos.dfuse.io",
+        authentication: false,
+        httpClient,
+        streamClient,
+        apiTokenStore,
+        refreshScheduler,
+        requestIdGenerator
+      })
+    }).not.toThrow()
   })
 
   it("refresh stream token on token refresh", async () => {
