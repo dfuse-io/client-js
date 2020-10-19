@@ -112,7 +112,7 @@ export type UnlistenMessageData = {
 
 /**
  * @deprecated The message factories are deprecated, there is no need to create your
- *             own message anynore. This will be removed in a future release. The standard
+ *             own message anymore. This will be removed in a future release. The standard
  *             client does not use this anymore.
  */
 export function unlistenMessage(data: UnlistenMessageData): OutboundMessage<UnlistenMessageData> {

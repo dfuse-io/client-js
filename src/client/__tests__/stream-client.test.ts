@@ -136,6 +136,19 @@ describe("StreamClient", () => {
     expect(socket.disconnectMock).toHaveBeenCalledTimes(1)
   })
 
+  it("keeps socket alive when no more stream present via close but keep socket open sets to true", async () => {
+    client = createStreamClient("any", {
+      socket,
+      autoDisconnectSocket: false,
+    })
+
+    const stream = await client.registerStream(message1, jest.fn())
+    await stream.close()
+
+    expect(socket.disconnectMock).toHaveBeenCalledTimes(0)
+    expect(socket.isConnected).toBeTruthy()
+  })
+
   it("does not call disconnect after a full register/unregister cycle with one still active", async () => {
     await client.registerStream(message1, jest.fn())
     const stream2 = await client.registerStream(message2, jest.fn())

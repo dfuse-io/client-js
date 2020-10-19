@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.16 (October 19, 2020)
+
+- Added `autoDisconnectSocket` option (on standard WebSocket streaming client) to add the possibility to prevent
+  automatic disconnection of socket when no more stream are active in the client. This was already available for
+  GraphQL over WebSocket but not for standard WebSocket stream.
+
 ## 0.3.15 (September 18, 2020)
 
 - Added `authentication` option to `createDfuseClient` so it's much easier to disable authentication on the client instance. Use this when connecting to a dfuse for EOSIO local instance or to a dfuse Community Edition.

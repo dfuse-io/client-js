@@ -69,7 +69,7 @@ export interface GraphqlStreamClientOptions {
 
   /**
    * When sets to `true`, when no more streams are active, the socket is
-   * automatically disconnected and closde. This option should be set to
+   * automatically disconnected and close. This option should be set to
    * `false` when using `Query` or `Mutation` over WebSocket transport
    * to avoid opening/closing the WebSocket connection for each operation
    * or when multiple short lived `Subscription`s are used.

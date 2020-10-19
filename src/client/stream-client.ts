@@ -37,6 +37,17 @@ export interface StreamClientOptions {
    * @default `true`
    */
   autoRestartStreamsOnReconnect?: boolean
+
+  /**
+   * When sets to `true`, when no more streams are active, the socket is
+   * automatically disconnected and close. This option should be set to
+   * `false` when using `Query` or `Mutation` over WebSocket transport
+   * to avoid opening/closing the WebSocket connection for each operation
+   * or when multiple short lived `Subscription`s are used.
+   *
+   * @default `true`
+   */
+  autoDisconnectSocket?: boolean
 }
 
 /**
@@ -53,21 +64,28 @@ export function createStreamClient(wsUrl: string, options: StreamClientOptions =
     options.socket || createSocket(wsUrl, { id: "stream", ...options.socketOptions }),
     options.autoRestartStreamsOnReconnect === undefined
       ? true
-      : options.autoRestartStreamsOnReconnect
+      : options.autoRestartStreamsOnReconnect,
+    options.autoDisconnectSocket === undefined ? true : options.autoDisconnectSocket
   )
 }
 
 class DefaultStreamClient {
   private socket: Socket
   private autoRestartStreamsOnReconnect: boolean
+  private autoDisconnectSocket: boolean
   private debug: IDebugger = debugFactory("dfuse:stream")
   private debugTrace: IDebugger = debugFactory("dfuse-trace:stream")
 
   private streams: { [id: string]: DefaultStream } = {}
 
-  constructor(socket: Socket, autoRestartStreamsOnReconnect: boolean) {
+  constructor(
+    socket: Socket,
+    autoRestartStreamsOnReconnect: boolean,
+    autoDisconnectSocket: boolean
+  ) {
     this.socket = socket
     this.autoRestartStreamsOnReconnect = autoRestartStreamsOnReconnect
+    this.autoDisconnectSocket = autoDisconnectSocket
   }
 
   public release(): void {
@@ -143,7 +161,7 @@ class DefaultStreamClient {
       await this.socket.send(message)
     }
 
-    if (Object.keys(this.streams).length <= 0) {
+    if (Object.keys(this.streams).length <= 0 && this.autoDisconnectSocket) {
       this.debug("No more stream present, disconnecting socket.")
       if (this.socket.isConnected) {
         await this.socket.disconnect()

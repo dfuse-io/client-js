@@ -172,7 +172,7 @@ describe("GraphqlStreamClient", () => {
     expect(socket.isConnected).toBeFalsy()
   })
 
-  it("keeps socket alive when no more stream present via close but keep socet open sets to true", async () => {
+  it("keeps socket alive when no more stream present via close but keep socket open sets to true", async () => {
     client = createGraphqlStreamClient("any", {
       socket,
       autoDisconnectSocket: false,
