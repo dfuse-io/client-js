@@ -1,6 +1,6 @@
 {
   "name": "@dfuse/client",
-  "version": "0.3.15",
+  "version": "0.3.16",
   "description": "dfuse JavaScript/TypeScript Client Library (for [dfuse API](https://docs.dfuse.io/))",
   "sideEffects": false,
   "main": "dist/lib/index.js",
@@ -101,7 +101,7 @@
     "terser": "^3.17.0",
     "ts-jest": "^26.3.0",
     "ts-node": "^7.0.1",
-    "typedoc": "^0.14.2",
+    "typedoc": "^0.19.2",
     "typedoc-default-themes-extension": "^0.0.3",
     "typedoc-plugin-toc-group": "^0.0.4",
     "typescript": "^4.0.2",

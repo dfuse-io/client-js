@@ -118,9 +118,9 @@ export interface DfuseClient {
    * on the `options` field.
    *
    * The [[Stream]] object can be used to control the stream. It can be marked via
-   * [[Stream#mark]] (so on reconnect, this stream restarts at the last marked location),
-   * joined via [[Stream#join]] (so you wait until the stream actually finishes) or closed
-   * via [[Stream#close]].
+   * [[Stream.mark]] (so on reconnect, this stream restarts at the last marked location),
+   * joined via [[Stream.join]] (so you wait until the stream actually finishes) or closed
+   * via [[Stream.close]].
    *
    * If we are unable to establish the connection or the initial send message cannot
    * be sent, then the promise will reject with the appropriate error.
