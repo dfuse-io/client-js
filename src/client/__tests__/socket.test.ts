@@ -522,6 +522,55 @@ describe("socket", () => {
     expect(onReconnect).toHaveBeenCalledTimes(0)
   })
 
+  it("is able to connect again when no fully closed yet", async () => {
+    const socket = createSocket("any", {
+      webSocketFactory: createWebSocketFactory(mockWebSocket),
+    })
+
+    setTimeout(() => {
+      openConnection(mockWebSocket)
+    })
+
+    await socket.connect(noopListener)
+
+    expect(socket.isConnected).toBeTruthy()
+
+    const reconnectionDeferred = new Deferred()
+
+    // Starts an asynchronous disconnect, socket is in half-state after the call has started
+    // New `connect` while in this state should "work" correctly
+    // eslint-disable-next-line jest/valid-expect-in-promise
+    socket.disconnect().catch(() => {
+      reconnectionDeferred.reject("disconnect failed")
+    })
+
+    setTimeout(async () => {
+      // Starts a connect phase while in half-state of disconnection
+      // eslint-disable-next-line jest/valid-expect-in-promise
+      Promise.race([
+        Promise.all([socket.connect(noopListener), socket.connect(noopListener)]),
+        rejectAfter(50),
+      ])
+        .then(() => {
+          reconnectionDeferred.resolve()
+          return
+        })
+        .catch((error) => {
+          reconnectionDeferred.reject(error)
+          return
+        })
+
+      await waitFor(0)
+
+      closeConnection(mockWebSocket, { code: 1001 })
+
+      await waitFor(0)
+      openConnection(mockWebSocket)
+    }, 0)
+
+    await expect(reconnectionDeferred.promise()).resolves.toBeUndefined()
+  })
+
   const createHandlerExecutor = (handlerName: string) => {
     return (socket: MockWebSocket, ...args: any[]) => {
       const handler = (socket as any)[handlerName]
@@ -570,4 +619,12 @@ async function waitForReconnectionToTrigger(): Promise<void> {
 
 function waitFor(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function rejectAfter(ms: number): Promise<void> {
+  return new Promise((resolve, reject) =>
+    setTimeout(() => {
+      reject("timeout reached")
+    }, ms)
+  )
 }

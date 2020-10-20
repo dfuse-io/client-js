@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.17 (October 20, 2020)
+
+- Fixed race condition when starting to start new streams (WebSocket or GraphQL over WebSocket) while the socket is currently
+  disconnecting but not fully disconnected.
+
 ## 0.3.16 (October 19, 2020)
 
 - Added `autoDisconnectSocket` option (on standard WebSocket streaming client) to add the possibility to prevent

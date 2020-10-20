@@ -255,11 +255,22 @@ class DefaultSocket implements Socket {
     options: SocketConnectOptions = {}
   ): Promise<void> {
     this.debug("About to connect to remote endpoint.")
+    if (this.closePromise) {
+      this.debug("A disconnection is already in progress, waiting for its termination first.")
+      try {
+        await this.closePromise
+      } catch (error) {
+        this.debug("Disconnect did not complete cleanly, ignoring.", error)
+      }
+    }
+
     if (this.connectionPromise !== undefined) {
+      this.debug("A connection is already in progress, joining it.")
       return this.connectionPromise
     }
 
     if (this.isConnected) {
+      this.debug("Already connected, nothing to do.")
       return
     }
 
@@ -284,7 +295,7 @@ class DefaultSocket implements Socket {
   public async disconnect(): Promise<void> {
     this.debug("About to disconnect from remote endpoint.")
     if (this.closePromise) {
-      this.debug("A disconnect is already in progress, joining it for termination.")
+      this.debug("A disconnection is already in progress, joining it for termination.")
       return this.closePromise
     }
 
@@ -450,14 +461,14 @@ class DefaultSocket implements Socket {
     this.isConnected = false
     this.connectionPromise = undefined
 
+    this.cleanSocket()
+
     if (this.closeResolver) {
       this.debug("Resolving disconnect close promise (via %s).", tag)
       this.closeResolver()
       this.closeResolver = undefined
       this.closePromise = undefined
     }
-
-    this.cleanSocket()
 
     this.debug(
       "Sending a `onClose` (%d) notification to client consumer (via %s).",
