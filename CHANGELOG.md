@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Improved error notification for GraphQL stream when the server rejects a message that is too big. Now, the stream will received an error and will close instead of staying alive while the socket is down.
+
 ## 0.3.17 (October 20, 2020)
 
 - Fixed race condition when starting to start new streams (WebSocket or GraphQL over WebSocket) while the socket is currently

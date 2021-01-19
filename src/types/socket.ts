@@ -1,6 +1,6 @@
 export type SocketConnectOptions = {
   onReconnect?: () => void
-  onTermination?: () => void
+  onTermination?: (initiator: "client" | "server", event: CloseEvent) => void
 }
 
 /**
@@ -36,7 +36,8 @@ export interface Socket {
    * socket has successfully re-connected with the remote endpoint.
    * @param options.onTermination An optional callback than can be passed to be notified when the socket
    * has now terminated, i.e. that it is now disconnected (wheter via a client or server termination)
-   * and that it will no try to auto-reconnect anymore.
+   * and that it will no try to auto-reconnect anymore. The callback will the initiator of the disconnection,
+   * either `'client'` or `'server'` and the `CloseEvent` received by the WebSocket as-is.
    */
   connect(listener: SocketMessageListener, options?: SocketConnectOptions): Promise<void>
 

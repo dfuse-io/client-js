@@ -162,7 +162,10 @@ class DefaultGrahqlStreamClient {
   ): Promise<Stream> {
     if (!this.socket.isConnected) {
       this.debug("Socket is not connected, connecting socket first.")
-      await this.socket.connect(this.handleMessage, { onReconnect: this.handleReconnection })
+      await this.socket.connect(this.handleMessage, {
+        onReconnect: this.handleReconnection,
+        onTermination: this.handleDisconnection,
+      })
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await this.connectionEstablisher.establish(this.apiToken!, this.socket)
     }
@@ -314,6 +317,42 @@ class DefaultGrahqlStreamClient {
     const closeError = message.type === "error" ? message.payload : undefined
 
     stream.close({ error: closeError }).catch(onStreamCloseError)
+  }
+
+  private handleDisconnection = (initiator: "client" | "server", event: CloseEvent): void => {
+    if (initiator == "server") {
+      this.debug("About to close all streams due to socket termination.", event)
+
+      const onStreamCloseError = (streamId: string, error: any): void => {
+        // FIXME: We shall pass this error somewhere, to some kind of notifier or event
+        //        emitter but there is no such stuff right now.
+        this.debug(
+          "Closing the stream [%s] (in response to socket disconnection) failed %O.",
+          streamId,
+          error
+        )
+      }
+
+      Object.keys(this.streams).map((id) => {
+        this.debug("About to close stream [%s] due to socket termination.", id)
+
+        const stream = this.streams[id]
+        const closeError = new Error(
+          `Server disconnected socket and no reconnection will be attempted (reason '${event.reason}', code '${event.code}')`
+        )
+
+        stream.onMessage(
+          {
+            type: "error",
+            errors: [closeError],
+            terminal: false,
+          },
+          stream
+        )
+
+        stream.close({ error: closeError }).catch((error) => onStreamCloseError(stream.id, error))
+      })
+    }
   }
 
   private handleReconnection = (): void => {

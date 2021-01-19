@@ -231,7 +231,7 @@ class DefaultSocket implements Socket {
   private debug: IDebugger
   private listener?: SocketMessageListener
   private onReconnectListener?: () => void
-  private onTerminationListener?: () => void
+  private onTerminationListener?: (initiator: "client" | "server", event: CloseEvent) => void
   private intervalHandler?: any
 
   private connectionPromise?: Promise<void>
@@ -493,7 +493,7 @@ class DefaultSocket implements Socket {
       this.debug("Terminating socket lifecycle (via %s), no reconnection will be attempted.", tag)
 
       if (this.onTerminationListener) {
-        this.onTerminationListener()
+        this.onTerminationListener(this.disconnectInitiator || "server", event)
       }
 
       this.disconnectInitiator = undefined

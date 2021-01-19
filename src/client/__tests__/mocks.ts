@@ -219,7 +219,7 @@ export type SocketController = {
   replier(handler: (outboundMessage: any) => unknown | undefined): void
 
   notifyReconnection(): void
-  notifyTermination(): void
+  notifyTermination(initiator: "client" | "server", event: any): void
 
   setConnected(): void
   setDisconnected(): void
@@ -229,7 +229,7 @@ export const createSocketController = (socket: MockSocket): SocketController => 
   let sender: SocketMessageListener | undefined
   let replier: ((outboundMessage: any) => unknown | undefined) | undefined
   let reconnecNotifier: (() => void) | undefined
-  let terminationNotifier: (() => void) | undefined
+  let terminationNotifier: ((initiator: "client" | "server", event: any) => void) | undefined
 
   socket.sendMock.mockImplementation((message: any) => {
     if (replier) {
@@ -279,9 +279,9 @@ export const createSocketController = (socket: MockSocket): SocketController => 
       }
     },
 
-    notifyTermination() {
+    notifyTermination(initiator: "client" | "server", event: any) {
       if (terminationNotifier) {
-        terminationNotifier()
+        terminationNotifier(initiator, event)
       }
     },
 
