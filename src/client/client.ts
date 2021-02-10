@@ -263,7 +263,15 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const secureEndpoint = options.secure === undefined ? true : options.secure
   const authentication = options.authentication === undefined ? true : options.authentication
 
-  const authUrl = options.authUrl || (authentication ? "https://auth.dfuse.io" : "null://")
+  let defaultAuthUrl = "null://"
+
+  if (authentication && isEnterpriseEdition(endpoint)) {
+    defaultAuthUrl = "https://auth.dfuse.io"
+  } else if (authentication && isCommunityEdition(endpoint)) {
+    defaultAuthUrl = "https://auth.eosnation.io"
+  }
+
+  const authUrl = options.authUrl || defaultAuthUrl
   const restUrl = secureEndpoint ? `https://${endpoint}` : `http://${endpoint}`
   const websocketUrl = secureEndpoint ? `wss://${endpoint}` : `ws://${endpoint}`
 
@@ -347,6 +355,14 @@ function checkApiKey(apiKey: string | undefined, authentication: boolean | undef
 
     throw new DfuseError(messages.join("\n"))
   }
+}
+
+function isEnterpriseEdition(endpoint: string): boolean {
+  return endpoint.includes("dfuse.io")
+}
+
+function isCommunityEdition(endpoint: string): boolean {
+  return endpoint.includes("eosnation.io")
 }
 
 function inferApiTokenStore(apiKey: string | undefined): ApiTokenStore {
