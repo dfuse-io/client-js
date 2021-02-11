@@ -1,5 +1,7 @@
 # Changelog
 
+- Removed the api key prefix validation for non enterprise Dfuse editions.
+
 ## 0.3.17 (October 20, 2020)
 
 - Fixed race condition when starting to start new streams (WebSocket or GraphQL over WebSocket) while the socket is currently
