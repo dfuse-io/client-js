@@ -81,20 +81,6 @@ describe("DfuseClient", () => {
     }).not.toThrow()
   })
 
-  it("correctly checks API key (in createDfuseClient)", () => {
-    const triggerCheck = (): DfuseClient =>
-      createDfuseClient({ apiKey: "web_!!!!!!", network: "mainnet.eos.dfuse.io" })
-
-    expect(triggerCheck).toThrowError(DfuseError)
-    expect(triggerCheck).toThrowErrorMatchingInlineSnapshot(`
-      "The provided API key is not in the right format, expecting it
-      to start with either \`mobile_\`, \`server_\` or \`web_\` followed
-      by a series of hexadecimal character (i.e.) \`web_0123456789abcdef\`)
-
-      Input received: web_!!!!!!"
-    `)
-  })
-
   it("correctly checks API key when authentication is explicitely true (in createDfuseClient)", () => {
     const triggerCheck = (): DfuseClient =>
       createDfuseClient({
@@ -122,11 +108,7 @@ describe("DfuseClient", () => {
 
     expect(triggerCheck).toThrowError(DfuseError)
     expect(triggerCheck).toThrowErrorMatchingInlineSnapshot(`
-      "The provided API key is not in the right format, expecting it
-      to start with either \`mobile_\`, \`server_\` or \`web_\` followed
-      by a series of hexadecimal character (i.e.) \`web_0123456789abcdef\`)
-
-      It seems your providing directly a API token (JWT) instead
+      "It seems your providing directly a API token (JWT) instead
       of an API key and are using your previous authentication protocol.
       Please refer to http://docs.dfuse.io/#authentication for
       all the details about API key and how to generate an API token
