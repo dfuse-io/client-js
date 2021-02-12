@@ -257,9 +257,9 @@ let clientInstanceId = 0
  * @kind Factories
  */
 export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
-  const endpoint = networkToEndpoint(options.network)
-  checkApiKey(options.apiKey, options.authentication, endpoint)
+  checkApiKey(options.apiKey, options.authentication)
 
+  const endpoint = networkToEndpoint(options.network)
   const secureEndpoint = options.secure === undefined ? true : options.secure
   const authentication = options.authentication === undefined ? true : options.authentication
 
@@ -305,11 +305,7 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
 
 // Even though higher the type say it cannot be empty, this is usually provided
 // by the user and as such, as assume it could be undefined.
-function checkApiKey(
-  apiKey: string | undefined,
-  authentication: boolean | undefined,
-  endpoint: string
-): void {
+function checkApiKey(apiKey: string | undefined, authentication: boolean | undefined): void {
   if (authentication !== undefined && authentication === false) {
     return
   }
@@ -325,20 +321,9 @@ function checkApiKey(
     throw new DfuseError(messages.join("\n"))
   }
 
-  const messages: string[] = []
-
-  if (isEnterpriseEdition(endpoint) && !apiKey.match(/^(mobile|server|web)_[0-9a-f]{2,}/i)) {
-    messages.push(
-      "The provided API key is not in the right format, expecting it",
-      "to start with either `mobile_`, `server_` or `web_` followed",
-      "by a series of hexadecimal character (i.e.) `web_0123456789abcdef`)",
-      ""
-    )
-  }
-
   // Assume it's an API token if looks (roughly) like a JWT token
   if (apiKey.split(".").length === 3) {
-    messages.push(
+    const messages = [
       "It seems your providing directly a API token (JWT) instead",
       "of an API key and are using your previous authentication protocol.",
       "Please refer to http://docs.dfuse.io/#authentication for",
@@ -346,18 +331,12 @@ function checkApiKey(
       "from it.",
       "",
       "And you can visit https://app.dfuse.io to obtain your free API key",
-      ""
-    )
-  }
+      "",
+    ]
 
-  if (messages.length > 0) {
     messages.push(`Input received: ${apiKey}`)
     throw new DfuseError(messages.join("\n"))
   }
-}
-
-function isEnterpriseEdition(endpoint: string): boolean {
-  return endpoint.includes("dfuse.io")
 }
 
 function inferApiTokenStore(apiKey: string | undefined): ApiTokenStore {

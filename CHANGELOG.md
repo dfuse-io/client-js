@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Removed the api key prefix validation for non enterprise dfuse editions.
+- Removed the api key prefix validation.
 
 - Improved error notification for GraphQL stream when the server rejects a message that is too big. Now, the stream will received an error and will close instead of staying alive while the socket is down.
 
