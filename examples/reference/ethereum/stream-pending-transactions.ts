@@ -18,7 +18,8 @@ async function main(): Promise<void> {
     },
   })
 
-  const addresses = loadAddresses("./addresses.json")
+  // Could be a list coming from a file, we tested successfully with 90K addresses without any problem
+  const addresses = ["0xA4e5961B58DBE487639929643dCB1Dc3848dAF5E"]
 
   const streamPendingTrxs = `subscription ($addresses: [String!]!, $fields: FILTER_FIELD!) {
     _alphaPendingTransactions(filterAddresses: $addresses, filterField: $fields) {
@@ -46,8 +47,7 @@ async function main(): Promise<void> {
     },
     {
       variables: {
-        // addresses: ["0xA4e5961B58DBE487639929643dCB1Dc3848dAF5E"],
-        addresses: addresses(),
+        addresses,
         fields: "FROM_OR_TO",
       },
     }
@@ -66,8 +66,4 @@ async function webSocketFactory(url: string, protocols: string[] = []): Promise<
   return new WebSocketClient(url, protocols, {
     maxPayload: 45 * 1024 * 1024, // 45 Mib
   })
-}
-
-async function loadAddresses(file: string): Promise<string[]> {
-  return []
 }
