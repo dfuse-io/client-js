@@ -32,7 +32,7 @@ disabled.
 ### EOSIO
 
 <!-- prettier-ignore -->
-See [examples/eosio/stream-transfers-graphql.ts](./examples/basic/eosio/stream-transfers-graphql.ts)
+See [examples/basic/eosio/stream-transfers-graphql.ts](./examples/basic/eosio/stream-transfers-graphql.ts)
 
 ```js
 const { createDfuseClient } = require("@dfuse/client")
@@ -75,7 +75,7 @@ await client.graphql(streamTransfer, (message, stream) => {
 
 ### Ethereum
 
-See [examples/ethereum/stream-transfers.ts](./examples/basic/ethereum/stream-transfers.ts)
+See [examples/basic/ethereum/stream-transfers.ts](./examples/basic/ethereum/stream-transfers.ts)
 
 <!-- prettier-ignore -->
 ```js
@@ -130,7 +130,7 @@ put the following code:
     global.fetch = require("node-fetch");
     global.WebSocket = require("ws");
 
-You can check the [Node.js Configuration](./examples/advanced/nodejs-fetch-and-websocket-options.ts)
+You can check the [Node.js Configuration](./examples/advanced/common/nodejs-fetch-and-websocket-options.ts)
 example for how to avoid polluting the global scope.
 
 ### Sane Defaults
@@ -273,7 +273,7 @@ build so it's usable by the examples:
 Ensures you have an environment variable `DFUSE_API_KEY` set to your dfuse API Key value.
 Then simply issue the following command (pick the example file you want to run):
 
-    yarn run:example examples/basic/eosio/stream-transfers.ts
+    yarn run:example examples/basic/eosio/stream-transfers-graphql.ts
 
 #### Browser Example
 
@@ -294,13 +294,13 @@ for production grade details on efficiently use `@dfuse/client`
 - [GraphQL Stream Transfers (Query)](./examples/basic/eosio/stream-transfers-graphql.ts)
 - [GraphQL Search Your Latest Transactions (Subscription)](./examples/basic/eosio/search-your-latest-transactions-graphql.ts)
 
-- [Check Balance (delta between fixed block and now)](./examples/basic/eosio/state-check-balance.ts)
-- [Search Your Latest Transactions](./examples/basic/eosio/search-your-latest-transactions.ts)
-- [Stream Transfers](./examples/basic/eosio/stream-transfers.ts)
-- [Stream Global State](./examples/basic/eosio/stream-global-state.ts)
+- [REST Check Balance (delta between fixed block and now)](./examples/basic/eosio/state-check-balance.ts)
+- [REST Search Your Latest Transactions](./examples/basic/eosio/search-your-latest-transactions.ts)
+- [WebSocket Stream Transfers](./examples/basic/eosio/stream-transfers-ws.ts)
+- [WebSocket Stream Global State](./examples/basic/eosio/stream-global-state-ws.ts)
 
 - [dfuse for EOSIO](./examples/basic/eosio/dfuse-for-eosio.ts)
-- [dfuse Community Edition (EOSIO)](./examples/basic/eosio/community-edition.ts)
+- [dfuse Community Edition (EOSIO)](./examples/basic/eosio/dfuse-community-edition.ts)
 
 ##### Ethereum
 
@@ -350,7 +350,7 @@ in each dfuse Stream and full configuration options for the library itself and a
 ##### EOSIO (REST API)
 
 - [fetch-block-id-by-time.ts](./examples/reference/eosio/fetch-block-id-by-time.ts)
-- [fetch-transaction.ts](./examples/reference/eosio/fetch-transactions.ts)
+- [fetch-transaction.ts](./examples/reference/eosio/fetch-transaction.ts)
 - [search-transactions.ts](./examples/reference/eosio/search-transactions.ts)
 - [state-abi-bin-to-json.ts](./examples/reference/eosio/state-abi-bin-to-json.ts)
 - [state-abi.ts](./examples/reference/eosio/state-abi.ts)
@@ -367,6 +367,11 @@ in each dfuse Stream and full configuration options for the library itself and a
 - [stream-head-info.ts](./examples/reference/eosio/stream-head-info.ts)
 - [stream-table-rows.ts](./examples/reference/eosio/stream-table-rows.ts)
 - [stream-transaction.ts](./examples/reference/eosio/stream-transaction.ts)
+
+##### Ethereum (GraphQL API)
+
+- [stream-blocks.ts](./examples/reference/ethereum/stream-blocks.ts)
+- [stream-pending-transactions.ts](./examples/reference/ethereum/stream-pending-transactions.ts)
 
 ## Development
 
