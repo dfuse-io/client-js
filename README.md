@@ -370,7 +370,6 @@ in each dfuse Stream and full configuration options for the library itself and a
 
 ##### Ethereum (GraphQL API)
 
-- [stream-blocks.ts](./examples/reference/ethereum/stream-blocks.ts)
 - [stream-pending-transactions.ts](./examples/reference/ethereum/stream-pending-transactions.ts)
 
 ## Development
