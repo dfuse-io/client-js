@@ -95,7 +95,7 @@ describe("DfuseClient", () => {
 
     expect(triggerCheck).toThrowError(DfuseError)
     expect(triggerCheck).toThrowErrorMatchingInlineSnapshot(`
-      "The client must be configured with an API key via the 
+      "The client must be configured with an API key via the
       \`apiKey\` config options.
 
       Received nothing."
@@ -120,18 +120,88 @@ describe("DfuseClient", () => {
     `)
   })
 
-  it("accepts undefined API key if authentication is false only (in createDfuseClient)", () => {
-    expect(() => {
-      createDfuseClient({
-        network: "mainnet.eos.dfuse.io",
-        authentication: false,
-        httpClient,
-        streamClient,
-        apiTokenStore,
-        refreshScheduler,
-        requestIdGenerator,
-      })
-    }).not.toThrow()
+  it("correclty assigns uses null:// auth when authentication disabled and endpoint ends with anything else than eosnation.io", () => {
+    const endpoints = createDfuseClient({
+      apiKey: "abc134",
+      network: "mainnet.fast.io",
+      authentication: false,
+      httpClient,
+      streamClient,
+      apiTokenStore,
+      refreshScheduler,
+      requestIdGenerator,
+    }).endpoints
+
+    expect(endpoints).toEqual({
+      authUrl: "null://",
+      graphqlQueryUrl: "https://mainnet.fast.io/graphql",
+      graphqlStreamUrl: "wss://mainnet.fast.io/graphql",
+      restUrl: "https://mainnet.fast.io",
+      websocketUrl: "wss://mainnet.fast.io",
+    })
+  })
+
+  it("correclty assigns uses null:// auth when authentication disabled and endpoint ends with eosnation.io", () => {
+    const endpoints = createDfuseClient({
+      apiKey: "abc134",
+      network: "mainnet.eosnation.io",
+      authentication: false,
+      httpClient,
+      streamClient,
+      apiTokenStore,
+      refreshScheduler,
+      requestIdGenerator,
+    }).endpoints
+
+    expect(endpoints).toEqual({
+      authUrl: "null://",
+      graphqlQueryUrl: "https://mainnet.eosnation.io/graphql",
+      graphqlStreamUrl: "wss://mainnet.eosnation.io/graphql",
+      restUrl: "https://mainnet.eosnation.io",
+      websocketUrl: "wss://mainnet.eosnation.io",
+    })
+  })
+
+  it("correclty assigns dfuse auth endpoint when authentication enabled and endpoint ends with anything else than eosnation.io", () => {
+    const endpoints = createDfuseClient({
+      apiKey: "abc134",
+      network: "mainnet.fast.io",
+      authentication: true,
+      httpClient,
+      streamClient,
+      apiTokenStore,
+      refreshScheduler,
+      requestIdGenerator,
+    }).endpoints
+
+    expect(endpoints).toEqual({
+      authUrl: "https://auth.dfuse.io",
+      graphqlQueryUrl: "https://mainnet.fast.io/graphql",
+      graphqlStreamUrl: "wss://mainnet.fast.io/graphql",
+      restUrl: "https://mainnet.fast.io",
+      websocketUrl: "wss://mainnet.fast.io",
+    })
+  })
+
+  it("correclty assigns Nation auth endpoint when authentication enabled and endpoint ends with eosnation.io", () => {
+    const endpoints = createDfuseClient({
+      apiKey: "abc134",
+      network: "mainnet.eosnation.io",
+      authentication: true,
+      httpClient,
+      streamClient,
+      apiTokenStore,
+      refreshScheduler,
+      requestIdGenerator,
+    }).endpoints
+
+    expect(endpoints).toEqual({
+      authUrl: "https://auth.eosnation.io",
+      graphqlQueryUrl: "https://mainnet.eosnation.io/graphql",
+      graphqlStreamUrl: "wss://mainnet.eosnation.io/graphql",
+      restUrl: "https://mainnet.eosnation.io",
+      websocketUrl: "wss://mainnet.eosnation.io",
+    })
   })
 
   it("refresh stream token on token refresh", async () => {

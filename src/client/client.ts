@@ -264,11 +264,12 @@ export function createDfuseClient(options: DfuseClientOptions): DfuseClient {
   const authentication = options.authentication === undefined ? true : options.authentication
 
   let defaultAuthUrl = "null://"
-
-  if (authentication && isEnterpriseEdition(endpoint)) {
-    defaultAuthUrl = "https://auth.dfuse.io"
-  } else if (authentication && isCommunityEdition(endpoint)) {
-    defaultAuthUrl = "https://auth.eosnation.io"
+  if (authentication) {
+    if (isCommunityEdition(endpoint)) {
+      defaultAuthUrl = "https://auth.eosnation.io"
+    } else {
+      defaultAuthUrl = "https://auth.dfuse.io"
+    }
   }
 
   const authUrl = options.authUrl || defaultAuthUrl
@@ -345,14 +346,6 @@ function checkApiKey(apiKey: string | undefined, authentication: boolean | undef
     messages.push(`Input received: ${apiKey}`)
     throw new DfuseError(messages.join("\n"))
   }
-}
-
-function isEnterpriseEdition(endpoint: string): boolean {
-  return endpoint.includes("dfuse.io")
-}
-
-function isCommunityEdition(endpoint: string): boolean {
-  return endpoint.includes("eosnation.io")
 }
 
 function inferApiTokenStore(apiKey: string | undefined): ApiTokenStore {
@@ -957,4 +950,8 @@ function isValidDocumentType(type?: string): boolean {
 
 function randomReqId(): string {
   return `dc-${Math.random().toString(16).substr(2)}`
+}
+
+function isCommunityEdition(endpoint: string): boolean {
+  return endpoint.includes("eosnation.io")
 }
