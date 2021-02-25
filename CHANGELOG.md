@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.19 (February 25, 2021)
+
+- Added a dependency bump from dependabot that was missed when doing the 0.3.8 release.
+
 ## 0.3.18 (February 25, 2021)
 
 - Added a default authentication endpoint for the dfuse Community Edition.
