@@ -321,7 +321,7 @@ function checkApiKey(apiKey: string | undefined, authentication: boolean | undef
 
   if (apiKey == null) {
     const messages = [
-      "The client must be configured with an API key via the ",
+      "The client must be configured with an API key via the",
       "`apiKey` config options.",
       "",
       "Received nothing.",
