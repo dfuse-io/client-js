@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.18 (February 25, 2021)
 
 - Added a default authentication endpoint for the dfuse Community Edition.
 
