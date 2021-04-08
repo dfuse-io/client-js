@@ -1048,7 +1048,7 @@ describe("DfuseClient", () => {
   })
 })
 
-describe("DfuseClient without authentication", () => {
+describe("DfuseClient with authUrl null://", () => {
   let httpClient: MockHttpClient
   let streamClient: MockStreamClient
   let graphqlStreamClient: MockGraphqlStreamClient
@@ -1093,7 +1093,61 @@ describe("DfuseClient without authentication", () => {
     expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
 
     expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
-      "a.b.c",
+      "",
+      "/v0/state/abi",
+      "GET",
+      { account: "eosio", block_num: undefined, json: true },
+      undefined,
+      undefined
+    )
+  })
+})
+
+describe("DfuseClient with authentication: false", () => {
+  let httpClient: MockHttpClient
+  let streamClient: MockStreamClient
+  let graphqlStreamClient: MockGraphqlStreamClient
+  let apiTokenStore: MockApiTokenStore
+  let refreshScheduler: MockRefreshScheduler
+  let requestIdGenerator: RequestIdGenerator
+  let client: DfuseClient
+
+  beforeEach(() => {
+    jest.spyOn(Date, "now").mockReturnValue(currentDate)
+
+    httpClient = new MockHttpClient()
+    streamClient = new MockStreamClient()
+    graphqlStreamClient = new MockGraphqlStreamClient()
+    apiTokenStore = new MockApiTokenStore()
+    refreshScheduler = new MockRefreshScheduler()
+    requestIdGenerator = mock<string>(() => mockRequestId)
+
+    apiTokenStore.getMock.mockReturnValue(Promise.resolve(nonExpiredApiTokenInfo))
+
+    client = createDfuseClient({
+      network: "mainnet.eos.dfuse.io",
+      authentication: false,
+      httpClient,
+      streamClient,
+      graphqlStreamClient,
+      apiTokenStore,
+      refreshScheduler,
+      requestIdGenerator,
+    })
+
+    // @ts-ignore For testing purposes, this exists on the client
+    client.id = 1
+  })
+
+  it("return a default token and not call auth issuer", async () => {
+    await client.stateAbi("eosio")
+
+    expect(httpClient.authRequestMock).toHaveBeenCalledTimes(0)
+    expect(refreshScheduler.scheduleMock).toHaveBeenCalledTimes(0)
+    expect(httpClient.apiRequestMock).toHaveBeenCalledTimes(1)
+
+    expect(httpClient.apiRequestMock).toHaveBeenCalledWith(
+      undefined,
       "/v0/state/abi",
       "GET",
       { account: "eosio", block_num: undefined, json: true },

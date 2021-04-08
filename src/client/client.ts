@@ -451,7 +451,7 @@ export class DefaultClient implements DfuseClient {
     this.requestIdGenerator = requestIdGenerator
 
     if (this.endpoints.authUrl.startsWith("null://")) {
-      this.apiTokenManager = createNoopApiTokenManager("a.b.c")
+      this.apiTokenManager = createNoopApiTokenManager("")
     } else {
       this.apiTokenManager = createApiTokenManager(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -506,8 +506,10 @@ export class DefaultClient implements DfuseClient {
     // If an `onMessage` options is provided, always use the WebSocket connection
     const onMessageProvided = typeof onMessage === "function" && onMessage
     if (onMessageProvided) {
-      return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
-        this.graphqlStreamClient.setApiToken(apiTokenInfo.token)
+      return this.withApiToken((apiTokenInfo: ApiTokenInfo | undefined) => {
+        if (apiTokenInfo) {
+          this.graphqlStreamClient.setApiToken(apiTokenInfo.token)
+        }
 
         return this.graphqlStreamClient.registerStream(
           `${this.requestIdGenerator()}-${this.id}`,
@@ -863,8 +865,10 @@ export class DefaultClient implements DfuseClient {
     body?: any,
     headers?: HttpHeaders
   ): Promise<T> {
-    return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
-      return this.httpClient.apiRequest<T>(apiTokenInfo.token, path, method, params, body, headers)
+    return this.withApiToken((apiTokenInfo: ApiTokenInfo | undefined) => {
+      const apiToken = apiTokenInfo?.token
+
+      return this.httpClient.apiRequest<T>(apiToken, path, method, params, body, headers)
     })
   }
 
@@ -876,20 +880,26 @@ export class DefaultClient implements DfuseClient {
     message: OutboundMessage,
     onMessage: OnStreamMessage
   ): Promise<Stream> {
-    return this.withApiToken((apiTokenInfo: ApiTokenInfo) => {
-      this.streamClient.setApiToken(apiTokenInfo.token)
+    return this.withApiToken((apiTokenInfo: ApiTokenInfo | undefined) => {
+      if (apiTokenInfo) {
+        this.streamClient.setApiToken(apiTokenInfo.token)
+      }
 
       return this.streamClient.registerStream(message, onMessage)
     })
   }
 
-  private async withApiToken<R>(worker: (apiTokenInfo: ApiTokenInfo) => Promise<R>): Promise<R> {
-    let apiTokenInfo: ApiTokenInfo
-    try {
-      this.debug("Retrieving latest API token via token manager")
-      apiTokenInfo = await this.apiTokenManager.getTokenInfo()
-    } catch (error) {
-      throw new DfuseClientError("Unable to obtain the API token", error)
+  private async withApiToken<R>(
+    worker: (apiTokenInfo: ApiTokenInfo | undefined) => Promise<R>
+  ): Promise<R> {
+    let apiTokenInfo: ApiTokenInfo | undefined = undefined
+    if (this.apiKey) {
+      try {
+        this.debug("Retrieving latest API token via token manager")
+        apiTokenInfo = await this.apiTokenManager.getTokenInfo()
+      } catch (error) {
+        throw new DfuseClientError("Unable to obtain the API token", error)
+      }
     }
 
     return await worker(apiTokenInfo)

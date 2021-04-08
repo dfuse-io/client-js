@@ -137,7 +137,7 @@ class DefaultHttpClient {
   }
 
   public async apiRequest<T>(
-    apiToken: string,
+    apiToken: string | undefined,
     path: string,
     method: string,
     params?: HttpQueryParameters,

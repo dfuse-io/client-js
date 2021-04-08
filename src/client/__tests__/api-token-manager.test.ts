@@ -16,7 +16,7 @@ const nonExpiredJustBeforeApiTokenInfo = { token: "non-expired-just-before", exp
 const expiredTokenInfo = { token: "expired-far", expires_at: 100 }
 const expiredRightOnApiTokenInfo = { token: "expired-right-on", expires_at: 1000 }
 const expiredJustAfterApiTokenInfo = { token: "expired-just-after", expires_at: 999 }
-const noopApiTokenInfo = { token: "aa.bb.cc", expires_at: 0 }
+const noopApiTokenInfo = { token: "aa.bb.cc", expires_at: Number.MAX_SAFE_INTEGER }
 
 const defaultFetchApiTokenInfo = nonExpiredApiTokenInfo
 

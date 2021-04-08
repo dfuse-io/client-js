@@ -87,7 +87,7 @@ export interface HttpClient {
    * not fitting our expected format.
    */
   apiRequest<T>(
-    apiToken: string,
+    apiToken: string | undefined,
     path: string,
     method: string,
     params?: HttpQueryParameters,

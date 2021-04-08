@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.20 (April 8, 2021)
+
+- Fixed problem on dfuse Community Edition when using `authentication: false`.
+
 ## 0.3.19 (February 25, 2021)
 
 - Added a dependency bump from dependabot that was missed when doing the 0.3.8 release.

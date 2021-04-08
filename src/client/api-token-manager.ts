@@ -45,7 +45,7 @@ export function createApiTokenManager(
  * Create the Noop [[ApiTokenManager]] interface that will manage all the lifecycle
  * of a token.
  *
- * @param token The hardwired token value (default value -> `a.b.c`)
+ * @param token The hardwired token value
  *
  * @kind Factories
  */
@@ -184,8 +184,8 @@ class NoopApiTokenManager implements ApiTokenManager {
   private debug: IDebugger
 
   constructor(token: string) {
-    this.token = token || "a.b.c"
-    this.expiresAt = 0
+    this.token = token
+    this.expiresAt = Number.MAX_SAFE_INTEGER
     this.debug = debugFactory("dfuse:token-manager-noop")
   }
 
