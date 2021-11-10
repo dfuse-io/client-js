@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.21 (November 9, 2021)
+
+- **Deprecated** `op` field of `RamOp`, use `family` and `action` fields instead.
+
+- Added `family` and `action` to `RamOp` type.
+
 ## 0.3.20 (April 8, 2021)
 
 - Fixed problem on dfuse Community Edition when using `authentication: false`.

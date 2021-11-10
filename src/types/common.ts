@@ -81,7 +81,15 @@ export type DbRow<T = unknown> = {
 }
 
 export type RamOp = {
+  /**
+   * @deprecated This field is scheduled for removal, newer RamOp will have this field set to
+   * "deprecated".
+   *
+   * Use the `family` and `action` fields instead
+   */
   op: string
+  family: string
+  action: string
   action_idx: number
   payer: string
   delta: number

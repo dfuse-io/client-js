@@ -53,7 +53,7 @@ Convert that to the following:
 ```js
 const client = createDfuseClient({
   apiKey: "Paste your API key here",
-  network: "mainnet" // Valid values are: `mainnet`, `jungle`, `kylin` or an host name
+  network: "mainnet", // Valid values are: `mainnet`, `jungle`, `kylin` or an host name
 })
 ```
 
@@ -257,3 +257,9 @@ You should replace it with the fully qualified endpoint value:
 
 - `mainnet` becomes `mainnet.eos.dfuse.io`
 - `kylin` becomes `kylin.eos.dfuse.dfuse.io`
+
+The `op` field of `RamOp` type has been removed. Use a combination of `family` and
+`action` to take your decision.
+
+- [EOSIO RamOp Families](https://github.com/streamingfast/proto-eosio/blob/master/dfuse/eosio/codec/v1/codec.proto#L660) (lowered case value with `NAMESPACE_` prefix removed)
+- [EOSIO RamOp Actions](https://github.com/streamingfast/proto-eosio/blob/master/dfuse/eosio/codec/v1/codec.proto#L673) (lowered case value with `ACTION_` prefix removed)
