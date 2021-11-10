@@ -1,0 +1,1116 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@dfuse/client</title>
+	<meta name="description" content="Documentation for @dfuse/client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@dfuse/client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1>@dfuse/client</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#dfuse-javascripttypescript-client-library" id="dfuse-javascripttypescript-client-library" style="color: inherit; text-decoration: none;">
+					<h1>dfuse JavaScript/TypeScript Client Library</h1>
+				</a>
+				<p>A GraphQL, WebSocket and HTTP REST client library to consume dfuse API <a href="https://dfuse.io">https://dfuse.io</a> (<a href="https://docs.dfuse.io">dfuse docs</a>).</p>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
+				<p>Using Yarn:</p>
+				<pre><code>yarn <span class="hljs-builtin-name">add</span> @dfuse<span class="hljs-built_in">/client
+</span>
+<span class="hljs-comment"># Use this command if you are using npm</span>
+<span class="hljs-comment">#npm install --save @dfuse/client</span></code></pre>
+				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+					<h2>Features</h2>
+				</a>
+				<p>What you get by using this library:</p>
+				<ul>
+					<li>Full dfuse API coverage (GraphQL, REST &amp; WebSocket)</li>
+					<li>API Token issuance &amp; management (auto-refresh, expiration handling, storage, etc)</li>
+					<li>Automatic re-connection on socket close</li>
+					<li>Stream progress management and auto-restart at last marked location on socket re-connection</li>
+					<li>Full customization power</li>
+				</ul>
+				<a href="#quick-start" id="quick-start" style="color: inherit; text-decoration: none;">
+					<h2>Quick Start</h2>
+				</a>
+				<p><em>Notice</em> You should replace the sequence of characters <code>Paste your API key here</code>
+					in the script above with your actual API key obtained from <a href="https://app.dfuse.io">https://app.dfuse.io</a>. You are
+					connecting to a local dfuse for EOSIO instance or to a dfuse Community Edition? Replace
+					<code>apiKey: &quot;&lt;Paste your API key here&gt;&quot;</code> with <code>authentication: false</code> so authentication is
+				disabled.</p>
+				<a href="#eosio" id="eosio" style="color: inherit; text-decoration: none;">
+					<h3>EOSIO</h3>
+				</a>
+				<!-- prettier-ignore -->
+				<p>See <a href="./examples/basic/eosio/stream-transfers-graphql.ts">examples/basic/eosio/stream-transfers-graphql.ts</a></p>
+				<pre><code class="language-js"><span class="hljs-keyword">const</span> { createDfuseClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;@dfuse/client&quot;</span>)
+<span class="hljs-keyword">const</span> client = createDfuseClient({
+  <span class="hljs-attr">apiKey</span>: <span class="hljs-string">&quot;&lt;Paste your API key here&gt;&quot;</span>,
+  <span class="hljs-attr">network</span>: <span class="hljs-string">&quot;mainnet.eos.dfuse.io&quot;</span>,
+})
+
+<span class="hljs-keyword">const</span> streamTransfer = <span class="hljs-string">`subscription($cursor: String!) {
+  searchTransactionsForward(query: &quot;receiver:eosio.token action:transfer -data.quantity:&#x27;0.0001 EOS&#x27;&quot;, cursor: $cursor) {
+    undo cursor
+    trace {
+      matchingActions { json }
+    }
+  }
+}`</span>
+
+<span class="hljs-keyword">await</span> client.graphql(streamTransfer, <span class="hljs-function">(<span class="hljs-params">message, stream</span>) =&gt;</span> {
+  <span class="hljs-keyword">if</span> (message.type === <span class="hljs-string">&quot;error&quot;</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;An error occurred&quot;</span>, message.errors, message.terminal)
+  }
+
+  <span class="hljs-keyword">if</span> (message.type === <span class="hljs-string">&quot;data&quot;</span>) {
+    <span class="hljs-keyword">const</span> data = message.data.searchTransactionsForward
+    <span class="hljs-keyword">const</span> actions = data.trace.matchingActions
+
+    actions.forEach(<span class="hljs-function">(<span class="hljs-params">{ json }: any</span>) =&gt;</span> {
+      <span class="hljs-keyword">const</span> { <span class="hljs-keyword">from</span>, to, quantity, memo } = json
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Transfer [<span class="hljs-subst">${<span class="hljs-keyword">from</span>}</span> -&gt; <span class="hljs-subst">${to}</span>, <span class="hljs-subst">${quantity}</span>] (<span class="hljs-subst">${memo}</span>)`</span>)
+    })
+
+    stream.mark({ <span class="hljs-attr">cursor</span>: data.cursor })
+  }
+
+  <span class="hljs-keyword">if</span> (message.type === <span class="hljs-string">&quot;complete&quot;</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Stream completed&quot;</span>)
+  }
+})</code></pre>
+				<a href="#ethereum" id="ethereum" style="color: inherit; text-decoration: none;">
+					<h3>Ethereum</h3>
+				</a>
+				<p>See <a href="./examples/basic/ethereum/stream-transfers.ts">examples/basic/ethereum/stream-transfers.ts</a></p>
+				<!-- prettier-ignore -->
+				<pre><code class="language-js"><span class="hljs-keyword">const</span> { createDfuseClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;@dfuse/client&quot;</span>)
+
+<span class="hljs-keyword">const</span> streamTransfer = <span class="hljs-string">`subscription($cursor: String) {
+  searchTransactions(query: &quot;method:&#x27;transfer(address,uint256)&#x27;&quot;, cursor: $cursor) {
+    undo cursor
+    node { hash from to value(encoding: ETHER) }
+  }
+}`</span>
+
+<span class="hljs-keyword">await</span> client.graphql(streamTransfer, <span class="hljs-function">(<span class="hljs-params">message, stream</span>) =&gt;</span> {
+  <span class="hljs-keyword">if</span> (message.type === <span class="hljs-string">&quot;error&quot;</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;An error occurred&quot;</span>, message.errors, message.terminal)
+  }
+
+  <span class="hljs-keyword">if</span> (message.type === <span class="hljs-string">&quot;data&quot;</span>) {
+    <span class="hljs-keyword">const</span> { cursor, node } = message.data.searchTransactions
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Transfer [<span class="hljs-subst">${node.<span class="hljs-keyword">from</span>}</span> -&gt; <span class="hljs-subst">${node.to}</span>, <span class="hljs-subst">${node.value}</span>]`</span>)
+
+    stream.mark({ cursor })
+  }
+
+  <span class="hljs-keyword">if</span> (message.type === <span class="hljs-string">&quot;complete&quot;</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;Stream completed&quot;</span>)
+  }
+})</code></pre>
+				<a href="#nodejs" id="nodejs" style="color: inherit; text-decoration: none;">
+					<h3>Node.js</h3>
+				</a>
+				<p>If you target a <code>Node.js</code> environment instead, you will need bring a <code>fetch</code> compatible
+				function and a proper <code>WebSocket</code> client.</p>
+				<p>You are free to use any compatible library respecting the respective requirements. To
+					make it simple, if <code>fetch</code> and/or <code>WebSocket</code> are available in the global scope (<code>global</code>),
+					they are picked automatically by the library. While polluting the global scope, it&#39;s the
+				easiest way to get started.</p>
+				<p>It&#39;s what the examples in this project do using respectively
+					<a href="https://www.npmjs.com/package/node-fetch">node-fetch</a> and
+				and <a href="https://www.npmjs.com/package/ws">ws</a> for <code>fetch</code> and <code>WebSocket</code> respectively.</p>
+				<p>Installation instructions using Yarn would be:</p>
+				<pre><code>yarn add <span class="hljs-keyword">node</span><span class="hljs-title">-fetch</span> ws</code></pre>
+				<p>In the bootstrap phase of your application, prior doing any <code>@dfuse/client</code> imports/require,
+				put the following code:</p>
+				<pre><code><span class="hljs-attr">global.fetch</span> = require(<span class="hljs-string">&quot;node-fetch&quot;</span>)<span class="hljs-comment">;</span>
+<span class="hljs-attr">global.WebSocket</span> = require(<span class="hljs-string">&quot;ws&quot;</span>)<span class="hljs-comment">;</span></code></pre>
+				<p>You can check the <a href="./examples/advanced/common/nodejs-fetch-and-websocket-options.ts">Node.js Configuration</a>
+				example for how to avoid polluting the global scope.</p>
+				<a href="#sane-defaults" id="sane-defaults" style="color: inherit; text-decoration: none;">
+					<h3>Sane Defaults</h3>
+				</a>
+				<p>The library make sane default assumptions about some of the dependencies
+					the library requires. This section details the choices we think are the
+				most important ones.</p>
+				<a href="#fetch" id="fetch" style="color: inherit; text-decoration: none;">
+					<h4>Fetch</h4>
+				</a>
+				<p>The library requires a <code>Fetch</code> like interface. In the Browser environment,
+					this is the <code>fetch</code> function that is used (we check that <code>window.fetch</code> is
+				a function).</p>
+				<p>If <code>window.fetch</code> is undefined, we fallback to check <code>global.fetch</code> variable.
+					This can be set in a Node.js environment to point to a compatible implementation
+					of <code>fetch</code>, like the one provided by the <a href="https://npmjs.com/package/node-fetch">node-fetch</a>
+				package.</p>
+				<p>If none is provided, the library throw an error. To avoid this error, you should pass
+				the <code>httpClientOptions.fetch</code> option when creating the dfuse Client.</p>
+				<p>It possible to provide you own implementation using under the cover any
+					HTTP library like <a href="https://npmjs.com/package/axios">axios</a> or even
+				<code>XMLHttpRequest</code> if you wish so.</p>
+				<a href="#websocket" id="websocket" style="color: inherit; text-decoration: none;">
+					<h4>WebSocket</h4>
+				</a>
+				<p>The library requires a <code>WebSocket</code> client interface having the same semantics
+				as the WebSocket API in the Browser environment.</p>
+				<p>In the Browser environment, this is the standard <code>WebSocket</code> variable that is used
+				(we check that <code>window.WebSocket</code> is present).</p>
+				<p>If <code>window.WebSocket</code> is undefined, we fallback to check <code>global.WebSocket</code> variable.
+					This can be set in a Node.js environment to point to a compatible implementation
+					of <code>WebSocket</code> client, like the one provided by the <a href="https://npmjs.com/package/ws">ws</a>
+				package.</p>
+				<p>If none is provided, the library throw an error. To avoid this error, you should pass
+					the <code>streamClientOptions.socketOptions.webSocketFactory</code> and the
+					<code>graphqlStreamClientOptions.socketOptions.webSocketFactory</code> options when creating the dfuse
+					Client. This factory method receives the full url to connect to the remote endpoint
+					(this will include the API token to use in query parameters of the url) and should
+				return a valid <code>WebSocket</code> client object.</p>
+				<p>We highly suggest to use <a href="https://npmjs.com/package/ws">ws</a> package straight in a
+				Node.js environment.</p>
+				<a href="#api-token-store" id="api-token-store" style="color: inherit; text-decoration: none;">
+					<h4>API Token Store</h4>
+				</a>
+				<p>The API token store interface is used by the dfuse Client to perform the
+					persistent retrieval and writing of the API token. Indeed, we rate limit
+					the API token issuance endpoint and as such, it&#39;s <strong>highly</strong> important
+					to re-use a valid token instead of generating a new one each time it&#39;s
+				required to avoid hitting the API token issue rate limiter.</p>
+				<p>The library, when no <code>apiTokenStore</code> options is passed to the client will
+				pick a default <code>ApiTokenStore</code> implementation based on your environment.</p>
+				<p>In a Browser environment, the concrete implementation that is used is the
+					<a href="https://dfuse-io.github.io/client-js/classes/localstorageapitokenstore.html">LocalStorageApiTokenStore</a>
+					class. This will save and retrieve the token from the browser <code>localStorage</code>
+				(under a <code>dfuse:token</code> key).</p>
+				<p>In a Node.js environment, the concrete implementation that is used is the
+					<a href="https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html">OnDiskApiTokenStore</a> class.
+					This will save and retrieve the token from a local file on the disk
+				at <code>~/.dfuse/&lt;sha256-api-key&gt;/token.info</code>.</p>
+				<p><strong>Note</strong> Depending on your deployment target (<code>Docker</code>, VM, etc.), it&#39;s possible
+					that the home directory (<code>~</code>) is not writable, causing the default
+					<a href="https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html">OnDiskApiTokenStore</a>
+					instance on Node.js environment to not work correctly. In those cases, simply define
+					yourself the <code>apiTokenStore</code> instance to use and pick the location where the token
+					should be saved. Instantiate a
+					<a href="https://dfuse-io.github.io/client-js/classes/fileapitokenstore.html">FileApiTokenStore</a>
+					instance and use it as the <code>apiTokenStore</code> configuration value when instantiating the
+				dfuse Client:</p>
+				<pre><code>import { createDfuseClient, FileApiTokenStore } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;@dfuse/client&quot;</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-keyword">client</span> = createDfuseClient({
+  ...,
+  apiTokenStore: <span class="hljs-keyword">new</span> FileApiTokenStore(<span class="hljs-string">&quot;/tmp/dfuse-token.json&quot;</span>),
+  ...,
+});</code></pre>
+				<a href="#api" id="api" style="color: inherit; text-decoration: none;">
+					<h3>API</h3>
+				</a>
+				<p>The full API reference can be found at <a href="https://dfuse-io.github.io/client-js/">https://dfuse-io.github.io/client-js/</a>.</p>
+				<p>This site is generated by running <code>typedoc</code> on this repository. The full API
+					reference being rather exhaustive, here a quick index pointing to the most
+					important entities&#39; documentation section that should be read to understand
+				the various part of the library:</p>
+				<a href="#factories" id="factories" style="color: inherit; text-decoration: none;">
+					<h5>Factories</h5>
+				</a>
+				<ul>
+					<li><a href="https://dfuse-io.github.io/client-js/globals.html#createdfuseclient">createDfuseClient</a></li>
+				</ul>
+				<a href="#interfaces" id="interfaces" style="color: inherit; text-decoration: none;">
+					<h5>Interfaces</h5>
+				</a>
+				<ul>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/dfuseclient.html">DfuseClient</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/streamclient.html">StreamClient</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/stream.html">Stream</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/httpclient.html">HttpClient</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/socket.html">Socket</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/apitokenstore.html">ApiTokenStore</a></li>
+				</ul>
+				<a href="#options" id="options" style="color: inherit; text-decoration: none;">
+					<h5>Options</h5>
+				</a>
+				<ul>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/dfuseclientoptions.html">DfuseClientOptions</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/streamclientoptions.html">StreamClientOptions</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/httpclientoptions.html">HttpClientOptions</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/interfaces/socketoptions.html">SocketOptions</a></li>
+				</ul>
+				<a href="#implementations" id="implementations" style="color: inherit; text-decoration: none;">
+					<h5>Implementations</h5>
+				</a>
+				<ul>
+					<li><a href="https://dfuse-io.github.io/client-js/classes/defaultclient.html">DefaultClient</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/classes/localstorageapitokenstore.html">LocalStorageApiTokenStore</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/classes/ondiskapitokenstore.html">OnDiskApiTokenStore</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/classes/fileapitokenstore.html">FileApiTokenStore</a></li>
+					<li><a href="https://dfuse-io.github.io/client-js/classes/inmemoryapitokenstore.html">InMemoryApiTokenStore</a></li>
+				</ul>
+				<p><strong>Note</strong> <code>DefaultStreamClient</code>, <code>DefaultHttpClient</code>, <code>DefaultSocket</code>, <code>DefaultApiTokenManager</code>
+				are all private implementations not exposed.</p>
+				<a href="#examples" id="examples" style="color: inherit; text-decoration: none;">
+					<h3>Examples</h3>
+				</a>
+				<p><strong>Note</strong> You can run the examples straight from this repository quite easily. Clone it to
+					you computer, run <code>yarn install &amp;&amp; yarn build</code> in the project directory. Link the local
+				build so it&#39;s usable by the examples:</p>
+				<pre><code>yarn <span class="hljs-keyword">link</span>               <span class="hljs-comment"># Adds a symlink of this project to your global installation</span>
+yarn <span class="hljs-keyword">link</span> @dfuse/client <span class="hljs-comment"># Adds `@dfuse/client` in this project&#x27;s `node_modules` folder (global symlink)</span></code></pre>
+				<p>Ensures you have an environment variable <code>DFUSE_API_KEY</code> set to your dfuse API Key value.
+				Then simply issue the following command (pick the example file you want to run):</p>
+				<pre><code>yarn run:example examples<span class="hljs-regexp">/basic/</span>eosio/stream-transfers-graphql.ts</code></pre>
+				<a href="#browser-example" id="browser-example" style="color: inherit; text-decoration: none;">
+					<h4>Browser Example</h4>
+				</a>
+				<p>For the browser example to work, you need to edit the <code>browser.html</code> file:</p>
+				<ul>
+					<li>Edit the <code>browser.html</code> file to put your own API key, search for <code>apiKey: &quot;&lt;Paste API key here!&gt;&quot;,</code> in the file.</li>
+				</ul>
+				<p>Once this is done, simply double-click on the <code>browser.html</code> file (<code>open examples/reference/browser.html</code> on Unix/Mac system).</p>
+				<a href="#basic" id="basic" style="color: inherit; text-decoration: none;">
+					<h4>Basic</h4>
+				</a>
+				<p>These are the starter examples showing a concrete use case you can solve using <code>@dfuse/client</code>
+					library. Those toy examples have low to no error handling, check the <a href="#advanced">Advanced section</a>
+				for production grade details on efficiently use <code>@dfuse/client</code></p>
+				<a href="#eosio-1" id="eosio-1" style="color: inherit; text-decoration: none;">
+					<h5>EOSIO</h5>
+				</a>
+				<ul>
+					<li><p><a href="./examples/basic/eosio/stream-transfers-graphql.ts">GraphQL Stream Transfers (Query)</a></p>
+					</li>
+					<li><p><a href="./examples/basic/eosio/search-your-latest-transactions-graphql.ts">GraphQL Search Your Latest Transactions (Subscription)</a></p>
+					</li>
+					<li><p><a href="./examples/basic/eosio/state-check-balance.ts">REST Check Balance (delta between fixed block and now)</a></p>
+					</li>
+					<li><p><a href="./examples/basic/eosio/search-your-latest-transactions.ts">REST Search Your Latest Transactions</a></p>
+					</li>
+					<li><p><a href="./examples/basic/eosio/stream-transfers-ws.ts">WebSocket Stream Transfers</a></p>
+					</li>
+					<li><p><a href="./examples/basic/eosio/stream-global-state-ws.ts">WebSocket Stream Global State</a></p>
+					</li>
+					<li><p><a href="./examples/basic/eosio/dfuse-for-eosio.ts">dfuse for EOSIO</a></p>
+					</li>
+					<li><p><a href="./examples/basic/eosio/dfuse-community-edition.ts">dfuse Community Edition (EOSIO)</a></p>
+					</li>
+				</ul>
+				<a href="#ethereum-1" id="ethereum-1" style="color: inherit; text-decoration: none;">
+					<h5>Ethereum</h5>
+				</a>
+				<ul>
+					<li><a href="./examples/basic/ethereum/stream-transfers.ts">GraphQL Stream Transfers</a></li>
+					<li><a href="./examples/basic/ethereum/search-your-latest-transactions.ts">GraphQL Search Your Latest Transactions</a></li>
+					<li><a href="./examples/basic/ethereum/stream-transactions.ts">GraphQL Stream Transactions</a></li>
+				</ul>
+				<a href="#advanced" id="advanced" style="color: inherit; text-decoration: none;">
+					<h4>Advanced</h4>
+				</a>
+				<p>You will find examples leveraging the full power library with all the correct patterns to
+					consume the Blockchain data efficiently, with strict data integrity and how to properly
+				deal with error and edge cases (like micro-forks!).</p>
+				<a href="#common" id="common" style="color: inherit; text-decoration: none;">
+					<h5>Common</h5>
+				</a>
+				<p>Those are examples that are general concepts applicable to all chains we support or
+					about some specifities of the <code>client-js</code> library like configuring the WebSocket
+				connection or the behavior of the client instance itself.</p>
+				<ul>
+					<li><a href="./examples/advanced/common/client-and-socket-notifications.ts">Client &amp; Socket Notifications - Looking at all events generated by the library</a></li>
+					<li><a href="./examples/advanced/common/forever-streaming.ts">Forever Stream - Always stay connected to dfuse Stream</a></li>
+					<li><a href="./examples/advanced/common/multiple-active-streams.ts">Multiple Active Streams - Connects multiple dfuse Streams at the same time</a></li>
+					<li><a href="./examples/advanced/common/navigating-forks.ts">Navigating Forks - Dealing with undo/redo steps</a></li>
+					<li><a href="./examples/advanced/common/graphql-never-miss-a-beat.ts">GraphQL Never Miss a Beat - Ensuring consistent data integrity</a></li>
+					<li><a href="./examples/advanced/common/never-miss-a-beat.ts">Never Miss a Beat - Ensuring consistent data integrity</a></li>
+					<li><a href="./examples/advanced/common/nodejs-fetch-and-websocket-options.ts">Node.js HTTP &amp; WebSocket Configuration - Avoid polluting the global scope and customizing WebSocket client</a></li>
+					<li><a href="./examples/advanced/common/graphql-gql-tag.ts">GraphQL - Use &#39;gql&#39; tag &amp; Typings</a></li>
+				</ul>
+				<a href="#eosio-2" id="eosio-2" style="color: inherit; text-decoration: none;">
+					<h5>EOSIO</h5>
+				</a>
+				<ul>
+					<li><a href="./examples/advanced/eosio/has-account.ts">Has Account - Quickest way to have a method to check if an account exists on the chain</a></li>
+					<li><a href="./examples/advanced/eosio/track-ram-usage.ts">Track RAM Usage - Or how to use the search cursor to fetch next results</a></li>
+					<li><a href="./examples/advanced/eosio/stream-only-irreversible-events.ts">Stream Irreversible Events Only - Avoiding dealing with micro-forks (non-live)</a></li>
+				</ul>
+				<a href="#reference" id="reference" style="color: inherit; text-decoration: none;">
+					<h4>Reference</h4>
+				</a>
+				<p>In this folder, you will get full reference examples. Those are used to showcase the actual full data
+					you receive with each call. It&#39;s also there where you can check the flow of messages that can be handled
+				in each dfuse Stream and full configuration options for the library itself and all the API calls.</p>
+				<a href="#common-1" id="common-1" style="color: inherit; text-decoration: none;">
+					<h5>Common</h5>
+				</a>
+				<ul>
+					<li><a href="./examples/reference/common/auth-issue.ts">auth-issue.ts</a></li>
+					<li><a href="./examples/reference/common/api-request.ts">api-request.ts</a></li>
+					<li><a href="./examples/reference/common/browser.html">browser.html (Showcase Browser using UMD build)</a></li>
+				</ul>
+				<a href="#eosio-rest-api" id="eosio-rest-api" style="color: inherit; text-decoration: none;">
+					<h5>EOSIO (REST API)</h5>
+				</a>
+				<ul>
+					<li><a href="./examples/reference/eosio/fetch-block-id-by-time.ts">fetch-block-id-by-time.ts</a></li>
+					<li><a href="./examples/reference/eosio/fetch-transaction.ts">fetch-transaction.ts</a></li>
+					<li><a href="./examples/reference/eosio/search-transactions.ts">search-transactions.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-abi-bin-to-json.ts">state-abi-bin-to-json.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-abi.ts">state-abi.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-key-accounts.ts">state-key-accounts.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-permission-links.ts">state-permission-links.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-table-scopes.ts">state-table-scopes.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-table.ts">state-table.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-tables-for-accounts.ts">state-tables-for-accounts.ts</a></li>
+					<li><a href="./examples/reference/eosio/state-tables-for-scopes.ts">state-tables-for-scopes.ts</a></li>
+				</ul>
+				<a href="#eosio-websocket-api" id="eosio-websocket-api" style="color: inherit; text-decoration: none;">
+					<h5>EOSIO (WebSocket API)</h5>
+				</a>
+				<ul>
+					<li><a href="./examples/reference/eosio/stream-action-traces.ts">stream-action-traces.ts</a></li>
+					<li><a href="./examples/reference/eosio/stream-head-info.ts">stream-head-info.ts</a></li>
+					<li><a href="./examples/reference/eosio/stream-table-rows.ts">stream-table-rows.ts</a></li>
+					<li><a href="./examples/reference/eosio/stream-transaction.ts">stream-transaction.ts</a></li>
+				</ul>
+				<a href="#ethereum-graphql-api" id="ethereum-graphql-api" style="color: inherit; text-decoration: none;">
+					<h5>Ethereum (GraphQL API)</h5>
+				</a>
+				<ul>
+					<li><a href="./examples/reference/ethereum/stream-pending-transactions.ts">stream-pending-transactions.ts</a></li>
+				</ul>
+				<a href="#development" id="development" style="color: inherit; text-decoration: none;">
+					<h2>Development</h2>
+				</a>
+				<p>The best way to develop this library is through modifying and adding examples
+				to the project.</p>
+				<p>To run the examples, it&#39;s quite simple, follow these instructions:</p>
+				<ol>
+					<li><p>Install project dependencies so that you get development tools at the same time:</p>
+						<pre><code>yarn <span class="hljs-keyword">install</span></code></pre>
+					</li>
+					<li><p>Link the project inside itself, that will be necessary to correct run the
+						examples which import <code>@dfuse/client</code>:</p>
+						<pre><code>yarn <span class="hljs-keyword">link</span>
+yarn <span class="hljs-keyword">link</span> @dfuse/client</code></pre>
+					</li>
+					<li><p>Start the build watcher so distribution files are always up-to-date. Forgetting
+							to do that will prevent examples from picking latest changes you&#39;ve made to
+						source files!</p>
+						<pre><code>yarn <span class="hljs-literal">start</span></code></pre>
+					</li>
+					<li><p>Last step is to add <code>.env</code> file containing the <a href="https://dfuse.io">dfuse</a> API key
+							required to run the examples. Create a file <code>.env</code> at the root of the project
+						with the following content:</p>
+						<pre><code>DFUSE_API_KEY=<span class="hljs-keyword">Replace</span> this <span class="hljs-keyword">with</span> API <span class="hljs-keyword">key</span>!</code></pre>
+					</li>
+					<li><p>Final check, let&#39;s run an example to ensure everything is working:</p>
+						<pre><code>yarn run:example examples<span class="hljs-regexp">/basic/</span>eosio/state-check-balance.ts</code></pre>
+					</li>
+				</ol>
+				<a href="#publishing" id="publishing" style="color: inherit; text-decoration: none;">
+					<h3>Publishing</h3>
+				</a>
+				<p>First step is to update the change log (<a href="./CHANGELOG.md">CHANGELOG.md</a>) by updating the
+					<code>## In Progress</code> header to change to <code>## &lt;Version&gt; (&lt;Month&gt; &lt;Day&gt;, &lt;Year&gt;)</code> (i.e. <code>## 0.11.11 (March 26, 2019)</code>)
+				and the commit that.</p>
+				<p>Assuming you have been granted access rights to publish this package, the command to perform is simply:</p>
+				<pre><code>yarn <span class="hljs-keyword">run</span><span class="bash"> publish:latest</span></code></pre>
+				<p>This command will automatically perform a clean build followed by the execution of the full test
+					suite then a publish the package followed by a publish of the docs and finally push the commits
+				and tag to the remote repository.</p>
+				<a href="#pre-release" id="pre-release" style="color: inherit; text-decoration: none;">
+					<h4>Pre-release</h4>
+				</a>
+				<p>If you want to publish a pre-release version not flagged as the latest so that people still pulls
+				the current stable version unless they opt-in explicitly, use the following invocation:</p>
+				<pre><code>yarn <span class="hljs-built_in">run</span> publish:<span class="hljs-keyword">next</span></code></pre>
+				<p>Does the same work as <code>publish:latest</code> but the docs is not published by this step.</p>
+				<a href="#credits--acknowledgement" id="credits--acknowledgement" style="color: inherit; text-decoration: none;">
+					<h2>Credits / Acknowledgement</h2>
+				</a>
+				<p>A big thanks (and hug) to our dear friend <a href="https://github.com/DenisCarriere">Denis Carriere</a> from
+				<a href="https://eosnation.io">EOS Nation</a> for creating the initial version of this project.</p>
+				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+					<h2>License</h2>
+				</a>
+				<p>MIT</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum tsd-is-external">
+						<a href="enums/inboundmessagetype.html" class="tsd-kind-icon">Inbound<wbr>Message<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-enum tsd-is-external">
+						<a href="enums/outboundmessagetype.html" class="tsd-kind-icon">Outbound<wbr>Message<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaultapitokenmanager.html" class="tsd-kind-icon">Default<wbr>Api<wbr>Token<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaultclient.html" class="tsd-kind-icon">Default<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaultgrahqlstreamclient.html" class="tsd-kind-icon">Default<wbr>Grahql<wbr>Stream<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter tsd-is-external">
+						<a href="classes/defaultgraphqlstream.html" class="tsd-kind-icon">Default<wbr>Graphql<wbr>Stream</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaulthttpclient.html" class="tsd-kind-icon">Default<wbr>Http<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaultrefreshscheduler.html" class="tsd-kind-icon">Default<wbr>Refresh<wbr>Scheduler</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaultsocket.html" class="tsd-kind-icon">Default<wbr>Socket</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaultstream.html" class="tsd-kind-icon">Default<wbr>Stream</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/defaultstreamclient.html" class="tsd-kind-icon">Default<wbr>Stream<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter tsd-is-external">
+						<a href="classes/deferred.html" class="tsd-kind-icon">Deferred</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/dfuseapierror.html" class="tsd-kind-icon">Dfuse<wbr>Api<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/dfuseclienterror.html" class="tsd-kind-icon">Dfuse<wbr>Client<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/dfuseerror.html" class="tsd-kind-icon">Dfuse<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/dfusegenericapierror.html" class="tsd-kind-icon">Dfuse<wbr>Generic<wbr>Api<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/dfusesocketerror.html" class="tsd-kind-icon">Dfuse<wbr>Socket<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/fileapitokenstore.html" class="tsd-kind-icon">File<wbr>Api<wbr>Token<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/graphqlconnectionestablisher.html" class="tsd-kind-icon">Graphql<wbr>Connection<wbr>Establisher</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/inmemoryapitokenstore.html" class="tsd-kind-icon">In<wbr>Memory<wbr>Api<wbr>Token<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/localstorageapitokenstore.html" class="tsd-kind-icon">Local<wbr>Storage<wbr>Api<wbr>Token<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/noopapitokenstore.html" class="tsd-kind-icon">No<wbr>OpApi<wbr>Token<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/noopapitokenmanager.html" class="tsd-kind-icon">Noop<wbr>Api<wbr>Token<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/ondiskapitokenstore.html" class="tsd-kind-icon">On<wbr>Disk<wbr>Api<wbr>Token<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/apitokenmanager.html" class="tsd-kind-icon">Api<wbr>Token<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/apitokenstore.html" class="tsd-kind-icon">Api<wbr>Token<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/dfuseclient.html" class="tsd-kind-icon">Dfuse<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/dfuseclientoptions.html" class="tsd-kind-icon">Dfuse<wbr>Client<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/graphqlstreamclient.html" class="tsd-kind-icon">Graphql<wbr>Stream<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/graphqlstreamclientoptions.html" class="tsd-kind-icon">Graphql<wbr>Stream<wbr>Client<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/httpclient.html" class="tsd-kind-icon">Http<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/httpclientoptions.html" class="tsd-kind-icon">Http<wbr>Client<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/refreshscheduler.html" class="tsd-kind-icon">Refresh<wbr>Scheduler</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/socket.html" class="tsd-kind-icon">Socket</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/socketoptions.html" class="tsd-kind-icon">Socket<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/stream.html" class="tsd-kind-icon">Stream</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/streamclient.html" class="tsd-kind-icon">Stream<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/streamclientoptions.html" class="tsd-kind-icon">Stream<wbr>Client<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abi" class="tsd-kind-icon">Abi</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abiaction" class="tsd-kind-icon">Abi<wbr>Action</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abierrormessage" class="tsd-kind-icon">Abi<wbr>Error<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abiextension" class="tsd-kind-icon">Abi<wbr>Extension</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abiricardianclause" class="tsd-kind-icon">Abi<wbr>Ricardian<wbr>Clause</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abistruct" class="tsd-kind-icon">Abi<wbr>Struct</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abistructfield" class="tsd-kind-icon">Abi<wbr>Struct<wbr>Field</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abitable" class="tsd-kind-icon">Abi<wbr>Table</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abitype" class="tsd-kind-icon">Abi<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#abivariant" class="tsd-kind-icon">Abi<wbr>Variant</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#accountramdelta" class="tsd-kind-icon">Account<wbr>Ram<wbr>Delta</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#action" class="tsd-kind-icon">Action</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#actionreceipt" class="tsd-kind-icon">Action<wbr>Receipt</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#actiontrace" class="tsd-kind-icon">Action<wbr>Trace</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#actiontracedata" class="tsd-kind-icon">Action<wbr>Trace<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#actiontracedbop" class="tsd-kind-icon">Action<wbr>Trace<wbr>DbOp</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#actiontraceinboundmessage" class="tsd-kind-icon">Action<wbr>Trace<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#apitokeninfo" class="tsd-kind-icon">Api<wbr>Token<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#authtokenresponse" class="tsd-kind-icon">Auth<wbr>Token<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#authorization" class="tsd-kind-icon">Authorization</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#blockheader" class="tsd-kind-icon">Block<wbr>Header</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#blockidbytimeresponse" class="tsd-kind-icon">Block<wbr>IdBy<wbr>Time<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#comparisonoperator" class="tsd-kind-icon">Comparison<wbr>Operator</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#completegraphqlstreammessage" class="tsd-kind-icon">Complete<wbr>Graphql<wbr>Stream<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#connectoptions" class="tsd-kind-icon">Connect<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#creationnode" class="tsd-kind-icon">Creation<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#dbop" class="tsd-kind-icon">DBOp</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#dtrxop" class="tsd-kind-icon">DTrx<wbr>Op</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#datagraphqlstreammessage" class="tsd-kind-icon">Data<wbr>Graphql<wbr>Stream<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#dbop" class="tsd-kind-icon">Db<wbr>Op</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#dbrow" class="tsd-kind-icon">Db<wbr>Row</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#dfuseclientendpoints" class="tsd-kind-icon">Dfuse<wbr>Client<wbr>Endpoints</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#errordata" class="tsd-kind-icon">Error<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#errorgraphqlstreammessage" class="tsd-kind-icon">Error<wbr>Graphql<wbr>Stream<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#errorinboundmessage" class="tsd-kind-icon">Error<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#extdtrxop" class="tsd-kind-icon">ExtDTrx<wbr>Op</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#getactiontracesmessagedata" class="tsd-kind-icon">Get<wbr>Action<wbr>Traces<wbr>Message<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#gettablerowsmessagedata" class="tsd-kind-icon">Get<wbr>Table<wbr>Rows<wbr>Message<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#gettransactionlifecyclemessagedata" class="tsd-kind-icon">Get<wbr>Transaction<wbr>Lifecycle<wbr>Message<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqldocument" class="tsd-kind-icon">Graphql<wbr>Document</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqlinboundmessage" class="tsd-kind-icon">Graphql<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqlinboundmessagetype" class="tsd-kind-icon">Graphql<wbr>Inbound<wbr>Message<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqloperationtype" class="tsd-kind-icon">Graphql<wbr>Operation<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqloutboundmessage" class="tsd-kind-icon">Graphql<wbr>Outbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#graphqlresponse" class="tsd-kind-icon">Graphql<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqlresponseerror" class="tsd-kind-icon">Graphql<wbr>Response<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqlstartoutboundmessage" class="tsd-kind-icon">Graphql<wbr>Start<wbr>Outbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#graphqlstreammessage" class="tsd-kind-icon">Graphql<wbr>Stream<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#graphqlvariables" class="tsd-kind-icon">Graphql<wbr>Variables</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#headinfodata" class="tsd-kind-icon">Head<wbr>Info<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#headinfoinboundmessage" class="tsd-kind-icon">Head<wbr>Info<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#httpheaders" class="tsd-kind-icon">Http<wbr>Headers</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#httpqueryparameters" class="tsd-kind-icon">Http<wbr>Query<wbr>Parameters</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#inboundmessage" class="tsd-kind-icon">Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#int64" class="tsd-kind-icon">Int64</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#linkedpermission" class="tsd-kind-icon">Linked<wbr>Permission</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#listeningdata" class="tsd-kind-icon">Listening<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#listeninginboundmessage" class="tsd-kind-icon">Listening<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#multistateresponse" class="tsd-kind-icon">Multi<wbr>State<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#ongraphqlstreammessage" class="tsd-kind-icon">On<wbr>Graphql<wbr>Stream<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#ongraphqlstreamrestart" class="tsd-kind-icon">On<wbr>Graphql<wbr>Stream<wbr>Restart</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#onstreammessage" class="tsd-kind-icon">On<wbr>Stream<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#onstreamrestart" class="tsd-kind-icon">On<wbr>Stream<wbr>Restart</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#outboundmessage" class="tsd-kind-icon">Outbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#outboundmessagefactory" class="tsd-kind-icon">Outbound<wbr>Message<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#pinginboundmessage" class="tsd-kind-icon">Ping<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#progressdata" class="tsd-kind-icon">Progress<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#progressinboundmessage" class="tsd-kind-icon">Progress<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#ramop" class="tsd-kind-icon">RAMOp</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#ramop" class="tsd-kind-icon">Ram<wbr>Op</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#rejecter" class="tsd-kind-icon">Rejecter</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#requestidgenerator" class="tsd-kind-icon">Request<wbr>IdGenerator</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#requestinit" class="tsd-kind-icon">Request<wbr>Init</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#resolver" class="tsd-kind-icon">Resolver</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#schedulejob" class="tsd-kind-icon">Schedule<wbr>Job</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#searchsorttype" class="tsd-kind-icon">Search<wbr>Sort<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#searchtransactionrow" class="tsd-kind-icon">Search<wbr>Transaction<wbr>Row</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#searchtransactionsresponse" class="tsd-kind-icon">Search<wbr>Transactions<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#socketconnectoptions" class="tsd-kind-icon">Socket<wbr>Connect<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#socketmessagelistener" class="tsd-kind-icon">Socket<wbr>Message<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#stateabiresponse" class="tsd-kind-icon">State<wbr>Abi<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#stateabitojsonresponse" class="tsd-kind-icon">State<wbr>Abi<wbr>ToJson<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#statekeyaccountsresponse" class="tsd-kind-icon">State<wbr>Key<wbr>Accounts<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#statekeytype" class="tsd-kind-icon">State<wbr>Key<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#statepermissionlinksresponse" class="tsd-kind-icon">State<wbr>Permission<wbr>Links<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#stateresponse" class="tsd-kind-icon">State<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#statetablerowresponse" class="tsd-kind-icon">State<wbr>Table<wbr>Row<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#statetablescopesresponse" class="tsd-kind-icon">State<wbr>Table<wbr>Scopes<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#streammarker" class="tsd-kind-icon">Stream<wbr>Marker</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#streamoptions" class="tsd-kind-icon">Stream<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#tabledeltadata" class="tsd-kind-icon">Table<wbr>Delta<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#tabledeltainboundmessage" class="tsd-kind-icon">Table<wbr>Delta<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#tableop" class="tsd-kind-icon">Table<wbr>Op</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#tablerows" class="tsd-kind-icon">Table<wbr>Rows</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#tablesnapshotdata" class="tsd-kind-icon">Table<wbr>Snapshot<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#tablesnapshotinboundmessage" class="tsd-kind-icon">Table<wbr>Snapshot<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#transaction" class="tsd-kind-icon">Transaction</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#transactionlifecycle" class="tsd-kind-icon">Transaction<wbr>Lifecycle</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#transactionlifecycledata" class="tsd-kind-icon">Transaction<wbr>Lifecycle<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#transactionlifecycleinboundmessage" class="tsd-kind-icon">Transaction<wbr>Lifecycle<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#transactionreceipt" class="tsd-kind-icon">Transaction<wbr>Receipt</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#transactionstatus" class="tsd-kind-icon">Transaction<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#transactiontrace" class="tsd-kind-icon">Transaction<wbr>Trace</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#uint64" class="tsd-kind-icon">Uint64</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#unlistenmessagedata" class="tsd-kind-icon">Unlisten<wbr>Message<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#unlistenedinboundmessage" class="tsd-kind-icon">Unlistened<wbr>Inbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#walkactionsstate" class="tsd-kind-icon">Walk<wbr>Actions<wbr>State</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#websocketfactory" class="tsd-kind-icon">Web<wbr>Socket<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#default_delay_buffer_percent" class="tsd-kind-icon">DEFAULT_<wbr>DELAY_<wbr>BUFFER_<wbr>PERCENT</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#default_keep_alive_interval_in_ms" class="tsd-kind-icon">DEFAULT_<wbr>KEEP_<wbr>ALIVE_<wbr>INTERVAL_<wbr>IN_<wbr>MS</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#default_reconnect_delay_in_ms" class="tsd-kind-icon">DEFAULT_<wbr>RECONNECT_<wbr>DELAY_<wbr>IN_<wbr>MS</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#default_restart_on_error_delay_in_ms" class="tsd-kind-icon">DEFAULT_<wbr>RESTART_<wbr>ON_<wbr>ERROR_<wbr>DELAY_<wbr>IN_<wbr>MS</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#max_uint32_integer" class="tsd-kind-icon">MAX_<wbr>UINT32_<wbr>INTEGER</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_fetch_block_id_by_time" class="tsd-kind-icon">V0_<wbr>FETCH_<wbr>BLOCK_<wbr>ID_<wbr>BY_<wbr>TIME</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_fetch_transaction" class="tsd-kind-icon">V0_<wbr>FETCH_<wbr>TRANSACTION</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_search_transactions" class="tsd-kind-icon">V0_<wbr>SEARCH_<wbr>TRANSACTIONS</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_abi" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>ABI</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_abi_bin_to_json" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>ABI_<wbr>BIN_<wbr>TO_<wbr>JSON</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_key_accounts" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>KEY_<wbr>ACCOUNTS</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_permission_links" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>PERMISSION_<wbr>LINKS</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_table" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>TABLE</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_tables_accounts" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>TABLES_<wbr>ACCOUNTS</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_tables_scopes" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>TABLES_<wbr>SCOPES</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_table_row" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>TABLE_<wbr>ROW</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v0_state_table_scopes" class="tsd-kind-icon">V0_<wbr>STATE_<wbr>TABLE_<wbr>SCOPES</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#v1_auth_issue" class="tsd-kind-icon">V1_<wbr>AUTH_<wbr>ISSUE</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#clientinstanceid" class="tsd-kind-icon">client<wbr>Instance<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#checkapikey" class="tsd-kind-icon">check<wbr>Api<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#createapitokenmanager" class="tsd-kind-icon">create<wbr>Api<wbr>Token<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#createdfuseclient" class="tsd-kind-icon">create<wbr>Dfuse<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#creategraphqlstreamclient" class="tsd-kind-icon">create<wbr>Graphql<wbr>Stream<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#createhttpclient" class="tsd-kind-icon">create<wbr>Http<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#createnoopapitokenmanager" class="tsd-kind-icon">create<wbr>Noop<wbr>Api<wbr>Token<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter tsd-is-external">
+						<a href="globals.html#createoutboundmessage" class="tsd-kind-icon">create<wbr>Outbound<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#createrefreshscheduler" class="tsd-kind-icon">create<wbr>Refresh<wbr>Scheduler</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#createsocket" class="tsd-kind-icon">create<wbr>Socket</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#createstreamclient" class="tsd-kind-icon">create<wbr>Stream<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#dynamicmessagedispatcher" class="tsd-kind-icon">dynamic<wbr>Message<wbr>Dispatcher</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#flattenactiontraces" class="tsd-kind-icon">flatten<wbr>Action<wbr>Traces</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#getactiontracesmessage" class="tsd-kind-icon">get<wbr>Action<wbr>Traces<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#getheadinfomessage" class="tsd-kind-icon">get<wbr>Head<wbr>Info<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#gettablerowsmessage" class="tsd-kind-icon">get<wbr>Table<wbr>Rows<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#gettransactionlifecyclemessage" class="tsd-kind-icon">get<wbr>Transaction<wbr>Lifecycle<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#inferapitokenstore" class="tsd-kind-icon">infer<wbr>Api<wbr>Token<wbr>Store</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#inferfetch" class="tsd-kind-icon">infer<wbr>Fetch</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#inferwebsocketfactory" class="tsd-kind-icon">infer<wbr>Web<wbr>Socket<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#isapitokenexpired" class="tsd-kind-icon">is<wbr>Api<wbr>Token<wbr>Expired</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#iscommunityedition" class="tsd-kind-icon">is<wbr>Community<wbr>Edition</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#isvaliddocumenttype" class="tsd-kind-icon">is<wbr>Valid<wbr>Document<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#matchingactiontraces" class="tsd-kind-icon">matching<wbr>Action<wbr>Traces</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#mkdirpsync" class="tsd-kind-icon">mkdirp<wbr>Sync</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#networktoendpoint" class="tsd-kind-icon">network<wbr>ToEndpoint</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#noop" class="tsd-kind-icon">noop</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#randomreqid" class="tsd-kind-icon">random<wbr>Req<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#readdata" class="tsd-kind-icon">read<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#unlistenmessage" class="tsd-kind-icon">unlisten<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#waitfor" class="tsd-kind-icon">wait<wbr>For</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#walkflattenedactiontraces" class="tsd-kind-icon">walk<wbr>Flattened<wbr>Action<wbr>Traces</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#walkmatchingactiontraces" class="tsd-kind-icon">walk<wbr>Matching<wbr>Action<wbr>Traces</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#writedata" class="tsd-kind-icon">write<wbr>Data</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,1386 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>DfuseClient | @dfuse/client</title>
+	<meta name="description" content="Documentation for @dfuse/client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">@dfuse/client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="dfuseclient.html">DfuseClient</a>
+				</li>
+			</ul>
+			<h1>Interface DfuseClient</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>The <code>DfuseClient</code> interface is the back-bone of the library. Based on the Facade
+							pattern, this client is your single go to point for interacting with dfuse Stream
+						API as well as the dfuse REST API.</p>
+					</div>
+					<p>The client contains only top-level methods enabling you to retrieve all the
+					information you need for your next-gen blockchain project.</p>
+					<p>The dfuse Client takes care for you of:</p>
+					<ul>
+						<li>Management of WebSocket connection (automatic connection/disconnection when needed).</li>
+						<li>Management of the API key (API token retrieval, freshness and persistence).</li>
+						<li>Abstract dfuse API into simple to use top-level methods.</li>
+						<li>Error handling wrapping error received via WebSocket and REST into easy to use error.</li>
+					</ul>
+					<dl class="tsd-comment-tags">
+						<dt>group</dt>
+						<dd><p>Interfaces</p>
+						</dd>
+					</dl>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">DfuseClient</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implemented by</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../classes/defaultclient.html" class="tsd-signature-type">DefaultClient</a></li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section tsd-is-external">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#endpoints" class="tsd-kind-icon">endpoints</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#gettokeninfo" class="tsd-kind-icon">get<wbr>Token<wbr>Info</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-external">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external"><a href="dfuseclient.html#apirequest" class="tsd-kind-icon">api<wbr>Request</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#authissue" class="tsd-kind-icon">auth<wbr>Issue</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#fetchblockidbytime" class="tsd-kind-icon">fetch<wbr>Block<wbr>IdBy<wbr>Time</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#fetchtransaction" class="tsd-kind-icon">fetch<wbr>Transaction</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external"><a href="dfuseclient.html#graphql" class="tsd-kind-icon">graphql</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#release" class="tsd-kind-icon">release</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#searchtransactions" class="tsd-kind-icon">search<wbr>Transactions</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#stateabi" class="tsd-kind-icon">state<wbr>Abi</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external"><a href="dfuseclient.html#stateabibintojson" class="tsd-kind-icon">state<wbr>Abi<wbr>Bin<wbr>ToJson</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#statekeyaccounts" class="tsd-kind-icon">state<wbr>Key<wbr>Accounts</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#statepermissionlinks" class="tsd-kind-icon">state<wbr>Permission<wbr>Links</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external"><a href="dfuseclient.html#statetable" class="tsd-kind-icon">state<wbr>Table</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external"><a href="dfuseclient.html#statetablerow" class="tsd-kind-icon">state<wbr>Table<wbr>Row</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#statetablescopes" class="tsd-kind-icon">state<wbr>Table<wbr>Scopes</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external"><a href="dfuseclient.html#statetablesforaccounts" class="tsd-kind-icon">state<wbr>Tables<wbr>For<wbr>Accounts</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external"><a href="dfuseclient.html#statetablesforscopes" class="tsd-kind-icon">state<wbr>Tables<wbr>For<wbr>Scopes</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#streamactiontraces" class="tsd-kind-icon">stream<wbr>Action<wbr>Traces</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#streamheadinfo" class="tsd-kind-icon">stream<wbr>Head<wbr>Info</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#streamtablerows" class="tsd-kind-icon">stream<wbr>Table<wbr>Rows</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="dfuseclient.html#streamtransaction" class="tsd-kind-icon">stream<wbr>Transaction</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-external">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+					<a name="endpoints" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> endpoints</h3>
+					<div class="tsd-signature tsd-kind-icon">endpoints<span class="tsd-signature-symbol">:</span> <a href="../globals.html#dfuseclientendpoints" class="tsd-signature-type">DfuseClientEndpoints</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L71">src/types/client.ts:71</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Returns the final resolved endpoints urls currenctly in used
+							by the client to reach dfuse services.</p>
+						</div>
+						<p>This is useful when using Apollo Client passing it the computed
+						url without effort.</p>
+						<pre><code> <span class="hljs-keyword">const</span> wsLink = <span class="hljs-keyword">new</span> WebSocketLink({
+   uri: dfuseClient.endpoints.graphqlStreamUrl,
+   ...,
+ });</code></pre>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+					<a name="gettokeninfo" class="tsd-anchor"></a>
+					<h3>get<wbr>Token<wbr>Info</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Token<wbr>Info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#apitokeninfo" class="tsd-signature-type">ApiTokenInfo</a><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L639">src/types/client.ts:639</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Call this method each time you need an API token. Th returned API token is always
+							valid. The expiration and the refresh of the token is handled automatically when using this method.</p>
+						</div>
+						<dl class="tsd-comment-tags">
+							<dt>returns</dt>
+							<dd><p>A <code>Promise</code> that will resolve to a valid <a href="../globals.html#apitokeninfo">ApiTokenInfo</a> instance, or will reject if an error occurs retrieving the API token.</p>
+							</dd>
+						</dl>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#apitokeninfo" class="tsd-signature-type">ApiTokenInfo</a><span class="tsd-signature-symbol">&gt;</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#apitokeninfo" class="tsd-signature-type">ApiTokenInfo</a><span class="tsd-signature-symbol">&gt;</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-external">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+					<a name="apirequest" class="tsd-anchor"></a>
+					<h3>api<wbr>Request</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">api<wbr>Request&lt;T&gt;<span class="tsd-signature-symbol">(</span>path<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, method<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, params<span class="tsd-signature-symbol">?: </span><a href="../globals.html#httpqueryparameters" class="tsd-signature-type">HttpQueryParameters</a>, body<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span>, headers<span class="tsd-signature-symbol">?: </span><a href="../globals.html#httpheaders" class="tsd-signature-type">HttpHeaders</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L625">src/types/client.ts:625</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>An helper method that can be used to perform a generic HTTP
+									call using the library inner configured <a href="httpclient.html">HttpClient</a>.</p>
+								</div>
+								<p>This can be used to reach other REST API found on the <code>nodeos</code>
+									process for example, those that are not directly included
+									in the library but are still accessible via our endpoint
+								like a <code>/v1/chain/get_info</code> or <code>/v1/chain/push_transaction</code>.</p>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>path: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The HTTP path on the endpoint</p>
+									</div>
+								</li>
+								<li>
+									<h5>method: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The HTTP method to perform the request agaisnt</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> params: <a href="../globals.html#httpqueryparameters" class="tsd-signature-type">HttpQueryParameters</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>{}</code>) The HTTP query parameters to append to the url, they will
+										be url-encoded and included in the final remote url. Has no effect when empty or undefined.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> body: <span class="tsd-signature-type">any</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>undefined</code>) The HTTP body to include in the request, assumed to be a
+										JSON object that will be serialized to a string. Not included in the HTTP request when <code>undefined</code>.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> headers: <a href="../globals.html#httpheaders" class="tsd-signature-type">HttpHeaders</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>{}</code>) The extra HTTP headers to include in the request. Those will be merged
+										with default ones (<code>{ Authorization: ... }</code>) and they override them if same key are specified.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A <code>Promise</code> that will resolve to the response body if it passes. Will reject with a
+								<a href="../classes/dfuseapierror.html">DfuseApiError</a> if it fits the dfuse Error Format or a generic <code>DfuseError</code> is it&#39;s something
+							not fitting our expected format (<code>nodeos</code> erorr format for example).</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="authissue" class="tsd-anchor"></a>
+					<h3>auth<wbr>Issue</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">auth<wbr>Issue<span class="tsd-signature-symbol">(</span>apiKey<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#authtokenresponse" class="tsd-signature-type">AuthTokenResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L259">src/types/client.ts:259</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>POST /v1/auth/issue</code> (on <code>https://auth.dfuse.io</code> by default, see <a href="dfuseclientoptions.html#authurl">DfuseClientOptions.authUrl</a>)</p>
+								</div>
+								<p>Issues dfuse API token for the following API key.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-post-https-auth-dfuse-io-v1-auth-issue">https://docs.dfuse.io/#rest-api-post-https-auth-dfuse-io-v1-auth-issue</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> apiKey: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>undefined</code>, uses the one defined on the client) The
+											<code>apiKey</code> to generate an API token for.
+											If left undefined, the client will provide the one it is configured with, if
+										present.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#authtokenresponse" class="tsd-signature-type">AuthTokenResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="fetchblockidbytime" class="tsd-anchor"></a>
+					<h3>fetch<wbr>Block<wbr>IdBy<wbr>Time</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">fetch<wbr>Block<wbr>IdBy<wbr>Time<span class="tsd-signature-symbol">(</span>time<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Date</span>, comparator<span class="tsd-signature-symbol">: </span><a href="../globals.html#comparisonoperator" class="tsd-signature-type">ComparisonOperator</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#blockidbytimeresponse" class="tsd-signature-type">BlockIdByTimeResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L279">src/types/client.ts:279</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/block_id/by_time</code></p>
+								</div>
+								<p>Fetches the block ID, block time and block number for the given timestamp.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>time: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Date</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The reference timestamp to query for. If it&#39;s a string, assumed to be
+											in ISO8601 extended format, i.e. <code>2019-03-04T10:36:14.5Z</code>. If it&#39;s a date, it&#39;s
+										going to be turned into an ISO8601 extended format relative to <code>UTC</code>.</p>
+									</div>
+								</li>
+								<li>
+									<h5>comparator: <a href="../globals.html#comparisonoperator" class="tsd-signature-type">ComparisonOperator</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Comparison operator for the block time. Should be one of:</p>
+										<ul>
+											<li><code>gt</code> (Greater Than <code>time</code>)</li>
+											<li><code>gte</code> (Greater Than or Equal to <code>time</code>)</li>
+											<li><code>lt</code> (Lower Than <code>time</code>)</li>
+											<li><code>lte</code> (Lower Than or Equal to<code>time</code>)</li>
+											<li><code>eq</code> (Strictly equal to <code>time</code>)</li>
+										</ul>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#blockidbytimeresponse" class="tsd-signature-type">BlockIdByTimeResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A promise resolving to a <a href="../globals.html#blockidbytimeresponse">BlockIdByTimeResponse</a> object if the request was
+								correct, or rejects with a <a href="../classes/dfuseapierror.html">DfuseApiError</a> when it failed (or a more <a href="../classes/dfuseerror.html">DfuseError</a>
+							when an unexpected error occurs).</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="fetchtransaction" class="tsd-anchor"></a>
+					<h3>fetch<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">fetch<wbr>Transaction<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#transactionlifecycle" class="tsd-signature-type">TransactionLifecycle</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L295">src/types/client.ts:295</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/transactions/:id</code></p>
+								</div>
+								<p>Retrieves a <a href="../globals.html#transactionlifecycle">TransactionLifecycle</a> object representing the transaction that
+								has for id <code>&lt;id&gt;</code>.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The transaction id to search for.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#transactionlifecycle" class="tsd-signature-type">TransactionLifecycle</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A promise resolving to a <a href="../globals.html#transactionlifecycle">TransactionLifecycle</a> object if the request was
+								correct, or rejects with a <a href="../classes/dfuseapierror.html">DfuseApiError</a> when it failed (or a more <a href="../classes/dfuseerror.html">DfuseError</a>
+							when an unexpected error occurs).</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+					<a name="graphql" class="tsd-anchor"></a>
+					<h3>graphql</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">graphql&lt;T&gt;<span class="tsd-signature-symbol">(</span>document<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="../globals.html#graphqldocument" class="tsd-signature-type">GraphqlDocument</a>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>operationType<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Exclude</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#graphqloperationtype" class="tsd-signature-type">GraphqlOperationType</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">"subscription"</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>variables<span class="tsd-signature-symbol">?: </span><a href="../globals.html#graphqlvariables" class="tsd-signature-type">GraphqlVariables</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#graphqlresponse" class="tsd-signature-type">GraphqlResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">graphql&lt;T&gt;<span class="tsd-signature-symbol">(</span>document<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="../globals.html#graphqldocument" class="tsd-signature-type">GraphqlDocument</a>, onMessage<span class="tsd-signature-symbol">: </span><a href="../globals.html#ongraphqlstreammessage" class="tsd-signature-type">OnGraphqlStreamMessage</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>operationType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#graphqloperationtype" class="tsd-signature-type">GraphqlOperationType</a><span class="tsd-signature-symbol">; </span>variables<span class="tsd-signature-symbol">?: </span><a href="../globals.html#graphqlvariables" class="tsd-signature-type">GraphqlVariables</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L102">src/types/client.ts:102</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Perform a <code>query</code> or <code>mutation</code> via the HTTP transport layer. The
+										semantic of this method is to resolve the promise with the GraphQL
+										response when the operation succeed on the server, whenever the
+									actual GraphQL response contains an <code>errors</code> field or not.</p>
+								</div>
+								<p>If an error at the HTTP error, the promise will be rejected.</p>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">any</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>document: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="../globals.html#graphqldocument" class="tsd-signature-type">GraphqlDocument</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The GraphQL operation document to perform. It must be
+											either a <code>query</code> or <code>mutation</code> operation. A <code>subscription</code>
+											operation is not supported by this method. You must use
+										the method that accept <code>options.onMessage</code> to make it work.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>operationType<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Exclude</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#graphqloperationtype" class="tsd-signature-type">GraphqlOperationType</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">"subscription"</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>variables<span class="tsd-signature-symbol">?: </span><a href="../globals.html#graphqlvariables" class="tsd-signature-type">GraphqlVariables</a><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Specific options that can be provided</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#graphqlresponse" class="tsd-signature-type">GraphqlResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L135">src/types/client.ts:135</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Perform a <code>query</code>, <code>mutation</code> or <code>subscription</code> via the WebSocket transport
+										layer. The semantic of this method is to resolve the promise with the <a href="stream.html">Stream</a>
+										object if the connection was established correctly (or if it was already
+										established) and the initial subscription message was sent correctly (this does
+									not check if it was received correctly).</p>
+								</div>
+								<p>Each message for the subscription will be sent to the <code>onMessage</code> handler defined
+								on the <code>options</code> field.</p>
+								<p>The <a href="stream.html">Stream</a> object can be used to control the stream. It can be marked via
+									<a href="stream.html#mark">Stream.mark</a> (so on reconnect, this stream restarts at the last marked location),
+									joined via <a href="stream.html#join">Stream.join</a> (so you wait until the stream actually finishes) or closed
+								via <a href="stream.html#close">Stream.close</a>.</p>
+								<p>If we are unable to establish the connection or the initial send message cannot
+								be sent, then the promise will reject with the appropriate error.</p>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">any</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>document: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="../globals.html#graphqldocument" class="tsd-signature-type">GraphqlDocument</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The GraphQL operation document to perform.</p>
+									</div>
+								</li>
+								<li>
+									<h5>onMessage: <a href="../globals.html#ongraphqlstreammessage" class="tsd-signature-type">OnGraphqlStreamMessage</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>operationType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#graphqloperationtype" class="tsd-signature-type">GraphqlOperationType</a><span class="tsd-signature-symbol">; </span>variables<span class="tsd-signature-symbol">?: </span><a href="../globals.html#graphqlvariables" class="tsd-signature-type">GraphqlVariables</a><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) Specific options that can be provided</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="release" class="tsd-anchor"></a>
+					<h3>release</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">release<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L80">src/types/client.ts:80</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Release any resources hold by this <a href="dfuseclient.html">DfuseClient</a> instance. Must
+									be tolerant to being called multiple times.</p>
+								</div>
+								<p>Once called, the instance is assumed unsuable and should never
+								be invoked anymore.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="searchtransactions" class="tsd-anchor"></a>
+					<h3>search<wbr>Transactions</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">search<wbr>Transactions<span class="tsd-signature-symbol">(</span>q<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockCount<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>cursor<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>limit<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>sort<span class="tsd-signature-symbol">?: </span><a href="../globals.html#searchsorttype" class="tsd-signature-type">SearchSortType</a><span class="tsd-signature-symbol">; </span>startBlock<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>withReversible<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#searchtransactionsresponse" class="tsd-signature-type">SearchTransactionsResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L318">src/types/client.ts:318</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/search/transactions</code></p>
+								</div>
+								<p>Search an EOSIO blockchain for transactions based on free-form criterias, using
+								the simple dfuse Search query language.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-search-transactions">https://docs.dfuse.io/#rest-api-get-v0-search-transactions</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>q: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Search query string. See Search language (<a href="https://docs.dfuse.io/#ref-search-query-specs">https://docs.dfuse.io/#ref-search-query-specs</a>)
+										specs for details.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockCount<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>cursor<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>limit<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>sort<span class="tsd-signature-symbol">?: </span><a href="../globals.html#searchsorttype" class="tsd-signature-type">SearchSortType</a><span class="tsd-signature-symbol">; </span>startBlock<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>withReversible<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#searchtransactionsresponse" class="tsd-signature-type">SearchTransactionsResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="stateabi" class="tsd-anchor"></a>
+					<h3>state<wbr>Abi</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Abi<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#stateabiresponse" class="tsd-signature-type">StateAbiResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L345">src/types/client.ts:345</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/abi</code></p>
+								</div>
+								<p>Fetches the ABI for a given contract account, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-abi">https://docs.dfuse.io/#rest-api-get-v0-state-abi</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Contract account targeted by the action.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#stateabiresponse" class="tsd-signature-type">StateAbiResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+					<a name="stateabibintojson" class="tsd-anchor"></a>
+					<h3>state<wbr>Abi<wbr>Bin<wbr>ToJson</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Abi<wbr>Bin<wbr>ToJson&lt;T&gt;<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, hexRows<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#stateabitojsonresponse" class="tsd-signature-type">StateAbiToJsonResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L370">src/types/client.ts:370</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/abi/bin_to_json</code></p>
+								</div>
+								<p>Fetches the ABI for a given contract account, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-post-v0-state-abi-bin_to_json">https://docs.dfuse.io/#rest-api-post-v0-state-abi-bin_to_json</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">unknown</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Contract account targeted by the action.</p>
+									</div>
+								</li>
+								<li>
+									<h5>table: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded table name you want to retrieve. For example, user
+											balances for tokens live in the accounts table. Refer to the contract&#39;s ABI for
+										a list of available tables. This is contract dependent.</p>
+									</div>
+								</li>
+								<li>
+									<h5>hexRows: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An array of hexadecimal rows to decode. Each row must be a valid
+										hexadecimal string representation of the row to decode against the ABI.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#stateabitojsonresponse" class="tsd-signature-type">StateAbiToJsonResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="statekeyaccounts" class="tsd-anchor"></a>
+					<h3>state<wbr>Key<wbr>Accounts</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Key<wbr>Accounts<span class="tsd-signature-symbol">(</span>publicKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statekeyaccountsresponse" class="tsd-signature-type">StateKeyAccountsResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L391">src/types/client.ts:391</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/key_accounts</code></p>
+								</div>
+								<p>Fetches the accounts controlled by the given public key, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-key_accounts">https://docs.dfuse.io/#rest-api-get-v0-state-key_accounts</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>publicKey: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The public key to fetch controlled accounts for.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statekeyaccountsresponse" class="tsd-signature-type">StateKeyAccountsResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="statepermissionlinks" class="tsd-anchor"></a>
+					<h3>state<wbr>Permission<wbr>Links</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Permission<wbr>Links<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statepermissionlinksresponse" class="tsd-signature-type">StatePermissionLinksResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L410">src/types/client.ts:410</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/permission_links</code></p>
+								</div>
+								<p>Fetches snapshots of any account&#39;s linked authorizations on the blockchain, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-permission_links">https://docs.dfuse.io/#rest-api-get-v0-state-permission_links</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Contract account targeted by the action.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statepermissionlinksresponse" class="tsd-signature-type">StatePermissionLinksResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+					<a name="statetable" class="tsd-anchor"></a>
+					<h3>state<wbr>Table</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Table&lt;T&gt;<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, scope<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#stateresponse" class="tsd-signature-type">StateResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L465">src/types/client.ts:465</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/table</code></p>
+								</div>
+								<p>Fetches the state of any table, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-table">https://docs.dfuse.io/#rest-api-get-v0-state-table</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">unknown</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Contract account targeted by the action.</p>
+									</div>
+								</li>
+								<li>
+									<h5>scope: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded scope of the table you are requesting.
+											For example, user balances for tokens live in their account name&#39;s scope.
+										This is contract dependent, so inspect the ABI for the contract you are interested in.</p>
+									</div>
+								</li>
+								<li>
+									<h5>table: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded table name you want to retrieve.
+											For example, user balances for tokens live in the accounts table.
+											Refer to the contract&#39;s ABI for a list of available tables.
+										This is contract dependent.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#stateresponse" class="tsd-signature-type">StateResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+					<a name="statetablerow" class="tsd-anchor"></a>
+					<h3>state<wbr>Table<wbr>Row</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Table<wbr>Row&lt;T&gt;<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, scope<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, primaryKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statetablerowresponse" class="tsd-signature-type">StateTableRowResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L512">src/types/client.ts:512</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/table/row</code></p>
+								</div>
+								<p>Fetches a single row from the state of any table, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>preview</dt>
+									<dd><p>This endpoint is preview mode. This means it might be changed or removed and
+										is not covered by breaking compatiblity policy of the project until it&#39;s out of preview.</p>
+									</dd>
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-table-row">https://docs.dfuse.io/#rest-api-get-v0-state-table-row</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">unknown</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Contract account targeted by the action.</p>
+									</div>
+								</li>
+								<li>
+									<h5>scope: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded scope of the table you are requesting.
+											For example, user balances for tokens live in their account name&#39;s scope.
+										This is contract dependent, so inspect the ABI for the contract you are interested in.</p>
+									</div>
+								</li>
+								<li>
+									<h5>table: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded table name you want to retrieve.
+											For example, user balances for tokens live in the accounts table.
+											Refer to the contract&#39;s ABI for a list of available tables.
+										This is contract dependent.</p>
+									</div>
+								</li>
+								<li>
+									<h5>primaryKey: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The string representation of the primary key that you want to retrieve. The
+											<code>primaryKey</code> is always a string, but can be encoded differently, for example <code>name</code> encoded
+											like an account. The <code>keyType</code> is used to know how to transform the value in the string to the
+										correct type.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statetablerowresponse" class="tsd-signature-type">StateTableRowResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="statetablescopes" class="tsd-anchor"></a>
+					<h3>state<wbr>Table<wbr>Scopes</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Table<wbr>Scopes<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statetablescopesresponse" class="tsd-signature-type">StateTableScopesResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L431">src/types/client.ts:431</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/table_scopes</code></p>
+								</div>
+								<p>Fetches a list of scopes, for a given table on a contract account, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-table_scopes">https://docs.dfuse.io/#rest-api-get-v0-state-table_scopes</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Contract account holding the requested table.</p>
+									</div>
+								</li>
+								<li>
+									<h5>table: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded table name you want to retrieve scopes from. Refer to the
+										contract&#39;s ABI for a list of available tables. This is contract dependent.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#statetablescopesresponse" class="tsd-signature-type">StateTableScopesResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+					<a name="statetablesforaccounts" class="tsd-anchor"></a>
+					<h3>state<wbr>Tables<wbr>For<wbr>Accounts</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Tables<wbr>For<wbr>Accounts&lt;T&gt;<span class="tsd-signature-symbol">(</span>accounts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, scope<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#multistateresponse" class="tsd-signature-type">MultiStateResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L550">src/types/client.ts:550</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/tables/accounts</code></p>
+								</div>
+								<p>Fetches a table for a given contract account for a group of scopes, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-tables-accounts">https://docs.dfuse.io/#rest-api-get-v0-state-tables-accounts</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">unknown</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>accounts: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An AccountName list a maximum of 1500 elements can be present in the list.</p>
+									</div>
+								</li>
+								<li>
+									<h5>scope: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A Name list, a maximum of 1500 elements can be present in the list.</p>
+									</div>
+								</li>
+								<li>
+									<h5>table: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded table name you want to retrieve.
+											For example, user balances for tokens live in the accounts table.
+											Refer to the contract&#39;s ABI for a list of available tables.
+										This is contract dependent.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#multistateresponse" class="tsd-signature-type">MultiStateResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+					<a name="statetablesforscopes" class="tsd-anchor"></a>
+					<h3>state<wbr>Tables<wbr>For<wbr>Scopes</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">state<wbr>Tables<wbr>For<wbr>Scopes&lt;T&gt;<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, scopes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#multistateresponse" class="tsd-signature-type">MultiStateResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L587">src/types/client.ts:587</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p><code>GET /v0/state/tables/scopes</code></p>
+								</div>
+								<p>Fetches a table for a given contract account for a group of scopes, at any block height.</p>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#rest-api-get-v0-state-tables-scopes">https://docs.dfuse.io/#rest-api-get-v0-state-tables-scopes</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">unknown</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Contract account targeted by the action.</p>
+									</div>
+								</li>
+								<li>
+									<h5>scopes: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+								<li>
+									<h5>table: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The name-encoded table name you want to retrieve.
+											For example, user balances for tokens live in the accounts table.
+											Refer to the contract&#39;s ABI for a list of available tables.
+										This is contract dependent.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>blockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>json<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>keyType<span class="tsd-signature-symbol">?: </span><a href="../globals.html#statekeytype" class="tsd-signature-type">StateKeyType</a><span class="tsd-signature-symbol">; </span>withAbi<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol">; </span>withBlockNum<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> }</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(optional) Optional parameters</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#multistateresponse" class="tsd-signature-type">MultiStateResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="streamactiontraces" class="tsd-anchor"></a>
+					<h3>stream<wbr>Action<wbr>Traces</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">stream<wbr>Action<wbr>Traces<span class="tsd-signature-symbol">(</span>data<span class="tsd-signature-symbol">: </span><a href="../globals.html#getactiontracesmessagedata" class="tsd-signature-type">GetActionTracesMessageData</a>, onMessage<span class="tsd-signature-symbol">: </span><a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a>, options<span class="tsd-signature-symbol">?: </span><a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L168">src/types/client.ts:168</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Retrieve a stream of actions, filtered by receiver(s), account(s) and action name(s).</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#websocket-based-api-get_action_traces">https://docs.dfuse.io/#websocket-based-api-get_action_traces</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>data: <a href="../globals.html#getactiontracesmessagedata" class="tsd-signature-type">GetActionTracesMessageData</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) Specific stream options used to filter</p>
+									</div>
+								</li>
+								<li>
+									<h5>onMessage: <a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The callback that will be invoked for each message
+										received for this specific stream.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>undefined</code>) The stream common options that can be used,
+										see <a href="../globals.html#streamoptions">StreamOptions</a> for more details and default values.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="streamheadinfo" class="tsd-anchor"></a>
+					<h3>stream<wbr>Head<wbr>Info</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">stream<wbr>Head<wbr>Info<span class="tsd-signature-symbol">(</span>onMessage<span class="tsd-signature-symbol">: </span><a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a>, options<span class="tsd-signature-symbol">?: </span><a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L224">src/types/client.ts:224</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Retrieve a stream of informations about the chain as it moves forward</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#websocket-based-api-get_head_info">https://docs.dfuse.io/#websocket-based-api-get_head_info</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>onMessage: <a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The callback that will be invoked for each message
+										received for this specific stream.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>undefined</code>) The stream common options that can be used,
+										see <a href="../globals.html#streamoptions">StreamOptions</a> for more details and default values.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="streamtablerows" class="tsd-anchor"></a>
+					<h3>stream<wbr>Table<wbr>Rows</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">stream<wbr>Table<wbr>Rows<span class="tsd-signature-symbol">(</span>data<span class="tsd-signature-symbol">: </span><a href="../globals.html#gettablerowsmessagedata" class="tsd-signature-type">GetTableRowsMessageData</a>, onMessage<span class="tsd-signature-symbol">: </span><a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a>, options<span class="tsd-signature-symbol">?: </span><a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L189">src/types/client.ts:189</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Retrieve a stream of changes to the tables, the side effects of transactions/actions being executed.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#websocket-based-api-get_table_rows">https://docs.dfuse.io/#websocket-based-api-get_table_rows</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>data: <a href="../globals.html#gettablerowsmessagedata" class="tsd-signature-type">GetTableRowsMessageData</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required)</p>
+									</div>
+								</li>
+								<li>
+									<h5>onMessage: <a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The callback that will be invoked for each message received for this specific stream.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>undefined</code>) The stream common options that can be used,
+										see <a href="../globals.html#streamoptions">StreamOptions</a> for more details and default values.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="streamtransaction" class="tsd-anchor"></a>
+					<h3>stream<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">stream<wbr>Transaction<span class="tsd-signature-symbol">(</span>data<span class="tsd-signature-symbol">: </span><a href="../globals.html#gettransactionlifecyclemessagedata" class="tsd-signature-type">GetTransactionLifecycleMessageData</a>, onMessage<span class="tsd-signature-symbol">: </span><a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a>, options<span class="tsd-signature-symbol">?: </span><a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dfuse-io/client-js/blob/f674da9/src/types/client.ts#L208">src/types/client.ts:208</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Retrieve a <code>transaction_lifecycle</code> (when <code>fetch</code> is true) and follow its life-cycle
+									(when <code>listen</code> is true).</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://docs.dfuse.io/#websocket-based-api-get_transaction_lifecycle">https://docs.dfuse.io/#websocket-based-api-get_transaction_lifecycle</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>data: <a href="../globals.html#gettransactionlifecyclemessagedata" class="tsd-signature-type">GetTransactionLifecycleMessageData</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required)</p>
+									</div>
+								</li>
+								<li>
+									<h5>onMessage: <a href="../globals.html#onstreammessage" class="tsd-signature-type">OnStreamMessage</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(required) The callback that will be invoked for each message
+										received for this specific stream.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../globals.html#streamoptions" class="tsd-signature-type">StreamOptions</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>(defaults <code>undefined</code>) The stream common options that can be used,
+										see <a href="../globals.html#streamoptions">StreamOptions</a> for more details and default values.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-is-external">
+						<a href="dfuseclient.html" class="tsd-kind-icon">Dfuse<wbr>Client</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#endpoints" class="tsd-kind-icon">endpoints</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#gettokeninfo" class="tsd-kind-icon">get<wbr>Token<wbr>Info</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+								<a href="dfuseclient.html#apirequest" class="tsd-kind-icon">api<wbr>Request</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#authissue" class="tsd-kind-icon">auth<wbr>Issue</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#fetchblockidbytime" class="tsd-kind-icon">fetch<wbr>Block<wbr>IdBy<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#fetchtransaction" class="tsd-kind-icon">fetch<wbr>Transaction</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+								<a href="dfuseclient.html#graphql" class="tsd-kind-icon">graphql</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#release" class="tsd-kind-icon">release</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#searchtransactions" class="tsd-kind-icon">search<wbr>Transactions</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#stateabi" class="tsd-kind-icon">state<wbr>Abi</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+								<a href="dfuseclient.html#stateabibintojson" class="tsd-kind-icon">state<wbr>Abi<wbr>Bin<wbr>ToJson</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#statekeyaccounts" class="tsd-kind-icon">state<wbr>Key<wbr>Accounts</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#statepermissionlinks" class="tsd-kind-icon">state<wbr>Permission<wbr>Links</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+								<a href="dfuseclient.html#statetable" class="tsd-kind-icon">state<wbr>Table</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+								<a href="dfuseclient.html#statetablerow" class="tsd-kind-icon">state<wbr>Table<wbr>Row</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#statetablescopes" class="tsd-kind-icon">state<wbr>Table<wbr>Scopes</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+								<a href="dfuseclient.html#statetablesforaccounts" class="tsd-kind-icon">state<wbr>Tables<wbr>For<wbr>Accounts</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter tsd-is-external">
+								<a href="dfuseclient.html#statetablesforscopes" class="tsd-kind-icon">state<wbr>Tables<wbr>For<wbr>Scopes</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#streamactiontraces" class="tsd-kind-icon">stream<wbr>Action<wbr>Traces</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#streamheadinfo" class="tsd-kind-icon">stream<wbr>Head<wbr>Info</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#streamtablerows" class="tsd-kind-icon">stream<wbr>Table<wbr>Rows</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="dfuseclient.html#streamtransaction" class="tsd-kind-icon">stream<wbr>Transaction</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
