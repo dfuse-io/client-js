@@ -4,6 +4,8 @@
 
 - **Deprecated** `op` field of `RamOp`, use `family` and `action` fields instead.
 
+- Exposed `./client/graphql-stream-client` module so that customized GraphQL Stream Client can be constructed.
+
 - Added `family` and `action` to `RamOp` type.
 
 ## 0.3.20 (April 8, 2021)

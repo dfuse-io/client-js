@@ -5,6 +5,7 @@ export * from "./client/http-client"
 export * from "./client/refresh-scheduler"
 export * from "./client/socket"
 export * from "./client/stream-client"
+export * from "./client/graphql-stream-client"
 
 export * from "./helpers/message"
 export * from "./helpers/time"
