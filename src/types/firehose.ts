@@ -1,6 +1,6 @@
 export declare type FirehoseHeader = {
   timestamp: {
-    seconds: number
+    seconds: string
   },
   producer: string,
   previous: string,
@@ -38,8 +38,8 @@ export declare type FirehoseState = {
     valueEx: string,
     consumed: string
   },
-  pendingNetUsage: string,
-  pendingCpuUsage: string,
+  pendingNetUsage?: string,
+  pendingCpuUsage?: string,
   totalNetWeight: string,
   totalCpuWeight: string,
   totalRamBytes: string,
@@ -69,17 +69,22 @@ export declare type FirehoseActiveScheduleV2 = {
   blockSigningAuthority: FirehoseValidBlockSigningAuthorityV2
 };
 
+export declare type FirehoseAuthSequence = {
+  accountName: string,
+  sequence: string
+};
+
+export declare type FirehoseAuthorization = {
+  actor: string,
+  permission: string
+};
+
 export declare type FirehoseActionTrace = {
   receipt: {
     receiver: string,
     digest: string,
     globalSequence: string,
-    authSequence: [
-      {
-        accountName: string,
-        sequence: string
-      }
-    ],
+    authSequence: Array<FirehoseAuthSequence>,
     recvSequence: string,
     codeSequence: string,
     abiSequence: string
@@ -87,17 +92,12 @@ export declare type FirehoseActionTrace = {
   action: {
     account: string,
     name: string,
-    authorization: [
-      {
-        actor: string,
-        permission: string
-      }
-    ],
+    authorization: Array<FirehoseAuthorization>,
     jsonData: string,
     rawData: string
   },
   elapsed: string,
-  console: string,
+  console?: string,
   transactionId: string,
   blockNum: string,
   blockTime: {
@@ -105,7 +105,7 @@ export declare type FirehoseActionTrace = {
   },
   receiver: string,
   actionOrdinal: number,
-  filteringMatched: true
+  filteringMatched?: boolean
 };
 
 export declare type FirehoseDbops = {
@@ -140,7 +140,7 @@ export declare type FirehoseRlimitOps2 = {
 };
 
 export declare type FirehoseCreationTree = {
-  creatorActionIndex: number,
+  creatorActionIndex?: number,
   executionActionIndex?: number
 };
 
@@ -162,7 +162,7 @@ export declare type FirehoseFilteredTransactionTrace = {
   dbOps: Array<FirehoseDbops>,
   rlimitOps: Array<FirehoseRlimitOps2>,
   creationTree: Array<FirehoseCreationTree>,
-  index: number
+  index: string
 };
 
 export declare type FirehoseFilteredTransactions = {
@@ -196,7 +196,7 @@ export declare type FirehoseBlock = {
   unfilteredExecutedTotalActionCount: number,
   validBlockSigningAuthorityV2: FirehoseValidBlockSigningAuthorityV2,
   activeScheduleV2: {
-    producer: Array<FirehoseActiveScheduleV2>
+    producers: Array<FirehoseActiveScheduleV2>
   },
   filteringApplied: boolean,
   filteringIncludeFilterExpr: string,
